@@ -1,0 +1,8 @@
+namespace abmgs.packets;
+
+enum PacketId: Unit32 {
+    ReqLogin = 0,
+    AckLogin = 1,
+}
+
+
