@@ -4,3 +4,9 @@ GET {{ABMGS.Server_HostAddress}}/
 Accept: application/json
 
 ###
+
+GET {{ABMGS.Server_HostAddress}}/shorten?url=https://www.naver.com
+Accept: application/json
+###
+
+GET {{ABMGS.Server_HostAddress}}/go/7DFD5544
