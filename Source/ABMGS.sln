@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABMGS.Server", "ABMGS.Serve
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABMGS.Server.Tests", "ABMGS.Server.Tests\ABMGS.Server.Tests.csproj", "{A911CE6A-FDD1-3F36-80E9-0AAE93ED2D0C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABMGS.Server.Front", "ABMGS.Server.Front\ABMGS.Server.Front.csproj", "{B6D9063E-FE1C-A4C8-FC06-1357EEA1AF7C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{A911CE6A-FDD1-3F36-80E9-0AAE93ED2D0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A911CE6A-FDD1-3F36-80E9-0AAE93ED2D0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A911CE6A-FDD1-3F36-80E9-0AAE93ED2D0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6D9063E-FE1C-A4C8-FC06-1357EEA1AF7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6D9063E-FE1C-A4C8-FC06-1357EEA1AF7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6D9063E-FE1C-A4C8-FC06-1357EEA1AF7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6D9063E-FE1C-A4C8-FC06-1357EEA1AF7C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
