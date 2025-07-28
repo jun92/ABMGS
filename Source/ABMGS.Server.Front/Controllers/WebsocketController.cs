@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 
 namespace ABMGS.Server.Front.Controllers;
@@ -19,4 +20,18 @@ public class WebsocketController : ControllerBase
     {
         return Ok();
     }
+    [Route("/ws/connect")]
+    public async Task ConnectByUserId([FromQuery] string userId)
+    {
+        if(HttpContext.WebSockets.IsWebSocketRequest)
+        {
+            WebSocket socket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+
+        }
+        else
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+        }
+    }
+
 }
