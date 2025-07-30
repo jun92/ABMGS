@@ -27,6 +27,8 @@ public class WebsocketController : ControllerBase
         {
             WebSocket socket = await HttpContext.WebSockets.AcceptWebSocketAsync();
 
+
+
         }
         else
         {
