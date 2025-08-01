@@ -1,4 +1,4 @@
-﻿
+
 using System.Net.WebSockets;
 
 namespace ABMGS.Server.Front.Services
@@ -8,7 +8,13 @@ namespace ABMGS.Server.Front.Services
         private IDictionary<Guid, WebSocket> _sessions = new Dictionary<Guid, WebSocket>();
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            throw new NotImplementedException();
+            while (!stoppingToken.IsCancellationRequested)
+            {
+
+                //Read some data from websocket if there is.
+            }
+
+            return Task.CompletedTask;
         }
 
         internal void AddWebSocket(Guid userId, WebSocket socket)
