@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABMGS.Server.Tests", "ABMGS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABMGS.Server.Front", "ABMGS.Server.Front\ABMGS.Server.Front.csproj", "{B6D9063E-FE1C-A4C8-FC06-1357EEA1AF7C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABMGS.Server.Front.IntegrationTests", "ABMGS.Server.Front.IntegrationTests\ABMGS.Server.Front.IntegrationTests.csproj", "{AAED8C53-374E-8B93-E666-2D3D2C3C3F74}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{B6D9063E-FE1C-A4C8-FC06-1357EEA1AF7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B6D9063E-FE1C-A4C8-FC06-1357EEA1AF7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B6D9063E-FE1C-A4C8-FC06-1357EEA1AF7C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAED8C53-374E-8B93-E666-2D3D2C3C3F74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAED8C53-374E-8B93-E666-2D3D2C3C3F74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAED8C53-374E-8B93-E666-2D3D2C3C3F74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAED8C53-374E-8B93-E666-2D3D2C3C3F74}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
