@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddHostedService<SessionService>();
+builder.Services.AddHostedService<SessionLoopService>();
 builder.Services.AddControllers();
 
 var app = builder.Build();
