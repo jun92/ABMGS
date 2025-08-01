@@ -37,9 +37,6 @@ public class WebsocketController : ControllerBase
             // // 응답 보낼 데이타가 있으면 보내고
             // // 연결 끊겼는지 체크
             // 반복 끝
-
-
-
         }
         else
         {

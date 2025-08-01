@@ -1,11 +1,12 @@
 using System.Net.WebSockets;
-
+using ABMGS.Server.Front;
 
 public class PlayerLoopService
 {
     private readonly ILogger<PlayerLoopService> _logger;
     private WebSocket? _webSocket;
     private Guid? _playerId;
+    
 
     public PlayerLoopService(ILogger<PlayerLoopService> logger)
     {
@@ -26,12 +27,14 @@ public class PlayerLoopService
                 continue;
             }
 
-            var buffer = new byte[1024 * 4];
+            var buffer = new byte[Config.MaxWebSocketMessageSize];
 
             CancellationTokenSource timeoutCancellationToken = new CancellationTokenSource();
-            timeoutCancellationToken.CancelAfter(TimeSpan.FromMilliseconds(50));
+            timeoutCancellationToken.CancelAfter(TimeSpan.FromMilliseconds(Config.RequestTimeoutMilliseconds));
 
             await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), timeoutCancellationToken.Token);
+
+            
 
 
         }
