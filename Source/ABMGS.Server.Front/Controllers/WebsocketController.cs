@@ -23,7 +23,7 @@ public class WebsocketController : ControllerBase
     {
         return Ok();
     }
-    [Route("/ws/connect")]
+    [Route("connect")]
     public async Task ConnectByUserId([FromQuery] Guid userId)
     {
         if (HttpContext.WebSockets.IsWebSocketRequest)
