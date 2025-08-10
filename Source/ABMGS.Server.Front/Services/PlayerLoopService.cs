@@ -6,7 +6,7 @@ public class PlayerLoopService
     private readonly ILogger<PlayerLoopService> _logger;
     private WebSocket? _webSocket;
     private Guid? _playerId;
-    
+
 
     public PlayerLoopService(ILogger<PlayerLoopService> logger)
     {
@@ -21,23 +21,16 @@ public class PlayerLoopService
 
         while (!sessionEndToken.IsCancellationRequested)
         {
-            if (!CanContinue())
-            {
-                await Task.Delay(TimeSpan.FromSeconds(1));
-                continue;
-            }
-
             var buffer = new byte[Config.MaxWebSocketMessageSize];
-
-            CancellationTokenSource timeoutCancellationToken = new CancellationTokenSource();
-            timeoutCancellationToken.CancelAfter(TimeSpan.FromMilliseconds(Config.RequestTimeoutMilliseconds));
-
-            await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), timeoutCancellationToken.Token);
-
-            
-
-
+            var timeoutToken = CreateTimeoutToken(TimeSpan.FromMilliseconds(Config.RequestTimeoutMilliseconds));
+            await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), timeoutToken);
         }
+    }
+    private CancellationToken CreateTimeoutToken(TimeSpan howLong)
+    {
+        CancellationTokenSource timeoutCancellationToken = new CancellationTokenSource();
+        timeoutCancellationToken.CancelAfter(howLong);
+        return timeoutCancellationToken.Token;
     }
 
     private static CancellationTokenSource GetTimeoutToken()
