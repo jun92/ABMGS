@@ -6,9 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
 
-builder.Services.AddOpenApi();
 builder.Services.AddHostedService<SessionService>();
 builder.Services.AddTransient<PlayerLoopService>();
+builder.Services.AddTransient<Player>();
 builder.Services.AddControllers();
 
 var app = builder.Build();
@@ -18,7 +18,7 @@ app.UseWebSockets();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+   // app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();

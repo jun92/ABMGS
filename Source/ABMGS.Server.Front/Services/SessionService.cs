@@ -11,7 +11,7 @@ namespace ABMGS.Server.Front.Services
             while (!stoppingToken.IsCancellationRequested)
             {
 
-                //Read some data from websocket if there is.
+                Task.Delay(TimeSpan.FromSeconds(1), stoppingToken).Wait(stoppingToken);
             }
 
             return Task.CompletedTask;

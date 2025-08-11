@@ -31,12 +31,6 @@ public class WebsocketController : ControllerBase
             WebSocket socket = await HttpContext.WebSockets.AcceptWebSocketAsync();
             await _loopService.StartSessionLoop(socket, userId);
 
-            // 반복 시작
-            // // 데이타를 읽고
-            // // 조합을 하고
-            // // 응답 보낼 데이타가 있으면 보내고
-            // // 연결 끊겼는지 체크
-            // 반복 끝
         }
         else
         {
