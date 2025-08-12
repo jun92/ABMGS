@@ -4,7 +4,7 @@ using ABMGS.Server.Front.Services;
 
 
 /// <summary> 
-/// 기본 아이더 1차 : 소켓 아이오를 담당하고 플레이어 객체에 데이타를 저장해준다.
+/// 
 /// </summary>
 public class PlayerLoopService
 {
