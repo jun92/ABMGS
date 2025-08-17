@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using ABMGS.Server.Front.Abstractions;
+using System.Collections.Concurrent;
 using System.Net.WebSockets;
 
 namespace ABMGS.Server.Front.Services;
@@ -26,7 +27,7 @@ public class Player(Guid _id)
     }
 }
 
-public class PlayerNetworkBuffer
+public class PlayerNetworkBuffer : INetworkBuffer
 {
     private readonly ConcurrentQueue<byte[]> _sendQueue = new();
     public PlayerNetworkBuffer()
@@ -34,10 +35,22 @@ public class PlayerNetworkBuffer
         // Initialize buffer or any other necessary setup
     }
 
+    public void AddReceiveData(byte[] data)
+    {
+        throw new NotImplementedException();
+    }
+
+
     public void EnqueueSendData(byte[] data)
     {
         _sendQueue.Enqueue(data);
     }
+
+    public byte[] GetReceiveData()
+    {
+        throw new NotImplementedException();
+    }
+
 
     public byte[] GetSendDataFromQueue()
     {
@@ -47,4 +60,15 @@ public class PlayerNetworkBuffer
         }
         return null; // or throw an exception, or return an empty array
     }
+
+    public byte[] PopSendData()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void PushSendData(byte[] data)
+    {
+        throw new NotImplementedException();
+    }
+
 }

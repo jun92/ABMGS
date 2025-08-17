@@ -12,7 +12,11 @@ public class WebsocketController : ControllerBase
     private readonly SessionService _sessionService;
     private readonly PlayerLoopService _loopService;
 
-    public WebsocketController(ILogger<WebsocketController> logger, SessionService sessionService, PlayerLoopService playerLoopService)
+    public WebsocketController(
+        ILogger<WebsocketController> logger,
+        SessionService sessionService,
+        PlayerLoopService playerLoopService
+        )
     {
         _logger = logger;
         _sessionService = sessionService;
@@ -30,7 +34,6 @@ public class WebsocketController : ControllerBase
         {
             WebSocket socket = await HttpContext.WebSockets.AcceptWebSocketAsync();
             await _loopService.StartSessionLoop(socket, userId);
-
         }
         else
         {
