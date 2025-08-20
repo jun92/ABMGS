@@ -15,6 +15,25 @@ public interface IPlayerFactory
     public IPlayer CreatePlayer(Guid id);
 }
 
+
+public interface IParser
+{
+    public T Parse<T>(byte[] data) where T : IPacket;
+}
+
+public class JsonParser : IParser
+{
+    public T Parse<T>(byte[] data) where T : IPacket
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public interface IPacket
+{
+
+}
+
 public class BasicPlayerFactory : IPlayerFactory
 {
     public IPlayer CreatePlayer(Guid id)
