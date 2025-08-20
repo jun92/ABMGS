@@ -1,8 +1,27 @@
-﻿using ABMGS.Server.Front.Abstractions;
+using ABMGS.Server.Front.Interfaces.Networks;
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
 
 namespace ABMGS.Server.Front.Services;
+
+public interface IPlayer
+{
+    public Guid Id();
+    public INetworkBuffer GetBuffer();
+}
+
+public interface IPlayerFactory
+{
+    public IPlayer CreatePlayer(Guid id);
+}
+
+public class BasicPlayerFactory : IPlayerFactory
+{
+    public IPlayer CreatePlayer(Guid id)
+    {
+        return new Player(id);
+    }
+}
 
 /// <summary> 
 /// 플레이어 관련 데이타 저장
@@ -11,26 +30,32 @@ namespace ABMGS.Server.Front.Services;
 /// </summary>
 /// <param name="_id"></param>
 /// <param name="webSocket"></param>
-public class Player(Guid _id)
+public class Player : IPlayer
 {
-    private Guid id = _id;
-    private readonly PlayerNetworkBuffer _buffer = new();
+    private Guid id;
+    private readonly INetworkBuffer _buffer = new NetworkBuffer();
+    /// <summary>
+    /// 세션 종료가 되면 fire되는 TaskCompletionSource
+    /// </summary>
+    private readonly TaskCompletionSource _sessionTerminationSource = new TaskCompletionSource();
 
-    public async Task SendAsync(byte[] data, CancellationToken cancellationToken)
+    public Player(Guid id)
     {
-        if (_webSocket.State != WebSocketState.Open)
-        {
-            throw new InvalidOperationException("WebSocket is not open.");
-        }
-        var segment = new ArraySegment<byte>(data);
-        await _webSocket.SendAsync(segment, WebSocketMessageType.Text, true, cancellationToken);
+        this.id = id;
+    }
+
+    public Guid Id() => id;
+
+    public INetworkBuffer GetBuffer()
+    {
+        throw new NotImplementedException();
     }
 }
 
-public class PlayerNetworkBuffer : INetworkBuffer
+public class NetworkBuffer : INetworkBuffer
 {
     private readonly ConcurrentQueue<byte[]> _sendQueue = new();
-    public PlayerNetworkBuffer()
+    public NetworkBuffer()
     {
         // Initialize buffer or any other necessary setup
     }
@@ -39,7 +64,6 @@ public class PlayerNetworkBuffer : INetworkBuffer
     {
         throw new NotImplementedException();
     }
-
 
     public void EnqueueSendData(byte[] data)
     {
@@ -50,17 +74,6 @@ public class PlayerNetworkBuffer : INetworkBuffer
     {
         throw new NotImplementedException();
     }
-
-
-    public byte[] GetSendDataFromQueue()
-    {
-        if (_sendQueue.TryDequeue(out var data))
-        {
-            return data;
-        }
-        return null; // or throw an exception, or return an empty array
-    }
-
     public byte[] PopSendData()
     {
         throw new NotImplementedException();

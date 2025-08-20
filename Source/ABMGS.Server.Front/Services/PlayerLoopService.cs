@@ -4,7 +4,7 @@ using ABMGS.Server.Front.Services;
 
 
 /// <summary> 
-/// 
+/// 루프를 돌면서 미들웨어가 종료되지 않게 유지하는 서비스
 /// </summary>
 public class PlayerLoopService
 {

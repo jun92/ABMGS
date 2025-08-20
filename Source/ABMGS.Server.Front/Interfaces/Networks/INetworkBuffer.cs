@@ -1,4 +1,4 @@
-namespace ABMGS.Server.Front.Abstractions;
+namespace ABMGS.Server.Front.Interfaces.Networks;
 
 public interface INetworkBuffer
 {
