@@ -15,6 +15,18 @@ public class PlayerLoopService
     private WebSocket _webSocket;
     private readonly IPlayerFactory _playerFactory;
 
+    // Session이 종료될때 fire되는 TaskCompletionSource
+    protected CancellationTokenSource _sessionEndTokenSource = new CancellationTokenSource();
+    // RecevieWait중에 뭔가를 보내야할 때, Receive를 취소하기 위한 CancellationTokenSource
+    protected CancellationTokenSource _cancelReceiveDueToSomethingToSend = new CancellationTokenSource();
+
+    public void InitializeCancellationTokens(IPlayer player)
+    {
+        _sessionEndTokenSource = new CancellationTokenSource();
+        _cancelReceiveDueToSomethingToSend = new CancellationTokenSource();
+        _cancelReceiveDueToSomethingToSend.Token.Register(player.FlushSendBuffer);
+    }
+
     public PlayerLoopService(ILogger<PlayerLoopService> logger, IPlayerFactory playerFactory)
     {
         _logger = logger;
@@ -31,18 +43,11 @@ public class PlayerLoopService
     {
         IPlayer Player = _playerFactory.CreatePlayer(playerId);
 
-        // Session이 종료될때 fire되는 TaskCompletionSource
-        CancellationTokenSource sessionEndNotification = new();
-        
-        
-        // RecevieWait중에 뭔가를 보내야할 때, Receive를 취소하기 위한 CancellationTokenSource
-        CancellationTokenSource cancelReceiveDueToSomethingToSend = new();
-        cancelReceiveDueToSomethingToSend.Token.Register(Player.FlushSendBuffer);
-
+        InitializeCancellationTokens(Player);
 
         CancellationTokenSource cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
-            sessionEndNotification.Token,
-            cancelReceiveDueToSomethingToSend.Token
+            _sessionEndTokenSource.Token,
+            _cancelReceiveDueToSomethingToSend.Token
         );
 
 
