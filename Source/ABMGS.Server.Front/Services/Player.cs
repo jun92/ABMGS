@@ -1,27 +1,7 @@
 using ABMGS.Server.Front.Interfaces.Networks;
-using System.Collections.Concurrent;
 using System.Net.WebSockets;
 
 namespace ABMGS.Server.Front.Services;
-
-public interface IPlayer
-{
-    public Guid Id();
-    public INetworkBuffer GetBuffer();
-}
-
-public interface IPlayerFactory
-{
-    public IPlayer CreatePlayer(Guid id);
-}
-
-public class BasicPlayerFactory : IPlayerFactory
-{
-    public IPlayer CreatePlayer(Guid id)
-    {
-        return new Player(id);
-    }
-}
 
 /// <summary> 
 /// 플레이어 관련 데이타 저장
@@ -50,38 +30,4 @@ public class Player : IPlayer
     {
         throw new NotImplementedException();
     }
-}
-
-public class NetworkBuffer : INetworkBuffer
-{
-    private readonly ConcurrentQueue<byte[]> _sendQueue = new();
-    public NetworkBuffer()
-    {
-        // Initialize buffer or any other necessary setup
-    }
-
-    public void AddReceiveData(byte[] data)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void EnqueueSendData(byte[] data)
-    {
-        _sendQueue.Enqueue(data);
-    }
-
-    public byte[] GetReceiveData()
-    {
-        throw new NotImplementedException();
-    }
-    public byte[] PopSendData()
-    {
-        throw new NotImplementedException();
-    }
-
-    public void PushSendData(byte[] data)
-    {
-        throw new NotImplementedException();
-    }
-
 }
