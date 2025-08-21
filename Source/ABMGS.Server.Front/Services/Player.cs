@@ -1,35 +1,8 @@
 using ABMGS.Server.Front.Interfaces.Networks;
+using System.Net.Sockets;
 using System.Net.WebSockets;
 
 namespace ABMGS.Server.Front.Services;
-
-
-
-public interface IParser
-{
-    public T Parse<T>(byte[] data) where T : IPacket;
-}
-
-public class JsonParser : IParser
-{
-    public T Parse<T>(byte[] data) where T : IPacket
-    {
-        throw new NotImplementedException();
-    }
-}
-
-public interface IPacket
-{
-
-}
-
-public class BasicPlayerFactory : IPlayerFactory
-{
-    public IPlayer CreatePlayer(Guid id)
-    {
-        return new Player(id);
-    }
-}
 
 /// <summary> 
 /// 플레이어 관련 데이타 저장

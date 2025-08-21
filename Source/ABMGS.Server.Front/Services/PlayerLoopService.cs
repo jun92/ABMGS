@@ -19,6 +19,12 @@ public class PlayerLoopService
         _player = new Player(Guid.NewGuid());
     }
 
+    /// <summary>
+    /// 지속적으로 루프를 돌면서 네트워크 receive/send를 처리합니다.
+    /// </summary>
+    /// <param name="webSocket"></param>
+    /// <param name="playerId"></param>
+    /// <returns></returns>
     public async Task StartSessionLoop(WebSocket webSocket, Guid playerId)
     {
         CancellationTokenSource sessionEndTokenSource = new CancellationTokenSource();
