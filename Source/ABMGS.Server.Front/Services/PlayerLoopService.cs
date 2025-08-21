@@ -53,7 +53,7 @@ public class PlayerLoopService
         //    await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), timeoutToken);
         //}
 
-        await WaitReceiveAMessageOrDiscardDueToSendBack(sessionEndTokenSource.Token);
+        await WaitReceiveAMessageOrDiscardDueToSendBack(cancellationTokenSource.Token);
     }
     public async Task<ArraySegment<Byte>> WaitReceiveAMessageOrDiscardDueToSendBack(CancellationToken cancellationToken)
     {

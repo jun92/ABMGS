@@ -16,10 +16,6 @@ public class Player : IPlayer
 {
     private Guid id;
     private readonly INetworkBuffer _buffer = new NetworkBuffer();
-    /// <summary>
-    /// 세션 종료가 되면 fire되는 TaskCompletionSource
-    /// </summary>
-    private readonly TaskCompletionSource _sessionTerminationSource = new TaskCompletionSource();
 
     public Player(Guid id)
     {
