@@ -67,14 +67,6 @@ public class PlayerLoopService
         WebSocketReceiveResult receiveResult;
         do
         {
-            cancellationToken.Register(() =>
-            {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    
-                }
-                
-            });
             try
             {
                 receiveResult = await _webSocket.ReceiveAsync(segment, cancellationToken);
