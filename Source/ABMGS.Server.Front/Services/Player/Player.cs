@@ -24,6 +24,7 @@ public class Player : IPlayer
     public Player(Guid id)
     {
         this.id = id;
+        
     }
 
     public Guid Id() => id;
@@ -32,4 +33,11 @@ public class Player : IPlayer
     {
         throw new NotImplementedException();
     }
+
+    public void FlushSendBuffer()
+    {
+        GetBuffer().PopSendData();
+
+    }
+
 }

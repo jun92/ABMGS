@@ -6,4 +6,5 @@ public interface IPlayer
 {
     public Guid Id();
     public INetworkBuffer GetBuffer();
+    public void FlushSendBuffer();
 }
