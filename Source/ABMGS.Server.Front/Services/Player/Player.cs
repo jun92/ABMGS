@@ -1,8 +1,9 @@
 using ABMGS.Server.Front.Interfaces.Networks;
+using ABMGS.Server.Front.Interfaces.Players;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 
-namespace ABMGS.Server.Front.Services;
+namespace ABMGS.Server.Front.Services.Player;
 
 /// <summary> 
 /// 플레이어 관련 데이타 저장

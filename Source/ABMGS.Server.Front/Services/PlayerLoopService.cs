@@ -1,6 +1,7 @@
 using System.Net.WebSockets;
 using ABMGS.Server.Front;
-using ABMGS.Server.Front.Services;
+using ABMGS.Server.Front.Interfaces.Players;
+using ABMGS.Server.Front.Services.Player;
 
 
 /// <summary> 
@@ -12,11 +13,12 @@ public class PlayerLoopService
     private Player _player;
     private MemoryStream _readStream = new MemoryStream();
     private WebSocket _webSocket;
+    private readonly IPlayerFactory _playerFactory;
 
-    public PlayerLoopService(ILogger<PlayerLoopService> logger)
+    public PlayerLoopService(ILogger<PlayerLoopService> logger, IPlayerFactory playerFactory)
     {
         _logger = logger;
-        _player = new Player(Guid.NewGuid());
+        _playerFactory = playerFactory;
     }
 
     /// <summary>
@@ -27,6 +29,8 @@ public class PlayerLoopService
     /// <returns></returns>
     public async Task StartSessionLoop(WebSocket webSocket, Guid playerId)
     {
+
+        
         CancellationTokenSource sessionEndTokenSource = new CancellationTokenSource();
         _webSocket = webSocket;
 
