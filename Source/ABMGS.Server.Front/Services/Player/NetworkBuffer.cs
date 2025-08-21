@@ -1,7 +1,7 @@
 using ABMGS.Server.Front.Interfaces.Networks;
 using System.Collections.Concurrent;
 
-namespace ABMGS.Server.Front.Services;
+namespace ABMGS.Server.Front.Services.Player;
 
 public class NetworkBuffer : INetworkBuffer
 {

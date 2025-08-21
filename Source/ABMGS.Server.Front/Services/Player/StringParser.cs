@@ -5,6 +5,11 @@ namespace ABMGS.Server.Front.Services;
 
 public class StringParser : IParser
 {
+    public byte[] Pack<PacketType>(PacketType packet) where PacketType : IPacket
+    {
+        throw new NotImplementedException();
+    }
+
     public PacketType Parse<PacketType>(byte[] data) where PacketType : IPacket
     {
         string jsonString = Encoding.UTF8.GetString(data);

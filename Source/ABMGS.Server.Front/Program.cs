@@ -1,4 +1,5 @@
 using ABMGS.Server.Front.Services;
+using ABMGS.Server.Front.Services.Player;
 
 var builder = WebApplication.CreateBuilder(args);
 
