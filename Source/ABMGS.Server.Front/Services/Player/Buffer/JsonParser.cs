@@ -1,7 +1,8 @@
+using ABMGS.Server.Front.Interfaces.Networks;
 using System.Text;
 using System.Text.Json;
 
-namespace ABMGS.Server.Front.Services;
+namespace ABMGS.Server.Front.Services.Player;
 
 public class JsonParser : IParser
 {

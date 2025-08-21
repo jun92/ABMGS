@@ -1,4 +1,6 @@
-namespace ABMGS.Server.Front.Services;
+using ABMGS.Server.Front.Interfaces.Networks;
+
+namespace ABMGS.Server.Front.Services.Player.Buffer;
 
 public class FlatBufferParser : IParser
 {

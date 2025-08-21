@@ -29,10 +29,27 @@ public class PlayerLoopService
     /// <returns></returns>
     public async Task StartSessionLoop(WebSocket webSocket, Guid playerId)
     {
+        IPlayer Player = _playerFactory.CreatePlayer(playerId);
 
+        // Session이 종료될때 fire되는 TaskCompletionSource
+        CancellationTokenSource sessionEndNotification = new();
         
-        CancellationTokenSource sessionEndTokenSource = new CancellationTokenSource();
-        _webSocket = webSocket;
+        
+        // RecevieWait중에 뭔가를 보내야할 때, Receive를 취소하기 위한 CancellationTokenSource
+        CancellationTokenSource cancelReceiveDueToSomethingToSend = new();
+        cancelReceiveDueToSomethingToSend.Token.Register(() =>
+        {
+            // Receive를 취소하기 위해서
+            // 이곳에서 뭔가를 처리할 수 있습니다.
+            // 예를 들어, SendQueue에 있는 메시지를 보내는 등의 작업을 할 수 있습니다.
+            _logger.LogInformation("Receive cancelled due to something to send.");
+        });
+
+        CancellationTokenSource cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+            sessionEndNotification.Token,
+            cancelReceiveDueToSomethingToSend.Token
+        );
+
 
         //while (!sessionEndTokenSource.Token.IsCancellationRequested)
         //{

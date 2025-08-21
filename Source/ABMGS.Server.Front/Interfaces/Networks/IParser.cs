@@ -1,4 +1,4 @@
-namespace ABMGS.Server.Front.Services;
+namespace ABMGS.Server.Front.Interfaces.Networks;
 
 public interface IParser
 {

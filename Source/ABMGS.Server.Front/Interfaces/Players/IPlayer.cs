@@ -1,6 +1,6 @@
 using ABMGS.Server.Front.Interfaces.Networks;
 
-namespace ABMGS.Server.Front.Services;
+namespace ABMGS.Server.Front.Interfaces.Players;
 
 public interface IPlayer
 {
