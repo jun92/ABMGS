@@ -2,10 +2,10 @@ using ABMGS.Server.Front.Interfaces.Players;
 
 namespace ABMGS.Server.Front.Services.Player;
 
-public class DefaultPlayerFactory : IPlayerFactory
+public class DefaultPlayerFactory 
 {
-    public IPlayer CreatePlayer(Guid id)
+    public PlayerType CreatePlayer<PlayerType>(Guid id) where PlayerType : IPlayer
     {
-        return new Player(id);
+        return (PlayerType)Activator.CreateInstance(typeof(PlayerType), id);
     }
 }

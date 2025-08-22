@@ -41,7 +41,7 @@ public class PlayerLoopService
     /// <returns></returns>
     public async Task StartSessionLoop(WebSocket webSocket, Guid playerId)
     {
-        IPlayer Player = _playerFactory.CreatePlayer(playerId);
+        Player Player = _playerFactory.CreatePlayer<Player>(playerId);
 
         InitializeCancellationTokens(Player);
 
@@ -49,6 +49,16 @@ public class PlayerLoopService
             _sessionEndTokenSource.Token,
             _cancelReceiveDueToSomethingToSend.Token
         );
+        var buffer = new byte[ABMGSConfig.MaxWebSocketMessageSize];
+        WebSocketReceiveResult result;
+        do
+        {
+            result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationTokenSource.Token);
+        } while (!result.EndOfMessage);
+        
+        
+
+        
 
 
         //while (!sessionEndTokenSource.Token.IsCancellationRequested)
