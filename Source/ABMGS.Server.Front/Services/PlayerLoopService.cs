@@ -49,26 +49,15 @@ public class PlayerLoopService
             _sessionEndTokenSource.Token,
             _cancelReceiveDueToSomethingToSend.Token
         );
-        var buffer = new byte[ABMGSConfig.MaxWebSocketMessageSize];
-        WebSocketReceiveResult result;
-        do
+
+        while(
+            cancellationTokenSource.Token.IsCancellationRequested != true &&
+            cancellationTokenSource.Token.GetType() == _sessionEndTokenSource.Token.GetType()
+            )
         {
-            result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationTokenSource.Token);
-        } while (!result.EndOfMessage);
+            await WaitReceiveAMessageOrDiscardDueToSendBack(cancellationTokenSource.Token);
+        }
         
-        
-
-        
-
-
-        //while (!sessionEndTokenSource.Token.IsCancellationRequested)
-        //{
-        //    var buffer = new byte[ABMGSConfig.MaxWebSocketMessageSize];
-        //    var timeoutToken = CreateTimeoutToken(TimeSpan.FromMilliseconds(ABMGSConfig.RequestTimeoutMilliseconds));
-        //    await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), timeoutToken);
-        //}
-
-        await WaitReceiveAMessageOrDiscardDueToSendBack(cancellationTokenSource.Token);
     }
     public async Task<ArraySegment<Byte>> WaitReceiveAMessageOrDiscardDueToSendBack(CancellationToken cancellationToken)
     {
