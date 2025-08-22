@@ -6,6 +6,7 @@ namespace ABMGS.Server.Front.Services.Player;
 public class NetworkBuffer : INetworkBuffer
 {
     private readonly ConcurrentQueue<byte[]> _sendQueue = new();
+    private readonly ConcurrentQueue<byte[]> _receiveQueue = new();
     public NetworkBuffer()
     {
         // Initialize buffer or any other necessary setup

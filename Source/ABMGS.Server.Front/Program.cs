@@ -9,9 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddHostedService<SessionService>();
-builder.Services.AddSingleton<IPlayerFactory, DefaultPlayerFactory>();
+builder.Services.AddSingleton<DefaultPlayerFactory>();
 builder.Services.AddTransient<PlayerLoopService>();
-builder.Services.AddTransient<Player>();
 builder.Services.AddControllers();
 
 var app = builder.Build();
