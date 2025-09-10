@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Mvc;
 using System.Net.WebSockets;
+using Microsoft.AspNetCore.Mvc;
 using ABMGS.Server.Front.Services;
 
 namespace ABMGS.Server.Front.Controllers;
