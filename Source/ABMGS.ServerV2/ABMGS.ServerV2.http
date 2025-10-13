@@ -1,0 +1,10 @@
+@ABMGS.ServerV2_HostAddress = https://localhost:7183
+
+GET {{ABMGS.ServerV2_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
+
+GET {{ABMGS.ServerV2_HostAddress}}/
+
+###
