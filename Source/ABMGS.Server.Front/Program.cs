@@ -15,19 +15,15 @@ builder.Services.AddTransient<PlayerLoopService>();
 builder.Services.AddTransient<IPlayerFactory, DefaultPlayerFactory>();
 builder.Services.AddControllers();
 builder.UseOrleans(builder =>
-{
-    builder.Configure<ClusterOptions>(options =>
     {
-        options.ClusterId = "ABMGSCluster";
-        options.ServiceId = "ABMGSApp";
-    });
-
-    //builder.UseLocalhostClustering();
-    builder.UseDevelopmentClustering( options =>     {
-        options.PrimarySiloEndpoint = new System.Net.IPEndPoint(System.Net.IPAddress.Loopback, 11111);
-    });
-    builder.Use
-});
+        builder.Configure<ClusterOptions>(options =>
+        {
+            options.ClusterId = "ABMGSCluster";
+            options.ServiceId = "ABMGSApp";
+        });
+        builder.UseLocalhostClustering();
+    }
+ );
 var app = builder.Build();
 
 app.UseWebSockets();
