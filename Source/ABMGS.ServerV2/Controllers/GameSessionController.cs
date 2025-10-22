@@ -11,4 +11,10 @@ public class GameSessionController : ControllerBase
     }
 
 
+    [Route("gamesession")]
+    public async Task GameSession()
+    {
+
+    }
+
 }
