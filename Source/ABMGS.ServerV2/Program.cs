@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddControllers();
 builder.UseOrleans(builder => {
     builder.UseLocalhostClustering();
     builder.AddMemoryGrainStorageAsDefault((OptionsBuilder<MemoryGrainStorageOptions> options) =>
@@ -26,13 +27,5 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseWebSockets();
 
-
-
-app.MapGet("/", () =>
-{
-    return Results.Ok();
-})
-.WithName("Default");
-
-app.Run();
+await app.RunAsync();
 
