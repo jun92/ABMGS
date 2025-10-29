@@ -27,9 +27,18 @@ public class WebsocketController : ControllerBase
     {
         return Ok();
     }
-    [Route("connect")]
+
+
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [Route("/platform/{platform}/provider/{provider}")]
     public async Task ConnectByUserId([FromQuery] Guid userId)
     {
+
+        // Authenticate the user here 
+
+
+        // check websocket connection. -> start game loop
         if (HttpContext.WebSockets.IsWebSocketRequest)
         {
             WebSocket socket = await HttpContext.WebSockets.AcceptWebSocketAsync();
