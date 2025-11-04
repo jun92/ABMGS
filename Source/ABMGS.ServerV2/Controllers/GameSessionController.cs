@@ -24,9 +24,9 @@ public class GameSessionController : ControllerBase
         return Ok();
     }
 
-    
 
 
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Route("/gamesession")]
     public async Task GameSession()
     {
@@ -36,14 +36,15 @@ public class GameSessionController : ControllerBase
         if (!HttpContext.WebSockets.IsWebSocketRequest)
         {
             HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return;
         }
 
         WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+        
         IPlayerActor PlayerActor = _clusterClient.GetGrain<IPlayerActor>(Guid.NewGuid());
 
+        await PlayerActor.StartGameLoop(webSocket, Guid.NewGuid().ToString(), new CancellationToken());
 
-
-        
     }
 
 }

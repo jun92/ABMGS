@@ -1,11 +1,13 @@
+using ABMGS.ServerV2.Enums;
+using System.IO.Pipelines;
 using System.Net.WebSockets;
 
 namespace ABMGS.ServerV2.Grains;
 
-
 public interface IPlayerActor : IGrainWithGuidKey
 {
-    public Task<INetworkReceiveActor> GetNetworkReceiveActor();
+    public Task StartGameLoop(WebSocket SocketHandle, string UniquePlayerId, CancellationToken AbnormalExitToken);
+    // public Task<INetworkReceiveActor> GetNetworkReceiveActor();
 }
 public class PlayerActor : Grain, IPlayerActor
 {
@@ -15,9 +17,45 @@ public class PlayerActor : Grain, IPlayerActor
     {
         _logger = logger;
     }
+    public async Task StartGameLoop(WebSocket SocketHandle, string UniquePlayerId, CancellationToken AbnormalExitToken)
+    {
+        #region Validations
+        ArgumentNullException.ThrowIfNullOrEmpty(UniquePlayerId);
+        ArgumentNullException.ThrowIfNull(SocketHandle);
+        #endregion
+
+        bool IsGameLoopValid = true;    
+
+        Pipe pipe = new Pipe();
+        PipeWriter writer = pipe.Writer;
+
+
+        while(IsGameLoopValid)
+        {
+            while(true)
+            {
+                Memory<byte> receiveBuffer = writer.GetMemory(4096);
+
+                ValueWebSocketReceiveResult result = await SocketHandle.ReceiveAsync(receiveBuffer, AbnormalExitToken);
+                writer.Advance(result.Count);
+                if(result.EndOfMessage == true)
+                {
+                    await writer.CompleteAsync();
+                    break;
+                }
+            }
+        }
+
+        
+        //Loop to receive data from the WebSocket
+
+
+
+        return Task.CompletedTask;
+    }
     public Task<INetworkReceiveActor> GetNetworkReceiveActor()
     {
-        string NetworkReceiveActorId = string.Join("/", this.GetGrainId().GetGuidKey().ToString(), "NetworkReceiveActor");
+        string NetworkReceiveActorId = string.Join("/", this.GetGrainId().GetGuidKey().ToString(), ActorSuffixNames.NetworkReceiveActor);
         return Task.FromResult(GrainFactory.GetGrain<INetworkReceiveActor>(NetworkReceiveActorId));
     }
 
