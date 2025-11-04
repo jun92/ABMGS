@@ -1,3 +1,4 @@
+using ABMGS.ServerV2.Grains;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.WebSockets;
 
@@ -8,9 +9,19 @@ namespace ABMGS.ServerV2.Controllers;
 public class GameSessionController : ControllerBase
 {
     private readonly ILogger<GameSessionController> _logger;
-    public GameSessionController(ILogger<GameSessionController> logger)
+    private readonly IClusterClient _clusterClient;
+    public GameSessionController(ILogger<GameSessionController> logger, IClusterClient clusterClient)
     {
         _logger = logger;
+        _clusterClient = clusterClient;
+    }
+
+    [ProducesResponseType(StatusCodes.Status203NonAuthoritative)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Route("authenticate")]
+    public IActionResult Authenticate()
+    {
+        return Ok();
     }
 
     
@@ -19,12 +30,16 @@ public class GameSessionController : ControllerBase
     [Route("/gamesession")]
     public async Task GameSession()
     {
-        if(!HttpContext.WebSockets.IsWebSocketRequest)
+
+        //Authenticate the user here
+
+        if (!HttpContext.WebSockets.IsWebSocketRequest)
         {
             HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
         }
 
         WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+        IPlayerActor PlayerActor = _clusterClient.GetGrain<IPlayerActor>(Guid.NewGuid());
 
 
 
