@@ -30,6 +30,7 @@ public class PlayerActor : Grain, IPlayerActor
         PipeWriter writer = pipe.Writer;
 
 
+        //Loop to receive data from the WebSocket
         while(IsGameLoopValid)
         {
             while(true)
@@ -45,13 +46,6 @@ public class PlayerActor : Grain, IPlayerActor
                 }
             }
         }
-
-        
-        //Loop to receive data from the WebSocket
-
-
-
-        return Task.CompletedTask;
     }
     public Task<INetworkReceiveActor> GetNetworkReceiveActor()
     {

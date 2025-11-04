@@ -1,6 +1,6 @@
 namespace ABMGS.ServerV2.Enums;
 
-public enum ActorSuffixNames
+public enum ActorSuffixNames 
 {
     NetworkReceiveActor,
 }
