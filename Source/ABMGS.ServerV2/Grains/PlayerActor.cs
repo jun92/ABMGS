@@ -2,6 +2,8 @@ using ABMGS.ServerV2.Enums;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
+using Google.FlatBuffers;
+using SyncnetPlatform.Dto;
 using System.Runtime.CompilerServices;
 
 namespace ABMGS.ServerV2.Grains;
@@ -71,11 +73,31 @@ public class PlayerActor : Grain, IPlayerActor
 
                     if (result.EndOfMessage == true)
                     {
-                        NBuf.FinishReceived();
+                        await NBuf.FinishReceived();
                         break;
                     }
                 }
             }
+
+            // Get the received data
+            byte[] receivedData = await NBuf.Read();
+            PacketWrapper packetWrapper = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(receivedData));
+            switch(packetWrapper.SystemPacketType)
+            {
+                case SystemPacket.LoginRequest:
+                    var loginRequest = packetWrapper.SystemPacketAsLoginRequest();
+                    _logger.LogInformation("Received LoginRequest with Username: {Username}", loginRequest.Id);
+                    break;
+                case SystemPacket.MoveRequest:
+                    MoveRequest moveRequest = packetWrapper.SystemPacketAsMoveRequest();
+                    _logger.LogInformation("Received MoveRequest with Direction: {Direction}", moveRequest.X);
+                    break;
+                default:
+                    _logger.LogWarning("Received unknown packet type: {PacketType}", packetWrapper.SystemPacketType);
+                    break;
+            }
+
+
         }
     }
     public Task<INetworkReceiveActor> GetNetworkReceiveActor()

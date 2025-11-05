@@ -1,0 +1,26 @@
+include "Custom.fbs";
+namespace SyncnetPlatform.Dto;
+
+
+union SystemPacket {
+    LoginRequest,
+    MoveRequest
+}
+
+table PacketWrapper {
+    system_packet: SystemPacket;
+    custom_packet: CustomPacket;
+}
+table LoginRequest {
+    id: string;
+    from: string;
+    count: int;
+}
+
+table MoveRequest {
+    id: string;
+    x: float;
+    y: float;
+}
+
+root_type PacketWrapper;

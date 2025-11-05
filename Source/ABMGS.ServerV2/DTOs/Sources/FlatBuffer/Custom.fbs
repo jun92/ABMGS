@@ -1,0 +1,9 @@
+union CustomPacket{
+    MyCustomPacket
+}
+
+table MyCustomPacket {
+    id: string;
+    x: float;
+    y: float;
+}
