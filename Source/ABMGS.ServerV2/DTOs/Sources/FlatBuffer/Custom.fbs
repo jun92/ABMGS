@@ -1,3 +1,6 @@
+
+namespace SyncnetPlatform.Dto;
+
 union CustomPacket{
     MyCustomPacket
 }
