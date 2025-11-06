@@ -5,6 +5,7 @@ using System.Net.WebSockets;
 using Google.FlatBuffers;
 using SyncnetPlatform.Dto;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Routing.Template;
 
 namespace ABMGS.ServerV2.Grains;
 public class NetworkBuffer : IDisposable
@@ -38,9 +39,70 @@ public class NetworkBuffer : IDisposable
     }
 }
 
+
+public interface IFuncWrapper
+{
+    public void Invoke(object data);
+    Type ParameterType { get; }
+}
+
+public class FuncWrapper<T> : IFuncWrapper
+{
+    private readonly Action<T> _action;
+    public FuncWrapper(Action<T> action)
+    {
+        _action = action;
+    }
+    public Type ParameterType => typeof(T);
+
+    public void Invoke(object data) => _action((T)data);
+}
 public class FlatBufferParser
 {
-    public T Deserialize<T>(byte[] data) where T : 
+    public IDictionary<SystemPacket, IFuncWrapper> _callTable = new Dictionary<SystemPacket, IFuncWrapper>();
+
+    public FlatBufferParser()
+    {
+        Register<LoginRequest>(SystemPacket.LoginRequest, HandleLoginRequest);
+        Register<MoveRequest>(SystemPacket.MoveRequest, HandleMoveRequest);
+    }
+
+    public void Register<T>(SystemPacket packetType, Action<T> handler)
+    {
+        _callTable[packetType] = new FuncWrapper<T>(handler);
+    }
+    public void Deserialize(byte[] data)
+    {
+        PacketWrapper packetWrapper = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data));
+        switch (packetWrapper.SystemPacketType)
+        {
+            case SystemPacket.LoginRequest:
+                var loginRequest = packetWrapper.SystemPacketAsLoginRequest();
+                _logger.LogInformation("Received LoginRequest with Username: {Username}", loginRequest.Id);
+                break;
+            case SystemPacket.MoveRequest:
+                MoveRequest moveRequest = packetWrapper.SystemPacketAsMoveRequest();
+                _logger.LogInformation("Received MoveRequest with Direction: {Direction}", moveRequest.X);
+                break;
+            default:
+                _logger.LogWarning("Received unknown packet type: {PacketType}", packetWrapper.SystemPacketType);
+                break;
+        }
+    }
+
+    public void HandleLoginRequest(LoginRequest loginRequest)
+    {
+        // Handle LoginRequest
+    }
+    public void HandleMoveRequest(MoveRequest moveRequest)
+    {
+        // Handle MoveRequest
+    }   
+
+}
+
+public class MessageDelivery
+{
 
 }
 
@@ -89,24 +151,9 @@ public class GameSessionActor : Grain, IGameSessionActor
             // Get the received data
             byte[] receivedData = await NBuf.Read();
 
-            parser.Deserialize<T>(receivedData);
+            parser.Deserialize(receivedData);
 
 
-            PacketWrapper packetWrapper = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(receivedData));
-            switch (packetWrapper.SystemPacketType)
-            {
-                case SystemPacket.LoginRequest:
-                    var loginRequest = packetWrapper.SystemPacketAsLoginRequest();
-                    _logger.LogInformation("Received LoginRequest with Username: {Username}", loginRequest.Id);
-                    break;
-                case SystemPacket.MoveRequest:
-                    MoveRequest moveRequest = packetWrapper.SystemPacketAsMoveRequest();
-                    _logger.LogInformation("Received MoveRequest with Direction: {Direction}", moveRequest.X);
-                    break;
-                default:
-                    _logger.LogWarning("Received unknown packet type: {PacketType}", packetWrapper.SystemPacketType);
-                    break;
-            }
 
 
 
