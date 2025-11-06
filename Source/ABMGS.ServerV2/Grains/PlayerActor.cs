@@ -63,6 +63,8 @@ public class FlatBufferParser
 
     public FlatBufferParser()
     {
+
+
         Register<LoginRequest>(SystemPacket.LoginRequest, HandleLoginRequest);
         Register<MoveRequest>(SystemPacket.MoveRequest, HandleMoveRequest);
     }
@@ -78,14 +80,14 @@ public class FlatBufferParser
         {
             case SystemPacket.LoginRequest:
                 var loginRequest = packetWrapper.SystemPacketAsLoginRequest();
-                _logger.LogInformation("Received LoginRequest with Username: {Username}", loginRequest.Id);
+                //_logger.LogInformation("Received LoginRequest with Username: {Username}", loginRequest.Id);
                 break;
             case SystemPacket.MoveRequest:
                 MoveRequest moveRequest = packetWrapper.SystemPacketAsMoveRequest();
-                _logger.LogInformation("Received MoveRequest with Direction: {Direction}", moveRequest.X);
+                //_logger.LogInformation("Received MoveRequest with Direction: {Direction}", moveRequest.X);
                 break;
             default:
-                _logger.LogWarning("Received unknown packet type: {PacketType}", packetWrapper.SystemPacketType);
+                //_logger.LogWarning("Received unknown packet type: {PacketType}", packetWrapper.SystemPacketType);
                 break;
         }
     }
