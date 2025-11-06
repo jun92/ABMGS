@@ -76,6 +76,8 @@ public class FlatBufferParser
     public void Deserialize(byte[] data)
     {
         PacketWrapper packetWrapper = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data));
+
+        
         switch (packetWrapper.SystemPacketType)
         {
             case SystemPacket.LoginRequest:
