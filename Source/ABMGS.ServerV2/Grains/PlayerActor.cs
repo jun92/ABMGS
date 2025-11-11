@@ -135,6 +135,10 @@ public class GameSessionActor : Grain, IGameSessionActor
 
     public async Task StartGameLoop(string uniquePlayerId, WebSocket SocketObject, CancellationToken abnormalExitToken)
     {
+
+        ArgumentNullException.ThrowIfNullOrEmpty(uniquePlayerId);
+        ArgumentNullException.ThrowIfNull(SocketObject);
+
         IPlayerActor playerActor = _clusterClient.GetGrain<IPlayerActor>(new Guid(uniquePlayerId));
         FlatBufferParser parser = new FlatBufferParser();
 
@@ -172,8 +176,7 @@ public interface IFlatBufferSerializer : IGrainWithGuidKey
 
 public interface IPlayerActor : IGrainWithGuidKey
 {
-    //public Task StartGameLoop(WebSocket SocketHandle, string UniquePlayerId, CancellationToken AbnormalExitToken);
-    // public Task<INetworkReceiveActor> GetNetworkReceiveActor();
+
 }
 
 public class PlayerActor : Grain, IPlayerActor
@@ -184,44 +187,6 @@ public class PlayerActor : Grain, IPlayerActor
     {
         _logger = logger;
     }
-    //public async Task StartGameLoop(WebSocket SocketHandle, string UniquePlayerId, CancellationToken AbnormalExitToken)
-    //{
-        
-        // ArgumentNullException.ThrowIfNullOrEmpty(UniquePlayerId);
-        // ArgumentNullException.ThrowIfNull(SocketHandle);
-        
-
-        //bool IsGameLoopValid = true;    
-
-        //using (NetworkBuffer NBuf = new NetworkBuffer(4096))
-        //{
-        //    //Loop to receive data from the WebSocket
-        //    while (IsGameLoopValid && !AbnormalExitToken.IsCancellationRequested)
-        //    {
-        //        while (true)
-        //        {
-        //            ValueWebSocketReceiveResult result = await SocketHandle.ReceiveAsync(NBuf.GetReceiveBuffer(), AbnormalExitToken);
-        //            NBuf.AddBuffer(result.Count);
-
-        //            if (result.EndOfMessage == true)
-        //            {
-        //                await NBuf.FinishReceived();
-        //                break;
-        //            }
-        //        }
-        //        // Get the received data
-        //        byte[] receivedData = await NBuf.Read();
-            
-                //PacketWrapper packetWrapper = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(receivedData));
-        //    }
-        //}
-    //}
-    public Task<INetworkReceiveActor> GetNetworkReceiveActor()
-    {
-        string NetworkReceiveActorId = string.Join("/", this.GetGrainId().GetGuidKey().ToString(), ActorSuffixNames.NetworkReceiveActor.ToString());
-        return Task.FromResult(GrainFactory.GetGrain<INetworkReceiveActor>(NetworkReceiveActorId));
-    }
-
 }
 
 public interface INetworkReceiveActor : IGrainWithStringKey
@@ -237,8 +202,6 @@ public class NetworkReceiveActor : Grain, INetworkReceiveActor
 {
     public void ReceivingLoop(WebSocket webSocket)
     {
-        webSocket.ReceiveAsync(new ArraySegment<byte>(new byte[1024]), CancellationToken.None);
-
     }
 }
 
