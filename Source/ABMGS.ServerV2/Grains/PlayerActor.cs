@@ -1,11 +1,13 @@
 using ABMGS.ServerV2.Enums;
+using Google.FlatBuffers;
+using Microsoft.AspNetCore.Routing.Template;
+using SyncnetPlatform.Dto;
 using System.Buffers;
 using System.IO.Pipelines;
+using System.Linq.Expressions;
 using System.Net.WebSockets;
-using Google.FlatBuffers;
-using SyncnetPlatform.Dto;
+using System.Reflection;
 using System.Runtime.CompilerServices;
-using Microsoft.AspNetCore.Routing.Template;
 
 namespace ABMGS.ServerV2.Grains;
 public class NetworkBuffer : IDisposable
@@ -151,24 +153,18 @@ public class GameSessionActor : Grain, IGameSessionActor
                     }
                 }
             }
-
             // Get the received data
             byte[] receivedData = await NBuf.Read();
-
             parser.Deserialize(receivedData);
-
-
-
-
-
             await Task.CompletedTask;
+        }
     }
 }
 
 public interface IFlatBufferSerializer : IGrainWithGuidKey
 {
-    public 
 }
+
 
 
 public interface IPlayerActor : IGrainWithGuidKey
@@ -265,6 +261,58 @@ public class NetworkParserActor : Grain, INetworkParserActor
 
 }
 
+    
 
 
 
+
+public class PacketPathBuilder
+{
+    private readonly IDictionary<SystemPacket, Action<object>> _packetHandlerTable = new Dictionary<SystemPacket, Action<object>>();
+    private readonly IDictionary<SystemPacket, Func<object>> _paramExtractionFuncTable = new Dictionary<SystemPacket, Func<object>>();
+
+
+    public IDictionary<SystemPacket, Action<object>> PacketHandleTable
+    {
+        get
+        {
+            return _packetHandlerTable;
+        }
+    }
+
+    public PacketPathBuilder()
+    {
+    }
+
+    public void BuildParamExtractionFuncs(PacketWrapper packetWrapper) 
+    {
+        Type baseClass = typeof(PacketWrapper);
+
+        MethodInfo[] methods = baseClass.GetMethods();
+
+        foreach(MethodInfo method in methods)
+        {
+            if(method.Name.StartsWith(PacketSuffix.SystemPacket.ToString()))
+            {
+                if(Enum.TryParse<SystemPacket>(method.ReturnType.Name, out SystemPacket packetType))
+                {
+                    _paramExtractionFuncTable[packetType] = FunctionBuilder.BuildFunctionWithReturnType<PacketWrapper>(packetWrapper, method);
+                }
+            }
+        }
+    }
+}
+
+public static class FunctionBuilder
+{
+    public static Func<object> BuildFunctionWithReturnType<HoldingClassType>(object classInstance, MethodInfo method) where HoldingClassType : IFlatbufferObject
+    {
+        Expression instanceExpression = Expression.Convert(Expression.Constant(classInstance), typeof(HoldingClassType));
+        MethodCallExpression callExpression = Expression.Call(instanceExpression, method);
+        Type funcType = typeof(Func<>).MakeGenericType(method.ReturnType);
+        Expression boxed = Expression.Convert(callExpression, typeof(object));
+        Expression<Func<object>> lambda = Expression.Lambda<Func<object>>(boxed, null);
+
+        return lambda.Compile();
+    }
+}

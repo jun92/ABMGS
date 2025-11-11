@@ -4,3 +4,9 @@ public enum ActorSuffixNames
 {
     NetworkReceiveActor,
 }
+
+public enum PacketSuffix
+{
+    SystemPacket,
+    CustomPacket
+}
