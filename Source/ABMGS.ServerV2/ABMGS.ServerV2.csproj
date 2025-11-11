@@ -13,4 +13,8 @@
     <PackageReference Include="Microsoft.Orleans.Server" Version="9.2.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Attributes\" />
+  </ItemGroup>
+
 </Project>

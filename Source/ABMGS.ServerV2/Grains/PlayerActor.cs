@@ -261,8 +261,46 @@ public class NetworkParserActor : Grain, INetworkParserActor
 
 }
 
-    
 
+public interface ICustomPacketHandler
+{
+
+}
+public partial class CustomPacketHandler : ICustomPacketHandler
+{
+    private readonly ILogger<CustomPacketHandler> _logger;
+    public CustomPacketHandler(ILogger<CustomPacketHandler> logger)
+    {
+        _logger = logger;
+    }
+
+    [PacketHandler(typeof(LoginRequest))]
+    public void HandleLoginRequest(LoginRequest loginRequest)
+    {
+        _logger.LogInformation($"Id: {loginRequest.Id}, From: {loginRequest.From}, Count: {loginRequest.Count}");
+    }
+   
+}
+
+public partial class CustomPacketHandler
+{
+    [PacketHandler(typeof(MoveRequest))]
+    public void HandleMoveRequest(MoveRequest moveRequest)
+    {
+        _logger.LogInformation($"Id: {moveRequest.Id}, X: {moveRequest.X}, Y: {moveRequest.Y}");
+    }
+}
+
+
+[AttributeUsage(AttributeTargets.Method, Inherited = false)]
+public sealed class PacketHandlerAttribute : Attribute
+{
+    public Type PacketType { get; }
+    public PacketHandlerAttribute(Type packetType)
+    {
+        PacketType = packetType;
+    }
+}
 
 
 
@@ -294,9 +332,25 @@ public class PacketPathBuilder
         {
             if(method.Name.StartsWith(PacketSuffix.SystemPacket.ToString()))
             {
-                if(Enum.TryParse<SystemPacket>(method.ReturnType.Name, out SystemPacket packetType))
+                if(Enum.TryParse(method.ReturnType.Name, out SystemPacket packetType))
                 {
                     _paramExtractionFuncTable[packetType] = FunctionBuilder.BuildFunctionWithReturnType<PacketWrapper>(packetWrapper, method);
+                }
+            }
+        }
+    }
+    public void BuildPacketHandlerFunctions<CustomPackerHandlerType>(CustomPackerHandlerType handler) where CustomPackerHandlerType : ICustomPacketHandler
+    {
+        Type baseClass = typeof(CustomPackerHandlerType);
+        MethodInfo[] methods = baseClass.GetMethods();
+        foreach(MethodInfo method in methods)
+        {
+            PacketHandlerAttribute? attr = method.GetCustomAttribute<PacketHandlerAttribute>();
+            if (attr != null)
+            {
+                if(Enum.TryParse(attr.PacketType.Name, out SystemPacket packetType))
+                {
+                    _packetHandlerTable[packetType] = FunctionBuilder.BuildFunctionWithParameterType<CustomPackerHandlerType>(handler, method);
                 }
             }
         }
@@ -305,13 +359,39 @@ public class PacketPathBuilder
 
 public static class FunctionBuilder
 {
-    public static Func<object> BuildFunctionWithReturnType<HoldingClassType>(object classInstance, MethodInfo method) where HoldingClassType : IFlatbufferObject
+    public static Func<object> BuildFunctionWithReturnType<HoldingClassType>(
+        HoldingClassType classInstance, 
+        MethodInfo method) 
+        where HoldingClassType : IFlatbufferObject
     {
         Expression instanceExpression = Expression.Convert(Expression.Constant(classInstance), typeof(HoldingClassType));
         MethodCallExpression callExpression = Expression.Call(instanceExpression, method);
         Type funcType = typeof(Func<>).MakeGenericType(method.ReturnType);
         Expression boxed = Expression.Convert(callExpression, typeof(object));
         Expression<Func<object>> lambda = Expression.Lambda<Func<object>>(boxed, null);
+
+        return lambda.Compile();
+    }
+
+    public static Action<object> BuildFunctionWithParameterType<HoldingClassType>(
+        HoldingClassType classInstance, 
+        MethodInfo method) 
+        where HoldingClassType: ICustomPacketHandler
+    {
+        PacketHandlerAttribute? packetHandlerAttribute = method.GetCustomAttribute<PacketHandlerAttribute>();
+        ArgumentNullException.ThrowIfNull(packetHandlerAttribute);
+
+        Expression packetHandlerInstanceExpression = Expression.Constant(classInstance, typeof(HoldingClassType));
+        ParameterExpression parameter = Expression.Parameter(typeof(object));
+        var convertedParamExpression = Expression.Convert(parameter, packetHandlerAttribute.PacketType);
+
+        MethodCallExpression methodCallExpression = Expression.Call(
+            packetHandlerInstanceExpression,
+            method,
+            convertedParamExpression
+            );
+
+        var lambda = Expression.Lambda<Action<object>>(methodCallExpression, parameter);
 
         return lambda.Compile();
     }
