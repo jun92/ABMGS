@@ -14,7 +14,7 @@ builder.Services.AddControllers();
 // SyncnetPlatform Actors
 builder.Services.AddTransient<IGameSessionActor, GameSessionActor>();
 builder.Services.AddTransient<ICustomPacketHandler, CustomPacketHandler>();
-builder.Services.AddTransient<PacketRouteTable>();
+builder.Services.AddTransient<FlatBufferPacketRouter>();
 
 
 builder.UseOrleans(builder => {

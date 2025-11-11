@@ -102,14 +102,14 @@ public class GameSessionActor : Grain, IGameSessionActor
 {
     private readonly ILogger<GameSessionActor> _logger;
     private readonly IClusterClient _clusterClient;
-    private readonly PacketRouteTable _routeTable;
+    private readonly FlatBufferPacketRouter _routeTable;
     private readonly ICustomPacketHandler _customPacketHandler;
 
     public GameSessionActor(
         ILogger<GameSessionActor> logger, 
         IClusterClient clusterClient, 
         ICustomPacketHandler customPacketHandler,
-        PacketRouteTable routeTable)
+        FlatBufferPacketRouter routeTable)
     {
         _logger = logger;
         _clusterClient = clusterClient;
@@ -252,27 +252,34 @@ public sealed class PacketHandlerAttribute : Attribute
 }
 
 
-
-public class PacketRouteTable
+public interface IPacketRouter
 {
-    private readonly ILogger<PacketRouteTable> _logger;
+    public void Execute(object packet);
+}
+
+public class JsonPacketRouter : IPacketRouter
+{
+    private readonly ILogger<JsonPacketRouter> _logger;
+    public JsonPacketRouter(ILogger<JsonPacketRouter> logger)
+    {
+        _logger = logger;
+    }
+    public void Execute(object packet)
+    {
+        throw new NotImplementedException();
+    }
+}
+public class FlatBufferPacketRouter : IPacketRouter
+{
+    private readonly ILogger<FlatBufferPacketRouter> _logger;
     private readonly IDictionary<SystemPacket, Action<object>> _packetHandlerTable = new Dictionary<SystemPacket, Action<object>>();
     private readonly IDictionary<SystemPacket, Func<PacketWrapper, object>> _paramExtractionFuncTable = new Dictionary<SystemPacket, Func<PacketWrapper, object>>();
-
-
-    public IDictionary<SystemPacket, Action<object>> PacketHandleTable
-    {
-        get
-        {
-            return _packetHandlerTable;
-        }
-    }
 
     public void Execute(PacketWrapper packetWrapper)
     {
         _packetHandlerTable[packetWrapper.SystemPacketType](_paramExtractionFuncTable[packetWrapper.SystemPacketType](packetWrapper));
     }
-    public PacketRouteTable(ILogger<PacketRouteTable> logger)
+    public FlatBufferPacketRouter(ILogger<FlatBufferPacketRouter> logger)
     {
         _logger = logger;
     }
@@ -303,6 +310,11 @@ public class PacketRouteTable
                 }
             }
         }
+    }
+
+    public void Execute(object packet)
+    {
+        Execute((PacketWrapper)packet);
     }
 }
 
