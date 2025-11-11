@@ -22,6 +22,7 @@ public struct PacketWrapper : IFlatbufferObject
 
   public SyncnetPlatform.Dto.SystemPacket SystemPacketType { get { int o = __p.__offset(4); return o != 0 ? (SyncnetPlatform.Dto.SystemPacket)__p.bb.Get(o + __p.bb_pos) : SyncnetPlatform.Dto.SystemPacket.NONE; } }
   public TTable? SystemPacket<TTable>() where TTable : struct, IFlatbufferObject { int o = __p.__offset(6); return o != 0 ? (TTable?)__p.__union<TTable>(o + __p.bb_pos) : null; }
+  public SyncnetPlatform.Dto.Dummy SystemPacketAsDummy() { return SystemPacket<SyncnetPlatform.Dto.Dummy>().Value; }
   public SyncnetPlatform.Dto.LoginRequest SystemPacketAsLoginRequest() { return SystemPacket<SyncnetPlatform.Dto.LoginRequest>().Value; }
   public SyncnetPlatform.Dto.MoveRequest SystemPacketAsMoveRequest() { return SystemPacket<SyncnetPlatform.Dto.MoveRequest>().Value; }
   public SyncnetPlatform.Dto.CustomPacket CustomPacketType { get { int o = __p.__offset(8); return o != 0 ? (SyncnetPlatform.Dto.CustomPacket)__p.bb.Get(o + __p.bb_pos) : SyncnetPlatform.Dto.CustomPacket.NONE; } }

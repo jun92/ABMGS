@@ -102,11 +102,35 @@ public class GameSessionActor : Grain, IGameSessionActor
 {
     private readonly ILogger<GameSessionActor> _logger;
     private readonly IClusterClient _clusterClient;
+    private readonly PacketRouteTable _routeTable;
+    private readonly ICustomPacketHandler _customPacketHandler;
 
-    public GameSessionActor(ILogger<GameSessionActor> logger, IClusterClient clusterClient)
+    public GameSessionActor(
+        ILogger<GameSessionActor> logger, 
+        IClusterClient clusterClient, 
+        ICustomPacketHandler customPacketHandler,
+        PacketRouteTable routeTable)
     {
         _logger = logger;
         _clusterClient = clusterClient;
+        _routeTable = routeTable;
+        _customPacketHandler = customPacketHandler;
+
+        
+    }
+
+    public void Initialize()
+    {
+        PacketWrapper packet = PacketWrapper.GetRootAsPacketWrapper(BuildDummyPacket());
+        _routeTable.BuildParamExtractionFuncs(packet);
+        _routeTable.BuildPacketHandlerFunctions<ICustomPacketHandler>(_customPacketHandler);
+    }
+    private ByteBuffer BuildDummyPacket()
+    {
+        FlatBufferBuilder flatBufferBuilder = new FlatBufferBuilder(1024);
+        Offset<Dummy> dummy = Dummy.CreateDummy(flatBufferBuilder, 0);
+        flatBufferBuilder.Finish(dummy.Value);
+        return flatBufferBuilder.DataBuffer;
     }
 
     public async Task StartGameLoop(string uniquePlayerId, WebSocket SocketObject, CancellationToken abnormalExitToken)
@@ -116,10 +140,11 @@ public class GameSessionActor : Grain, IGameSessionActor
 
         bool IsGameLoopValid = true;
 
-        using (NetworkBuffer NBuf = new(4096))
+        //Loop to receive data from the WebSocket
+        while (IsGameLoopValid && !abnormalExitToken.IsCancellationRequested)
         {
-            //Loop to receive data from the WebSocket
-            while (IsGameLoopValid && !abnormalExitToken.IsCancellationRequested)
+            
+            using (NetworkBuffer NBuf = new(4096))
             {
                 while (true)
                 {
@@ -132,12 +157,10 @@ public class GameSessionActor : Grain, IGameSessionActor
                         break;
                     }
                 }
+                _routeTable.Execute(PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(await NBuf.Read())));
             }
-            // Get the received data
-            byte[] receivedData = await NBuf.Read();
-            parser.Deserialize(receivedData);
-            await Task.CompletedTask;
         }
+        await Task.CompletedTask;
     }
 }
 
@@ -149,7 +172,7 @@ public interface IFlatBufferSerializer : IGrainWithGuidKey
 
 public interface IPlayerActor : IGrainWithGuidKey
 {
-    public Task StartGameLoop(WebSocket SocketHandle, string UniquePlayerId, CancellationToken AbnormalExitToken);
+    //public Task StartGameLoop(WebSocket SocketHandle, string UniquePlayerId, CancellationToken AbnormalExitToken);
     // public Task<INetworkReceiveActor> GetNetworkReceiveActor();
 }
 
@@ -161,55 +184,38 @@ public class PlayerActor : Grain, IPlayerActor
     {
         _logger = logger;
     }
-    public async Task StartGameLoop(WebSocket SocketHandle, string UniquePlayerId, CancellationToken AbnormalExitToken)
-    {
-        #region Validations
-        ArgumentNullException.ThrowIfNullOrEmpty(UniquePlayerId);
-        ArgumentNullException.ThrowIfNull(SocketHandle);
-        #endregion
+    //public async Task StartGameLoop(WebSocket SocketHandle, string UniquePlayerId, CancellationToken AbnormalExitToken)
+    //{
+        
+        // ArgumentNullException.ThrowIfNullOrEmpty(UniquePlayerId);
+        // ArgumentNullException.ThrowIfNull(SocketHandle);
+        
 
-        bool IsGameLoopValid = true;    
+        //bool IsGameLoopValid = true;    
 
-        using (NetworkBuffer NBuf = new NetworkBuffer(4096))
-        {
-            //Loop to receive data from the WebSocket
-            while (IsGameLoopValid && !AbnormalExitToken.IsCancellationRequested)
-            {
-                while (true)
-                {
-                    ValueWebSocketReceiveResult result = await SocketHandle.ReceiveAsync(NBuf.GetReceiveBuffer(), AbnormalExitToken);
-                    NBuf.AddBuffer(result.Count);
+        //using (NetworkBuffer NBuf = new NetworkBuffer(4096))
+        //{
+        //    //Loop to receive data from the WebSocket
+        //    while (IsGameLoopValid && !AbnormalExitToken.IsCancellationRequested)
+        //    {
+        //        while (true)
+        //        {
+        //            ValueWebSocketReceiveResult result = await SocketHandle.ReceiveAsync(NBuf.GetReceiveBuffer(), AbnormalExitToken);
+        //            NBuf.AddBuffer(result.Count);
 
-                    if (result.EndOfMessage == true)
-                    {
-                        await NBuf.FinishReceived();
-                        break;
-                    }
-                }
-            }
-
-            // Get the received data
-            byte[] receivedData = await NBuf.Read();
+        //            if (result.EndOfMessage == true)
+        //            {
+        //                await NBuf.FinishReceived();
+        //                break;
+        //            }
+        //        }
+        //        // Get the received data
+        //        byte[] receivedData = await NBuf.Read();
             
-            PacketWrapper packetWrapper = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(receivedData));
-            switch(packetWrapper.SystemPacketType)
-            {
-                case SystemPacket.LoginRequest:
-                    var loginRequest = packetWrapper.SystemPacketAsLoginRequest();
-                    _logger.LogInformation("Received LoginRequest with Username: {Username}", loginRequest.Id);
-                    break;
-                case SystemPacket.MoveRequest:
-                    MoveRequest moveRequest = packetWrapper.SystemPacketAsMoveRequest();
-                    _logger.LogInformation("Received MoveRequest with Direction: {Direction}", moveRequest.X);
-                    break;
-                default:
-                    _logger.LogWarning("Received unknown packet type: {PacketType}", packetWrapper.SystemPacketType);
-                    break;
-            }
-
-
-        }
-    }
+                //PacketWrapper packetWrapper = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(receivedData));
+        //    }
+        //}
+    //}
     public Task<INetworkReceiveActor> GetNetworkReceiveActor()
     {
         string NetworkReceiveActorId = string.Join("/", this.GetGrainId().GetGuidKey().ToString(), ActorSuffixNames.NetworkReceiveActor.ToString());
@@ -284,10 +290,11 @@ public sealed class PacketHandlerAttribute : Attribute
 
 
 
-public class PacketPathBuilder
+public class PacketRouteTable
 {
+    private readonly ILogger<PacketRouteTable> _logger;
     private readonly IDictionary<SystemPacket, Action<object>> _packetHandlerTable = new Dictionary<SystemPacket, Action<object>>();
-    private readonly IDictionary<SystemPacket, Func<object>> _paramExtractionFuncTable = new Dictionary<SystemPacket, Func<object>>();
+    private readonly IDictionary<SystemPacket, Func<PacketWrapper, object>> _paramExtractionFuncTable = new Dictionary<SystemPacket, Func<PacketWrapper, object>>();
 
 
     public IDictionary<SystemPacket, Action<object>> PacketHandleTable
@@ -298,32 +305,31 @@ public class PacketPathBuilder
         }
     }
 
-    public PacketPathBuilder()
+    public void Execute(PacketWrapper packetWrapper)
     {
+        _packetHandlerTable[packetWrapper.SystemPacketType](_paramExtractionFuncTable[packetWrapper.SystemPacketType](packetWrapper));
+    }
+    public PacketRouteTable(ILogger<PacketRouteTable> logger)
+    {
+        _logger = logger;
     }
 
     public void BuildParamExtractionFuncs(PacketWrapper packetWrapper) 
     {
-        Type baseClass = typeof(PacketWrapper);
-
-        MethodInfo[] methods = baseClass.GetMethods();
-
-        foreach(MethodInfo method in methods)
+        foreach (MethodInfo method in typeof(PacketWrapper).GetMethods())
         {
             if(method.Name.StartsWith(PacketSuffix.SystemPacket.ToString()))
             {
                 if(Enum.TryParse(method.ReturnType.Name, out SystemPacket packetType))
                 {
-                    _paramExtractionFuncTable[packetType] = FunctionBuilder.BuildFunctionWithReturnType<PacketWrapper>(packetWrapper, method);
+                    _paramExtractionFuncTable[packetType] = FunctionBuilder.BuildFunctionWithReturnType<PacketWrapper>(method);
                 }
             }
         }
     }
     public void BuildPacketHandlerFunctions<CustomPackerHandlerType>(CustomPackerHandlerType handler) where CustomPackerHandlerType : ICustomPacketHandler
     {
-        Type baseClass = typeof(CustomPackerHandlerType);
-        MethodInfo[] methods = baseClass.GetMethods();
-        foreach(MethodInfo method in methods)
+        foreach (MethodInfo method in typeof(CustomPackerHandlerType).GetMethods())
         {
             PacketHandlerAttribute? attr = method.GetCustomAttribute<PacketHandlerAttribute>();
             if (attr != null)
@@ -339,17 +345,14 @@ public class PacketPathBuilder
 
 public static class FunctionBuilder
 {
-    public static Func<object> BuildFunctionWithReturnType<HoldingClassType>(
-        HoldingClassType classInstance, 
+    public static Func<HoldingClassType, object> BuildFunctionWithReturnType<HoldingClassType>(
         MethodInfo method) 
         where HoldingClassType : IFlatbufferObject
     {
-        Expression instanceExpression = Expression.Convert(Expression.Constant(classInstance), typeof(HoldingClassType));
-        MethodCallExpression callExpression = Expression.Call(instanceExpression, method);
-        Type funcType = typeof(Func<>).MakeGenericType(method.ReturnType);
+        ParameterExpression instanceParameter = Expression.Parameter(typeof(HoldingClassType));
+        MethodCallExpression callExpression = Expression.Call(instanceParameter, method);
         Expression boxed = Expression.Convert(callExpression, typeof(object));
-        Expression<Func<object>> lambda = Expression.Lambda<Func<object>>(boxed, null);
-
+        Expression<Func<HoldingClassType, object>> lambda = Expression.Lambda<Func<HoldingClassType, object>>(boxed, instanceParameter);
         return lambda.Compile();
     }
 

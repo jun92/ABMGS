@@ -3,14 +3,22 @@ namespace SyncnetPlatform.Dto;
 
 
 union SystemPacket {
+    Dummy,
     LoginRequest,
     MoveRequest
 }
+
+
 
 table PacketWrapper {
     system_packet: SystemPacket;
     custom_packet: CustomPacket;
 }
+
+table Dummy {
+    id: int;
+}
+
 table LoginRequest {
     id: string;
     from: string;

@@ -8,8 +8,9 @@ namespace SyncnetPlatform.Dto
 public enum SystemPacket : byte
 {
   NONE = 0,
-  LoginRequest = 1,
-  MoveRequest = 2,
+  Dummy = 1,
+  LoginRequest = 2,
+  MoveRequest = 3,
 };
 
 
@@ -21,6 +22,9 @@ static public class SystemPacketVerify
     bool result = true;
     switch((SystemPacket)typeId)
     {
+      case SystemPacket.Dummy:
+        result = SyncnetPlatform.Dto.DummyVerify.Verify(verifier, tablePos);
+        break;
       case SystemPacket.LoginRequest:
         result = SyncnetPlatform.Dto.LoginRequestVerify.Verify(verifier, tablePos);
         break;

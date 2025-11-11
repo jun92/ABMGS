@@ -1,3 +1,4 @@
+using ABMGS.ServerV2.Grains;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Orleans.Configuration;
@@ -9,6 +10,13 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
+
+// SyncnetPlatform Actors
+builder.Services.AddTransient<IGameSessionActor, GameSessionActor>();
+builder.Services.AddTransient<ICustomPacketHandler, CustomPacketHandler>();
+builder.Services.AddTransient<PacketRouteTable>();
+
+
 builder.UseOrleans(builder => {
     builder.UseLocalhostClustering();
     builder.AddMemoryGrainStorageAsDefault((OptionsBuilder<MemoryGrainStorageOptions> options) =>

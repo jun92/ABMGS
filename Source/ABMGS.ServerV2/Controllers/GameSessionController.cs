@@ -11,7 +11,10 @@ public class GameSessionController : ControllerBase
 {
     private readonly ILogger<GameSessionController> _logger;
     private readonly IClusterClient _clusterClient;
-    public GameSessionController(ILogger<GameSessionController> logger, IClusterClient clusterClient)
+    
+    public GameSessionController(
+        ILogger<GameSessionController> logger, 
+        IClusterClient clusterClient)
     {
         _logger = logger;
         _clusterClient = clusterClient;
@@ -41,10 +44,9 @@ public class GameSessionController : ControllerBase
         }
 
         WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-        
-        IPlayerActor PlayerActor = _clusterClient.GetGrain<IPlayerActor>(Guid.NewGuid());
 
-        await PlayerActor.StartGameLoop(webSocket, Guid.NewGuid().ToString(), new CancellationToken());
+        IGameSessionActor gameSessionActor = _clusterClient.GetGrain<IGameSessionActor>(Guid.NewGuid());
+        await gameSessionActor.StartGameLoop("testuserid", webSocket, CancellationToken.None);
 
     }
 
