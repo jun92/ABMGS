@@ -1,4 +1,8 @@
-using ABMGS.ServerV2.Grains;
+using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Handlers;
+using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Sessions;
+using ABMGS.ServerV2.SyncnetPlatform.Network.Handlers;
+using ABMGS.ServerV2.SyncnetPlatform.Network.Sessions;
+using ABMGS.ServerV2.SyncnetPlatform.Network.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Orleans.Configuration;
@@ -14,6 +18,7 @@ builder.Services.AddControllers();
 // SyncnetPlatform Actors
 builder.Services.AddTransient<IGameSessionActor, GameSessionActor>();
 builder.Services.AddTransient<ICustomPacketHandler, CustomPacketHandler>();
+builder.Services.AddTransient<ISystemPacketHandler, SystemPacketHandler>();
 builder.Services.AddTransient<FlatBufferPacketRouter>();
 
 

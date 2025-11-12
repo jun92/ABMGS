@@ -1,7 +1,7 @@
-using ABMGS.ServerV2.Grains;
+using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Sessions;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.WebSockets;
-using static ABMGS.ServerV2.Grains.GameSessionActor;
+using static ABMGS.ServerV2.SyncnetPlatform.Network.Sessions.GameSessionActor;
 
 namespace ABMGS.ServerV2.Controllers;
 

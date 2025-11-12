@@ -1,5 +1,5 @@
 
-namespace SyncnetPlatform.Dto;
+namespace ABMGS.ServerV2.SyncnetPlatform.Protocos.FlatBuffer.Generated;
 
 union CustomPacket{
     MyCustomPacket
