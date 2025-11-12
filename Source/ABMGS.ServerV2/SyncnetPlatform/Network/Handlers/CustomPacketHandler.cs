@@ -1,5 +1,7 @@
+using ABMGS.ServerV2.SyncnetPlatform.Actors;
 using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Actors.Player;
 using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Handlers;
+using ABMGS.ServerV2.SyncnetPlatform.Network.Attributes;
 using SyncnetPlatform.Dto;
 
 namespace ABMGS.ServerV2.SyncnetPlatform.Network.Handlers;
@@ -20,6 +22,7 @@ public partial class CustomPacketHandler : PacketHandlerBase, ICustomPacketHandl
     public void HandleLoginRequest(LoginRequest loginRequest)
     {
         IPlayerActor player = GetPlayer(_playerId);
+        IPlayerDataActor playerData = GetPlayerData(_playerId);
         _logger.LogInformation($"Id: {loginRequest.Id}, From: {loginRequest.From}, Count: {loginRequest.Count}");
     }
     [PacketHandler(typeof(MoveRequest))]

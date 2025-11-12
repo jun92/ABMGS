@@ -19,15 +19,20 @@ public class PlayerActor : Grain, IPlayerActor
         _logger = logger;
     }
 
+    public void Echo()
+    {
+
+    }
+
 
 }
 
-public interface IPlayerData : IGrainWithGuidKey
+public interface IPlayerDataActor : IGrainWithGuidKey
 {
 
 }
 
-public class PlayerDataActor: Grain, IPlayerData
+public class PlayerDataActor: Grain, IPlayerDataActor
 {
     private readonly ILogger<PlayerDataActor> _logger;
     public PlayerDataActor(ILogger<PlayerDataActor> logger)
@@ -36,13 +41,13 @@ public class PlayerDataActor: Grain, IPlayerData
     }
 }
 
-public interface IPlayerInventory : IGrainWithGuidKey
+public interface IPlayerInventoryActor : IGrainWithGuidKey
 {
     public void AddItem(Guid id);
     public void DeleteItem(Guid id);
 }
 
-public class PlayerInventoryActor : Grain, IPlayerInventory
+public class PlayerInventoryActor : Grain, IPlayerInventoryActor
 {
     private readonly ILogger<PlayerInventoryActor> _logger;
     public PlayerInventoryActor(ILogger<PlayerInventoryActor> logger)
