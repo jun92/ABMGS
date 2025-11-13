@@ -2,7 +2,7 @@ using ABMGS.ServerV2.SyncnetPlatform.Actors;
 using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Actors.Player;
 using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Handlers;
 using ABMGS.ServerV2.SyncnetPlatform.Network.Attributes;
-using SyncnetPlatform.Dto;
+using ABMGS.ServerV2.SyncnetPlatform.Protocos.FlatBuffer.Generated;
 
 namespace ABMGS.ServerV2.SyncnetPlatform.Network.Handlers;
 

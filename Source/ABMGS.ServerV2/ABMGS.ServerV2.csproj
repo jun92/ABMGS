@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <Folder Include="Attributes\" />
-    <Folder Include="Grains\" />
+    <Folder Include="DTOs\Sources\FlatBuffer\SyncnetPlatform\Dto\" />
   </ItemGroup>
 
 </Project>

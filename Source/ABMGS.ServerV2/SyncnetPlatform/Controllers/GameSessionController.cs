@@ -1,9 +1,8 @@
 using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Sessions;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.WebSockets;
-using static ABMGS.ServerV2.SyncnetPlatform.Network.Sessions.GameSessionService;
 
-namespace ABMGS.ServerV2.Controllers;
+namespace ABMGS.ServerV2.SyncnetPlatform.Controllers;
 
 [ApiController]
 [Route("/ws")]

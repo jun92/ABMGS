@@ -22,16 +22,11 @@ builder.Services.AddControllers();
 builder.UseSyncnetPlatform();
 //builder.AddCustomPacketHandler<CustomPacketHandler>();
 
-
-
+// Orleans Configuration
 builder.UseOrleans(builder => {
     builder.UseRedisClustering(options => {
         options.ConfigurationOptions = ConfigurationOptions.Parse("localhost:6379");
     });
-    //builder.UseLocalhostClustering();
-    //builder.AddMemoryGrainStorageAsDefault((OptionsBuilder<MemoryGrainStorageOptions> options) =>
-    //{
-    //});
 });
 
 var app = builder.Build();

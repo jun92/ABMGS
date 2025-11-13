@@ -1,6 +1,7 @@
 using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Actors.Player;
+using ABMGS.ServerV2.SyncnetPlatform.Protocos.FlatBuffer.Generated;
+using Google.FlatBuffers;
 using Microsoft.AspNetCore.Routing.Template;
-using SyncnetPlatform.Dto;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 
@@ -13,18 +14,49 @@ namespace ABMGS.ServerV2.SyncnetPlatform.Actors;
 public class PlayerActor : Grain, IPlayerActor
 {
     private readonly ILogger<PlayerActor> _logger;
+    private WebSocket? _webSocket;
 
     public PlayerActor(ILogger<PlayerActor> logger)
     {
         _logger = logger;
+        _webSocket = null;
     }
 
-    public void Echo()
+    public WebSocket WebSocketHandle { private get => _webSocket; set => _webSocket = value; }
+
+    public async Task Echo(int seq)
     {
+        if (_webSocket != null)
+        {
+            PacketFactory factory = new PacketFactory();
+            await _webSocket.SendAsync(new ArraySegment<byte>(factory.BuildPong(seq)), WebSocketMessageType.Binary, true, CancellationToken.None);
+        }
+        else
+        {
+            _logger.LogError($"{nameof(Echo)} was called without valid WebSocket handle");
+        }
+    }
+}
 
+public class PacketFactory
+{
+    private readonly ILogger<PacketFactory>? _logger;
+    public PacketFactory(ILogger<PacketFactory> logger)
+    {
+        _logger = logger; 
+    }
+    public PacketFactory()
+    {
+        _logger = null;
     }
 
-
+    public byte[] BuildPong(int seq)
+    {
+        FlatBufferBuilder builder = new FlatBufferBuilder(4096);
+        Offset<Pong> pongOffset = Pong.CreatePong(builder, ++seq);
+        builder.Finish(pongOffset.Value);
+        return builder.SizedByteArray();
+    }
 }
 
 public interface IPlayerDataActor : IGrainWithGuidKey

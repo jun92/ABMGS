@@ -1,8 +1,9 @@
 using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Handlers;
 using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Sessions;
 using ABMGS.ServerV2.SyncnetPlatform.Network.Utils;
+using ABMGS.ServerV2.SyncnetPlatform.Protocos.FlatBuffer.Generated;
+
 using Google.FlatBuffers;
-using SyncnetPlatform.Dto;
 using System.Net.WebSockets;
 
 namespace ABMGS.ServerV2.SyncnetPlatform.Network.Sessions;

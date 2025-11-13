@@ -1,17 +1,16 @@
+using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Actors.Player;
 using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Handlers;
 using ABMGS.ServerV2.SyncnetPlatform.Network.Attributes;
-using SyncnetPlatform.Dto;
+using ABMGS.ServerV2.SyncnetPlatform.Protocos.FlatBuffer.Generated;
+using System.Threading.Tasks;
 
 namespace ABMGS.ServerV2.SyncnetPlatform.Network.Handlers;
 
-public class SystemPacketHandler : ISystemPacketHandler
+public class SystemPacketHandler : PacketHandlerBase, ISystemPacketHandler
 {
-    private readonly ILogger<SystemPacketHandler> _logger;
     protected Guid _playerId;
-
-    public SystemPacketHandler(ILogger<SystemPacketHandler> logger)
+    public SystemPacketHandler(ILogger<SystemPacketHandler> logger, IClusterClient clusterClient) : base(logger, clusterClient)
     {
-        _logger = logger;
     }
 
     public void BindPlayer(Guid playerId)
@@ -28,6 +27,12 @@ public class SystemPacketHandler : ISystemPacketHandler
     public void HandleMoveRequest(MoveRequest request)
     {
 
+    }
+    [PacketHandler(typeof(Ping))]
+    public async Task HandlePing(Ping request)
+    {
+        IPlayerActor player = GetPlayer(_playerId);
+        await player.Echo(request.Seq);
     }
 
 }

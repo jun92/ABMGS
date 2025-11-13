@@ -1,4 +1,4 @@
-namespace ABMGS.ServerV2.Enums;
+namespace ABMGS.ServerV2.SyncnetPlatform.Enums;
 
 public enum ActorSuffixNames 
 {

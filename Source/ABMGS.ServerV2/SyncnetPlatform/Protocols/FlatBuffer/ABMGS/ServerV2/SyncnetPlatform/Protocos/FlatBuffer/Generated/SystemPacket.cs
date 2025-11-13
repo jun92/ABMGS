@@ -9,8 +9,10 @@ public enum SystemPacket : byte
 {
   NONE = 0,
   Dummy = 1,
-  LoginRequest = 2,
-  MoveRequest = 3,
+  Ping = 2,
+  Pong = 3,
+  LoginRequest = 4,
+  MoveRequest = 5,
 };
 
 
@@ -24,6 +26,12 @@ static public class SystemPacketVerify
     {
       case SystemPacket.Dummy:
         result = ABMGS.ServerV2.SyncnetPlatform.Protocos.FlatBuffer.Generated.DummyVerify.Verify(verifier, tablePos);
+        break;
+      case SystemPacket.Ping:
+        result = ABMGS.ServerV2.SyncnetPlatform.Protocos.FlatBuffer.Generated.PingVerify.Verify(verifier, tablePos);
+        break;
+      case SystemPacket.Pong:
+        result = ABMGS.ServerV2.SyncnetPlatform.Protocos.FlatBuffer.Generated.PongVerify.Verify(verifier, tablePos);
         break;
       case SystemPacket.LoginRequest:
         result = ABMGS.ServerV2.SyncnetPlatform.Protocos.FlatBuffer.Generated.LoginRequestVerify.Verify(verifier, tablePos);

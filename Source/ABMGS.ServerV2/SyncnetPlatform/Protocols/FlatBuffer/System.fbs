@@ -5,6 +5,8 @@ namespace ABMGS.ServerV2.SyncnetPlatform.Protocos.FlatBuffer.Generated;
 
 union SystemPacket {
     Dummy,
+    Ping,
+    Pong,
     LoginRequest,
     MoveRequest
 }
@@ -18,6 +20,13 @@ table PacketWrapper {
 
 table Dummy {
     id: int;
+}
+
+table Ping {
+    seq: int;
+}
+table Pong {
+    seq: int;
 }
 
 table LoginRequest {
