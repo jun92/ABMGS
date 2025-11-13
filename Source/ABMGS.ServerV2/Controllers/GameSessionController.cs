@@ -1,7 +1,7 @@
 using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Sessions;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.WebSockets;
-using static ABMGS.ServerV2.SyncnetPlatform.Network.Sessions.GameSessionActor;
+using static ABMGS.ServerV2.SyncnetPlatform.Network.Sessions.GameSessionService;
 
 namespace ABMGS.ServerV2.Controllers;
 
@@ -11,13 +11,16 @@ public class GameSessionController : ControllerBase
 {
     private readonly ILogger<GameSessionController> _logger;
     private readonly IClusterClient _clusterClient;
+    private readonly IGameSessionService _gameSessionService;
     
     public GameSessionController(
         ILogger<GameSessionController> logger, 
-        IClusterClient clusterClient)
+        IClusterClient clusterClient,
+        IGameSessionService gameSessionService)
     {
         _logger = logger;
         _clusterClient = clusterClient;
+        _gameSessionService = gameSessionService;
     }
 
     [ProducesResponseType(StatusCodes.Status203NonAuthoritative)]
@@ -44,10 +47,7 @@ public class GameSessionController : ControllerBase
         }
 
         WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-
-        IGameSessionActor gameSessionActor = _clusterClient.GetGrain<IGameSessionActor>(Guid.NewGuid());
-        await gameSessionActor.StartGameLoop("testuserid", webSocket, CancellationToken.None);
-
+        await _gameSessionService.StartGameSession(Guid.NewGuid(), webSocket, CancellationToken.None);
     }
 
 }

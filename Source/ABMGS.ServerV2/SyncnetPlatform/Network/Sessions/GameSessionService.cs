@@ -7,16 +7,16 @@ using System.Net.WebSockets;
 
 namespace ABMGS.ServerV2.SyncnetPlatform.Network.Sessions;
 
-public class GameSessionActor : Grain, IGameSessionActor 
+public class GameSessionService : Grain, IGameSessionService
 {
-    private readonly ILogger<GameSessionActor> _logger;
+    private readonly ILogger<GameSessionService> _logger;
     private readonly IClusterClient _clusterClient;
     private readonly FlatBufferPacketRouter _routeTable;
     private readonly ICustomPacketHandler _customPacketHandler;
     private ISystemPacketHandler _systemPacketHandler;
 
-    public GameSessionActor(
-        ILogger<GameSessionActor> logger, 
+    public GameSessionService(
+        ILogger<GameSessionService> logger, 
         IClusterClient clusterClient, 
         ICustomPacketHandler customPacketHandler,
         ISystemPacketHandler systemPacketHandler,
@@ -36,7 +36,7 @@ public class GameSessionActor : Grain, IGameSessionActor
         _routeTable.BuildPacketHandlerFunctions(_customPacketHandler);
         
     }
-    private ByteBuffer BuildDummyPacket()
+    protected ByteBuffer BuildDummyPacket()
     {
         FlatBufferBuilder flatBufferBuilder = new FlatBufferBuilder(1024);
         Offset<Dummy> dummy = Dummy.CreateDummy(flatBufferBuilder, 0);
@@ -44,14 +44,13 @@ public class GameSessionActor : Grain, IGameSessionActor
         return flatBufferBuilder.DataBuffer;
     }
 
-    public async Task StartGameLoop(string uniquePlayerId, WebSocket SocketObject, CancellationToken abnormalExitToken)
+    public async Task StartGameSession(Guid uniquePlayerId, WebSocket SocketObject, CancellationToken abnormalExitToken)
     {
-        ArgumentException.ThrowIfNullOrEmpty(uniquePlayerId);
         ArgumentNullException.ThrowIfNull(SocketObject);
 
         // Let the handlers know who is dealing with.
-        _systemPacketHandler.BindPlayer(new Guid(uniquePlayerId));
-        _customPacketHandler.BindPlayer(new Guid(uniquePlayerId));
+        _systemPacketHandler.BindPlayer(uniquePlayerId);
+        _customPacketHandler.BindPlayer(uniquePlayerId);
 
         bool IsGameLoopValid = true;
 

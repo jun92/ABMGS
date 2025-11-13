@@ -1,3 +1,4 @@
+using ABMGS.ServerV2.SyncnetPlatform.Extensions;
 using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Handlers;
 using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Sessions;
 using ABMGS.ServerV2.SyncnetPlatform.Network.Handlers;
@@ -16,10 +17,9 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
 // SyncnetPlatform Actors
-builder.Services.AddTransient<IGameSessionActor, GameSessionActor>();
-builder.Services.AddTransient<ICustomPacketHandler, CustomPacketHandler>();
-builder.Services.AddTransient<ISystemPacketHandler, SystemPacketHandler>();
-builder.Services.AddTransient<FlatBufferPacketRouter>();
+builder.UseSyncnetPlatform();
+builder.AddCustomPacketHandler<CustomPacketHandler>();
+
 
 
 builder.UseOrleans(builder => {
