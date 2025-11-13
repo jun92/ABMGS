@@ -1,11 +1,10 @@
-using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Handlers;
-using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Sessions;
-using ABMGS.ServerV2.SyncnetPlatform.Network.Handlers;
-using ABMGS.ServerV2.SyncnetPlatform.Network.Sessions;
-using ABMGS.ServerV2.SyncnetPlatform.Network.Utils;
-using System.Runtime.CompilerServices;
+using SyncnetPlatform.Interfaces.Network.Handlers;
+using SyncnetPlatform.Interfaces.Network.Sessions;
+using SyncnetPlatform.Network.Handlers;
+using SyncnetPlatform.Network.Sessions;
+using SyncnetPlatform.Network.Utils;
 
-namespace ABMGS.ServerV2.SyncnetPlatform.Extensions;
+namespace SyncnetPlatform.Extensions;
 
 public static class WebApplicationBuilderExtension
 {

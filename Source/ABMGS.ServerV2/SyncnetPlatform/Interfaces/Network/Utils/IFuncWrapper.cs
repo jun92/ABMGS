@@ -1,4 +1,4 @@
-namespace ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Utils;
+namespace SyncnetPlatform.Interfaces.Network.Utils;
 
 public interface IFuncWrapper
 {

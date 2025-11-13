@@ -1,8 +1,8 @@
-using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Actors;
-using ABMGS.ServerV2.SyncnetPlatform.Actors;
-using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Actors.Player;
+using SyncnetPlatform.Interfaces.Actors;
+using SyncnetPlatform.Actors;
+using SyncnetPlatform.Interfaces.Actors.Player;
 
-namespace ABMGS.ServerV2.SyncnetPlatform.Network.Handlers;
+namespace SyncnetPlatform.Network.Handlers;
 
 public class PacketHandlerBase
 {

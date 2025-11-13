@@ -1,17 +1,12 @@
 include "Custom.fbs";
 
-namespace ABMGS.ServerV2.SyncnetPlatform.Protocos.FlatBuffer.Generated;
-
+namespace SyncnetPlatform.Protocols.Generated;
 
 union SystemPacket {
     Dummy,
     Ping,
     Pong,
-    LoginRequest,
-    MoveRequest
 }
-
-
 
 table PacketWrapper {
     system_packet: SystemPacket;
@@ -27,18 +22,6 @@ table Ping {
 }
 table Pong {
     seq: int;
-}
-
-table LoginRequest {
-    id: string;
-    from: string;
-    count: int;
-}
-
-table MoveRequest {
-    id: string;
-    x: float;
-    y: float;
 }
 
 root_type PacketWrapper;

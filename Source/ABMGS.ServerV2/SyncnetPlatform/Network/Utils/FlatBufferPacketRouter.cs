@@ -1,12 +1,12 @@
-using ABMGS.ServerV2.SyncnetPlatform.Enums;
-using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Handlers;
-using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Utils;
-using ABMGS.ServerV2.SyncnetPlatform.Network.Attributes;
-using ABMGS.ServerV2.SyncnetPlatform.Protocos.FlatBuffer.Generated;
+using SyncnetPlatform.Enums;
+using SyncnetPlatform.Interfaces.Network.Handlers;
+using SyncnetPlatform.Interfaces.Network.Utils;
+using SyncnetPlatform.Network.Attributes;
+using SyncnetPlatform.Protocols.Generated;
 
 using System.Reflection;
 
-namespace ABMGS.ServerV2.SyncnetPlatform.Network.Utils;
+namespace SyncnetPlatform.Network.Utils;
 
 public class FlatBufferPacketRouter : IPacketRouter
 {

@@ -1,7 +1,7 @@
 using System.Buffers;
 using System.IO.Pipelines;
 
-namespace ABMGS.ServerV2.SyncnetPlatform.Network.Utils;
+namespace SyncnetPlatform.Network.Utils;
 
 public class NetworkBuffer(int bufferSize) : IDisposable
 {

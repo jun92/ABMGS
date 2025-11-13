@@ -1,10 +1,10 @@
-using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Handlers;
-using ABMGS.ServerV2.SyncnetPlatform.Network.Attributes;
+using SyncnetPlatform.Interfaces.Network.Handlers;
+using SyncnetPlatform.Network.Attributes;
 using Google.FlatBuffers;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace ABMGS.ServerV2.SyncnetPlatform.Network.Utils;
+namespace SyncnetPlatform.Network.Utils;
 
 public static class FunctionBuilder
 {

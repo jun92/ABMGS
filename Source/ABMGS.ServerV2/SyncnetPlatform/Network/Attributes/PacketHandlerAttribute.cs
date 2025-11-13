@@ -1,4 +1,4 @@
-namespace ABMGS.ServerV2.SyncnetPlatform.Network.Attributes;
+namespace SyncnetPlatform.Network.Attributes;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
 public sealed class PacketHandlerAttribute : Attribute

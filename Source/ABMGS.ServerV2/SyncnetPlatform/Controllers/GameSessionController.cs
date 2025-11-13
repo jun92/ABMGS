@@ -1,8 +1,8 @@
-using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Sessions;
+using SyncnetPlatform.Interfaces.Network.Sessions;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.WebSockets;
 
-namespace ABMGS.ServerV2.SyncnetPlatform.Controllers;
+namespace SyncnetPlatform.Controllers;
 
 [ApiController]
 [Route("/ws")]

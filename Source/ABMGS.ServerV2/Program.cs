@@ -1,9 +1,9 @@
-using ABMGS.ServerV2.SyncnetPlatform.Extensions;
-using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Handlers;
-using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Sessions;
-using ABMGS.ServerV2.SyncnetPlatform.Network.Handlers;
-using ABMGS.ServerV2.SyncnetPlatform.Network.Sessions;
-using ABMGS.ServerV2.SyncnetPlatform.Network.Utils;
+using SyncnetPlatform.Extensions;
+using SyncnetPlatform.Interfaces.Network.Handlers;
+using SyncnetPlatform.Interfaces.Network.Sessions;
+using SyncnetPlatform.Network.Handlers;
+using SyncnetPlatform.Network.Sessions;
+using SyncnetPlatform.Network.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Orleans.Clustering.Redis;

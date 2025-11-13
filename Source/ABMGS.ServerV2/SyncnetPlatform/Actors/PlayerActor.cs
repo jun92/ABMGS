@@ -1,11 +1,9 @@
-using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Actors.Player;
-using ABMGS.ServerV2.SyncnetPlatform.Protocos.FlatBuffer.Generated;
+using SyncnetPlatform.Interfaces.Actors.Player;
 using Google.FlatBuffers;
-using Microsoft.AspNetCore.Routing.Template;
 using System.Net.WebSockets;
-using System.Runtime.CompilerServices;
+using SyncnetPlatform.Protocols.Generated;
 
-namespace ABMGS.ServerV2.SyncnetPlatform.Actors;
+namespace SyncnetPlatform.Actors;
 
 /// <summary>
 /// 세션에 연결되어 있는 플레이어의 모든 엔티티를 가지고 있는 상위 그레인,
