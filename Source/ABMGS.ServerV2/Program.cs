@@ -6,8 +6,10 @@ using ABMGS.ServerV2.SyncnetPlatform.Network.Sessions;
 using ABMGS.ServerV2.SyncnetPlatform.Network.Utils;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
+using Orleans.Clustering.Redis;
 using Orleans.Configuration;
 using Orleans.Services;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,15 +20,18 @@ builder.Services.AddControllers();
 
 // SyncnetPlatform Actors
 builder.UseSyncnetPlatform();
-builder.AddCustomPacketHandler<CustomPacketHandler>();
+//builder.AddCustomPacketHandler<CustomPacketHandler>();
 
 
 
 builder.UseOrleans(builder => {
-    builder.UseLocalhostClustering();
-    builder.AddMemoryGrainStorageAsDefault((OptionsBuilder<MemoryGrainStorageOptions> options) =>
-    {
+    builder.UseRedisClustering(options => {
+        options.ConfigurationOptions = ConfigurationOptions.Parse("localhost:6379");
     });
+    //builder.UseLocalhostClustering();
+    //builder.AddMemoryGrainStorageAsDefault((OptionsBuilder<MemoryGrainStorageOptions> options) =>
+    //{
+    //});
 });
 
 var app = builder.Build();

@@ -14,10 +14,11 @@ public static class WebApplicationBuilderExtension
         builder.Services.AddTransient<IGameSessionService, GameSessionService>();
         builder.Services.AddTransient<ISystemPacketHandler, SystemPacketHandler>();
         builder.Services.AddTransient<FlatBufferPacketRouter>();
+        builder.Services.AddTransient<ICustomPacketHandler, CustomPacketHandler>();
     }
 
     public static void AddCustomPacketHandler<CustomHandlerType>(this WebApplicationBuilder builder) where CustomHandlerType: ICustomPacketHandler
     {
-        builder.Services.AddTransient(typeof(CustomHandlerType));
+       // builder.Services.AddTransient(typeof(CustomHandlerType));
     }
 }
