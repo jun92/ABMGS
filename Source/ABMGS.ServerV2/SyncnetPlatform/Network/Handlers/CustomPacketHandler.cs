@@ -1,10 +1,10 @@
-using ABMGS.ServerV2.SyncnetPlatform.Actors;
-using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Actors.Player;
-using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Handlers;
-using ABMGS.ServerV2.SyncnetPlatform.Network.Attributes;
-using ABMGS.ServerV2.SyncnetPlatform.Protocos.FlatBuffer.Generated;
+using SyncnetPlatform.Actors;
+using SyncnetPlatform.Interfaces.Actors.Player;
+using SyncnetPlatform.Interfaces.Network.Handlers;
+using SyncnetPlatform.Network.Attributes;
+using SyncnetPlatform.Protocols.Generated;
 
-namespace ABMGS.ServerV2.SyncnetPlatform.Network.Handlers;
+namespace SyncnetPlatform.Network.Handlers;
 
 public partial class CustomPacketHandler : PacketHandlerBase, ICustomPacketHandler
 {
@@ -18,17 +18,17 @@ public partial class CustomPacketHandler : PacketHandlerBase, ICustomPacketHandl
         _playerId = playerId;
     }
 
-    [PacketHandler(typeof(LoginRequest))]
-    public void HandleLoginRequest(LoginRequest loginRequest)
-    {
-        IPlayerActor player = GetPlayer(_playerId);
-        IPlayerDataActor playerData = GetPlayerData(_playerId);
-        _logger.LogInformation($"Id: {loginRequest.Id}, From: {loginRequest.From}, Count: {loginRequest.Count}");
-    }
-    [PacketHandler(typeof(MoveRequest))]
-    public void HandleMoveRequest(MoveRequest moveRequest)
-    {
-        _logger.LogInformation($"Id: {moveRequest.Id}, X: {moveRequest.X}, Y: {moveRequest.Y}");
-    }
+    //[PacketHandler(typeof(LoginRequest))]
+    //public void HandleLoginRequest(LoginRequest loginRequest)
+    //{
+    //    IPlayerActor player = GetPlayer(_playerId);
+    //    IPlayerDataActor playerData = GetPlayerData(_playerId);
+    //    _logger.LogInformation($"Id: {loginRequest.Id}, From: {loginRequest.From}, Count: {loginRequest.Count}");
+    //}
+    //[PacketHandler(typeof(MoveRequest))]
+    //public void HandleMoveRequest(MoveRequest moveRequest)
+    //{
+    //    _logger.LogInformation($"Id: {moveRequest.Id}, X: {moveRequest.X}, Y: {moveRequest.Y}");
+    //}
    
 }

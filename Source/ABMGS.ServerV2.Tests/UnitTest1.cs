@@ -6,7 +6,7 @@ using System.Text;
 
 namespace ABMGS.ServerV2.Tests;
 
-public class UnitTest1
+public class WebSocketTest
 {
     [Fact]
     public void Test1()

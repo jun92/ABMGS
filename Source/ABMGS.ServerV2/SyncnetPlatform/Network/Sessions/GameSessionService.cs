@@ -1,12 +1,12 @@
-using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Handlers;
-using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Sessions;
-using ABMGS.ServerV2.SyncnetPlatform.Network.Utils;
-using ABMGS.ServerV2.SyncnetPlatform.Protocos.FlatBuffer.Generated;
+using SyncnetPlatform.Interfaces.Network.Handlers;
+using SyncnetPlatform.Interfaces.Network.Sessions;
+using SyncnetPlatform.Network.Utils;
+using SyncnetPlatform.Protocols.Generated;
 
 using Google.FlatBuffers;
 using System.Net.WebSockets;
 
-namespace ABMGS.ServerV2.SyncnetPlatform.Network.Sessions;
+namespace SyncnetPlatform.Network.Sessions;
 
 public class GameSessionService : Grain, IGameSessionService
 {

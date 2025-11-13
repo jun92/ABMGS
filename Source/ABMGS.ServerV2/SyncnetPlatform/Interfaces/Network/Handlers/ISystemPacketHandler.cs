@@ -1,4 +1,4 @@
-namespace ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Handlers;
+namespace SyncnetPlatform.Interfaces.Network.Handlers;
 
 public interface ISystemPacketHandler
 {

@@ -1,6 +1,6 @@
-using ABMGS.ServerV2.SyncnetPlatform.Interfaces.Network.Utils;
+using SyncnetPlatform.Interfaces.Network.Utils;
 
-namespace ABMGS.ServerV2.SyncnetPlatform.Network.Utils;
+namespace SyncnetPlatform.Network.Utils;
 
 public class FuncWrapper<T> : IFuncWrapper
 {
