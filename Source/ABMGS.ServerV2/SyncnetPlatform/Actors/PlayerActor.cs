@@ -1,7 +1,6 @@
 using SyncnetPlatform.Interfaces.Actors.Player;
-using Google.FlatBuffers;
+using SyncnetPlatform.Network.Utils;
 using System.Net.WebSockets;
-using SyncnetPlatform.Protocols.Generated;
 
 namespace SyncnetPlatform.Actors;
 
@@ -26,34 +25,16 @@ public class PlayerActor : Grain, IPlayerActor
     {
         if (_webSocket != null)
         {
-            PacketFactory factory = new PacketFactory();
-            await _webSocket.SendAsync(new ArraySegment<byte>(factory.BuildPong(seq)), WebSocketMessageType.Binary, true, CancellationToken.None);
+            await _webSocket.SendAsync(
+                new ArraySegment<byte>(SyncnetPacketBuilder.Build<PongArgs>(new PongArgs(seq + 1))), 
+                WebSocketMessageType.Binary, 
+                true, 
+                CancellationToken.None);
         }
         else
         {
             _logger.LogError($"{nameof(Echo)} was called without valid WebSocket handle");
         }
-    }
-}
-
-public class PacketFactory
-{
-    private readonly ILogger<PacketFactory>? _logger;
-    public PacketFactory(ILogger<PacketFactory> logger)
-    {
-        _logger = logger; 
-    }
-    public PacketFactory()
-    {
-        _logger = null;
-    }
-
-    public byte[] BuildPong(int seq)
-    {
-        FlatBufferBuilder builder = new FlatBufferBuilder(4096);
-        Offset<Pong> pongOffset = Pong.CreatePong(builder, ++seq);
-        builder.Finish(pongOffset.Value);
-        return builder.SizedByteArray();
     }
 }
 
