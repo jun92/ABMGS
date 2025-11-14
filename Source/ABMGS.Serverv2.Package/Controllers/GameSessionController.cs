@@ -1,6 +1,8 @@
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using Microsoft.AspNetCore.Mvc;
 using System.Net.WebSockets;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http;
 
 namespace SyncnetPlatform.Controllers;
 

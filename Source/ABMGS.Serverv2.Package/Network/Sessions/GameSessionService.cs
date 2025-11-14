@@ -1,10 +1,11 @@
+using System.Net.WebSockets;
+using Microsoft.Extensions.Logging;
+using Google.FlatBuffers;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Protocols.Generated;
 
-using Google.FlatBuffers;
-using System.Net.WebSockets;
 
 namespace SyncnetPlatform.Network.Sessions;
 

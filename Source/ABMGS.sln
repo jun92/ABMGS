@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.0.11205.157 d18.0
+VisualStudioVersion = 18.0.11205.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABMGS.Server.Front", "ABMGS.Server.Front\ABMGS.Server.Front.csproj", "{B6D9063E-FE1C-A4C8-FC06-1357EEA1AF7C}"
 EndProject
@@ -15,6 +15,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABMGS.ServerV2.Tests", "ABMGS.ServerV2.Tests\ABMGS.ServerV2.Tests.csproj", "{E5AD4EE1-7A8B-360F-63B7-69E1E1BA3188}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABMGS.ServerV2.Shared", "ABMGS.ServerV2.Shared\ABMGS.ServerV2.Shared.csproj", "{585631ED-1C27-D1CD-836C-08EBD83B92C0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABMGS.Serverv2.Package", "ABMGS.Serverv2.Package\ABMGS.Serverv2.Package.csproj", "{891CDBC0-6FA5-5E31-E34B-10163E60017A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +40,10 @@ Global
 		{585631ED-1C27-D1CD-836C-08EBD83B92C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{585631ED-1C27-D1CD-836C-08EBD83B92C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{585631ED-1C27-D1CD-836C-08EBD83B92C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{891CDBC0-6FA5-5E31-E34B-10163E60017A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{891CDBC0-6FA5-5E31-E34B-10163E60017A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{891CDBC0-6FA5-5E31-E34B-10163E60017A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{891CDBC0-6FA5-5E31-E34B-10163E60017A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
