@@ -1,6 +1,7 @@
 using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Actors;
 using SyncnetPlatform.Interfaces.Actors.Player;
+using Microsoft.Extensions.Logging;
 
 namespace SyncnetPlatform.Network.Handlers;
 

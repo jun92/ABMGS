@@ -1,6 +1,7 @@
+using System.Net.WebSockets;
+using Microsoft.Extensions.Logging;
 using SyncnetPlatform.Interfaces.Actors.Player;
 using SyncnetPlatform.Network.Utils;
-using System.Net.WebSockets;
 
 namespace SyncnetPlatform.Actors;
 
