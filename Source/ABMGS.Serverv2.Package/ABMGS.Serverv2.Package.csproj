@@ -8,6 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="SyncnetPlatform\**" />
+    <EmbeddedResource Remove="SyncnetPlatform\**" />
+    <None Remove="SyncnetPlatform\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Google.FlatBuffers" Version="25.2.10" />
     <PackageReference Include="Microsoft.Orleans.Clustering.Redis" Version="9.2.1" />
     <PackageReference Include="Microsoft.Orleans.Server" Version="9.2.1" />
@@ -20,10 +26,5 @@
 <ItemGroup>
 	<FrameworkReference Include="Microsoft.AspNetCore.App" />
 </ItemGroup>
-
-
-	<ItemGroup>
-    <Folder Include="SyncnetPlatform\Protocols\" />
-  </ItemGroup>
 
 </Project>
