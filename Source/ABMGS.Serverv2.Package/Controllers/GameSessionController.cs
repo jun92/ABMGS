@@ -26,7 +26,7 @@ public class GameSessionController : ControllerBase
 
     [ProducesResponseType(StatusCodes.Status203NonAuthoritative)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [Route("authenticate")]
+    [Route("/healthcheck")]
     public IActionResult Authenticate()
     {
         return Ok();
@@ -35,7 +35,7 @@ public class GameSessionController : ControllerBase
 
 
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [Route("/gamesession")]
+    [Route("gamesession")]
     public async Task GameSession()
     {
 
