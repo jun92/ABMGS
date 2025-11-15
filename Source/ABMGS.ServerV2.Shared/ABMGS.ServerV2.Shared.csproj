@@ -15,8 +15,8 @@
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-	  <Exec Command="flatc.exe -n -o ./generated System.fbs" />
-	  <Exec Command="flatc.exe -n -o ./generated Custom.fbs" />
+	  <Exec Command="flatc -n -o ./generated System.fbs" />
+	  <Exec Command="flatc -n -o ./generated Custom.fbs" />
   </Target>
 
 </Project>
