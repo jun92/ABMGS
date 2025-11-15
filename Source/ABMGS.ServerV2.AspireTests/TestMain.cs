@@ -29,10 +29,21 @@ public class TestMain
         var response = await httpClient.GetAsync("/alive");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
+        var wsUri = new UriBuilder(httpClient.BaseAddress!)
+        {
+            Scheme = httpClient.BaseAddress!.Scheme == "https" ? "wss" : "ws",
+            Path = "/gamesession"
+        }.Uri;
 
-        Uri uri = app.GetEndpoint("orleans-frontend");
-        var webSocketUri = new UriBuilder(uri);
-        var webSocket = new ClientWebSocket();
+
+        var wsClient = new ClientWebSocket();
+        await wsClient.ConnectAsync(wsUri, CancellationToken.None);
+
+        Assert.Equal(WebSocketState.Open, wsClient.State);
+
+        await wsClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "Good Bye", cancellationToken: CancellationToken.None);
+
+
 
 
     }
