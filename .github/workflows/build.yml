@@ -21,6 +21,10 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
       working-directory: Source/AppHost
+    - name: Install flatc
+      uses: Nugine/setup-flatc@v1
+      with:
+        version: "25.2.10"
     - name: Build
       run: dotnet build --no-restore
       working-directory: Source/AppHost
