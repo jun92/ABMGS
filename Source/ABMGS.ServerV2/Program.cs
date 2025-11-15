@@ -35,13 +35,15 @@ builder.UseOrleans( builder => {
 
 var app = builder.Build();
 
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+app.UseRouting();
 app.MapDefaultEndpoints();
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseWebSockets();
 
 await app.RunAsync();
