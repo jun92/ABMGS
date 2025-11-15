@@ -22,14 +22,14 @@ jobs:
         dotnet-version: 10.0.x
     - name: Restore dependencies
       run: dotnet restore
-      working-directory: Source/ABMGS.ServerV2.AspireTest
+      working-directory: Source/ABMGS.ServerV2.AspireTests
     - name: Install flatc
       uses: Nugine/setup-flatc@v1
       with:
         version: "25.2.10"
     - name: Build
       run: dotnet build --no-restore
-      working-directory: Source/ABMGS.ServerV2.AspireTest
+      working-directory: Source/ABMGS.ServerV2.AspireTests
     - name: Test
       run: dotnet test --no-build --verbosity normal
-      working-directory: Source/ABMGS.ServerV2.AspireTest
+      working-directory: Source/ABMGS.ServerV2.AspireTests
