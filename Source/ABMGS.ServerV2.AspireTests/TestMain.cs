@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net.WebSockets;
+using SyncnetPlatform.Network.Utils;
 
 namespace ABMGS.ServerV2.AspireTest;
 
@@ -24,10 +26,13 @@ public class TestMain
         var httpClient = app.CreateHttpClient("orleans-frontend");
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         await app.ResourceNotifications.WaitForResourceHealthyAsync("orleans-frontend", cts.Token);
-
         var response = await httpClient.GetAsync("/alive");
-
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+
+        Uri uri = app.GetEndpoint("orleans-frontend");
+        var webSocketUri = new UriBuilder(uri);
+        var webSocket = new ClientWebSocket();
 
 
     }
