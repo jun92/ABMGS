@@ -25,7 +25,7 @@ public class TestMain
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         await app.ResourceNotifications.WaitForResourceHealthyAsync("orleans-frontend", cts.Token);
 
-        var response = await httpClient.GetAsync("/healthcheck");
+        var response = await httpClient.GetAsync("/alive");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
