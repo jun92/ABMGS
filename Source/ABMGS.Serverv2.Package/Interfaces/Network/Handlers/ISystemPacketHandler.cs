@@ -1,7 +1,9 @@
+using System.Net.WebSockets;
+
 namespace SyncnetPlatform.Interfaces.Network.Handlers;
 
 public interface ISystemPacketHandler
 {
-    public void BindPlayer(Guid playerId);
+    public Task BindPlayer(Guid playerId, WebSocket websocket);
 
 }

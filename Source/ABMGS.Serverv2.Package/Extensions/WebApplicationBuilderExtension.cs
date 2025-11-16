@@ -13,7 +13,7 @@ public static class WebApplicationBuilderExtension
     public static void UseSyncnetPlatform(this WebApplicationBuilder builder)
     {
         builder.Services.AddTransient<IGameSessionService, GameSessionService>();
-        builder.Services.AddTransient<ISystemPacketHandler, SystemPacketHandler>();
+        builder.Services.AddTransient<SystemPacketHandler>();
         builder.Services.AddTransient<FlatBufferPacketRouter>();
         builder.Services.AddTransient<ICustomPacketHandler, CustomPacketHandler>();
     }

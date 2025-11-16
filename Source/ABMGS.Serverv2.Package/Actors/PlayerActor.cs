@@ -19,8 +19,11 @@ public class PlayerActor : Grain, IPlayerActor
         _logger = logger;
         _webSocket = null;
     }
+    public async Task Initialize(WebSocket webSocket)
+    {
+        _webSocket = webSocket;
+    }
 
-    public WebSocket WebSocketHandle { private get => _webSocket; set => _webSocket = value; }
 
     public async Task Echo(int seq)
     {
@@ -37,6 +40,7 @@ public class PlayerActor : Grain, IPlayerActor
             _logger.LogError($"{nameof(Echo)} was called without valid WebSocket handle");
         }
     }
+
 }
 
 public interface IPlayerDataActor : IGrainWithGuidKey

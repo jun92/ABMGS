@@ -24,6 +24,5 @@ public class NetworkBuffer(int bufferSize) : IDisposable
     }
     public void Dispose()
     {
-        _pipe.Reset();
     }
 }

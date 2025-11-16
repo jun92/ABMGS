@@ -22,7 +22,7 @@ public static class FunctionBuilder
     public static Action<object> BuildFunctionWithParameterType<HoldingClassType>(
         HoldingClassType classInstance, 
         MethodInfo method) 
-        where HoldingClassType: ICustomPacketHandler
+      //  where HoldingClassType: SystemPacketHandler
     {
         PacketHandlerAttribute? packetHandlerAttribute = method.GetCustomAttribute<PacketHandlerAttribute>();
         ArgumentNullException.ThrowIfNull(packetHandlerAttribute);

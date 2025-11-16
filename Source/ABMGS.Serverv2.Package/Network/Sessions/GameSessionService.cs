@@ -5,6 +5,8 @@ using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Protocols.Generated;
+using SyncnetPlatform.Network.Handlers;
+using SyncnetPlatform.Interfaces.Actors.Player;
 
 
 namespace SyncnetPlatform.Network.Sessions;
@@ -15,13 +17,13 @@ public class GameSessionService : Grain, IGameSessionService
     private readonly IClusterClient _clusterClient;
     private readonly FlatBufferPacketRouter _routeTable;
     private readonly ICustomPacketHandler _customPacketHandler;
-    private ISystemPacketHandler _systemPacketHandler;
+    private readonly SystemPacketHandler _systemPacketHandler;
 
     public GameSessionService(
         ILogger<GameSessionService> logger, 
         IClusterClient clusterClient, 
         ICustomPacketHandler customPacketHandler,
-        ISystemPacketHandler systemPacketHandler,
+        SystemPacketHandler systemPacketHandler,
         FlatBufferPacketRouter routeTable)
     {
         _logger = logger;
@@ -29,20 +31,22 @@ public class GameSessionService : Grain, IGameSessionService
         _routeTable = routeTable;
         _customPacketHandler = customPacketHandler;
         _systemPacketHandler = systemPacketHandler;
+        Initialize();
     }
 
     public void Initialize()
     {
         PacketWrapper packet = PacketWrapper.GetRootAsPacketWrapper(BuildDummyPacket());
         _routeTable.BuildParamExtractionFuncs(packet);
-        _routeTable.BuildPacketHandlerFunctions(_customPacketHandler);
+        _routeTable.BuildPacketHandlerFunctions<SystemPacketHandler>(_systemPacketHandler);
         
     }
     protected ByteBuffer BuildDummyPacket()
     {
         FlatBufferBuilder flatBufferBuilder = new FlatBufferBuilder(1024);
         Offset<Dummy> dummy = Dummy.CreateDummy(flatBufferBuilder, 0);
-        flatBufferBuilder.Finish(dummy.Value);
+        Offset<PacketWrapper> wrapper = PacketWrapper.CreatePacketWrapper(flatBufferBuilder, SystemPacket.Dummy, dummy.Value);
+        flatBufferBuilder.Finish(wrapper.Value);
         return flatBufferBuilder.DataBuffer;
     }
 
@@ -51,7 +55,7 @@ public class GameSessionService : Grain, IGameSessionService
         ArgumentNullException.ThrowIfNull(SocketObject);
 
         // Let the handlers know who is dealing with.
-        _systemPacketHandler.BindPlayer(uniquePlayerId);
+        await _systemPacketHandler.BindPlayer(uniquePlayerId, SocketObject);
         _customPacketHandler.BindPlayer(uniquePlayerId);
 
         bool IsGameLoopValid = true;
