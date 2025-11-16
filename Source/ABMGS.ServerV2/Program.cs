@@ -25,12 +25,12 @@ builder.UseSyncnetPlatform();
 
 // Orleans Configuration
 builder.UseOrleans( builder => {
-    builder.UseRedisClustering(options =>
-    {
-        options.ConfigurationOptions = ConfigurationOptions.Parse(
-            builder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
-    });
-    //builder.UseLocalhostClustering();
+    //builder.UseRedisClustering(options =>
+    //{
+    //    options.ConfigurationOptions = ConfigurationOptions.Parse(
+    //        builder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
+    //});
+    builder.UseLocalhostClustering();
 });
 
 var app = builder.Build();
@@ -43,6 +43,7 @@ if (app.Environment.IsDevelopment())
 }
 app.UseRouting();
 app.MapDefaultEndpoints();
+app.MapControllers();
 //app.UseHttpsRedirection();
 app.UseWebSockets();
 

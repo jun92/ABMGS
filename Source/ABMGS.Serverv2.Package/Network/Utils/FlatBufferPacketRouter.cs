@@ -4,7 +4,7 @@ using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Utils;
 using SyncnetPlatform.Network.Attributes;
 using SyncnetPlatform.Protocols.Generated;
-
+using System.Linq;
 using System.Reflection;
 
 namespace SyncnetPlatform.Network.Utils;
@@ -17,7 +17,18 @@ public class FlatBufferPacketRouter : IPacketRouter
 
     public void Execute(PacketWrapper packetWrapper)
     {
-        _packetHandlerTable[packetWrapper.SystemPacketType](_paramExtractionFuncTable[packetWrapper.SystemPacketType](packetWrapper));
+        try
+        {
+            var aa = _paramExtractionFuncTable[packetWrapper.SystemPacketType];
+            var parameters = _paramExtractionFuncTable[packetWrapper.SystemPacketType](packetWrapper);
+            _packetHandlerTable[packetWrapper.SystemPacketType](parameters);
+            // _packetHandlerTable[packetWrapper.SystemPacketType](_paramExtractionFuncTable[packetWrapper.SystemPacketType](packetWrapper));
+
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message);
+        }
     }
     public FlatBufferPacketRouter(ILogger<FlatBufferPacketRouter> logger)
     {
@@ -38,9 +49,9 @@ public class FlatBufferPacketRouter : IPacketRouter
             }
         }
     }
-    public void BuildPacketHandlerFunctions<CustomPackerHandlerType>(CustomPackerHandlerType handler) where CustomPackerHandlerType : ICustomPacketHandler
+    public void BuildPacketHandlerFunctions<PacketHandlerType>(PacketHandlerType handler) where PacketHandlerType : ISystemPacketHandler
     {
-        foreach (MethodInfo method in typeof(CustomPackerHandlerType).GetMethods())
+        foreach (MethodInfo method in typeof(PacketHandlerType).GetMethods())
         {
             PacketHandlerAttribute? attr = method.GetCustomAttribute<PacketHandlerAttribute>();
             if (attr != null)
@@ -52,6 +63,7 @@ public class FlatBufferPacketRouter : IPacketRouter
                 }
             }
         }
+       
     }
 
     public void Execute(object packet)

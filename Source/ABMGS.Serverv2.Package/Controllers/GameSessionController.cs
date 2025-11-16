@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 namespace SyncnetPlatform.Controllers;
 
 [ApiController]
+[Route("/ws")]
 public class GameSessionController : ControllerBase
 {
     private readonly ILogger<GameSessionController> _logger;
@@ -25,7 +26,7 @@ public class GameSessionController : ControllerBase
 
     [ProducesResponseType(StatusCodes.Status203NonAuthoritative)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [HttpGet("/alive")]
+    [HttpGet("alive")]
     public IActionResult Authenticate()
     {
         return Ok();
@@ -34,7 +35,7 @@ public class GameSessionController : ControllerBase
 
 
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [HttpGet("/gamesession")]
+    [HttpGet("gamesession")]
     public async Task GameSession()
     {
 
