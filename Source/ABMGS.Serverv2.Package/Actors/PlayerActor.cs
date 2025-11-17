@@ -82,6 +82,14 @@ public class PlayerActor : Grain, IPlayerActor
 {
     private readonly ILogger<PlayerActor> _logger;
 
+    [GameSpecificProperty]
+    private string name;
+    [GameSpecificProperty]
+    private string displayName;
+    [GameSpecificProperty]
+    private int _level;
+    [GameSpecificProperty]
+    private double _exp;
 
     public PlayerActor(ILogger<PlayerActor> logger)
     {
