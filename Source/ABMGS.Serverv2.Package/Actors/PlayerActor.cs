@@ -6,6 +6,7 @@ using SyncnetPlatform.Network.Attributes;
 using SyncnetPlatform.Network.Handlers;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Protocols.Generated;
+using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Runtime.CompilerServices;
 
@@ -15,16 +16,19 @@ namespace SyncnetPlatform.Actors;
 
 public interface IPacketHandler : IGrainWithGuidKey
 {
-
+    Task InvokeHandler(byte[] data);
+    Task PushRecievedData(byte[] Data);
 }
 
 public class PacketHandlingActor : IPacketHandler
 {
     private readonly FlatBufferPacketRouter _routeTable;
     private readonly ILogger<PacketHandlingActor> _logger;
+    private readonly ConcurrentQueue<byte[]> _receiveQueue;
     public PacketHandlingActor(ILogger<PacketHandlingActor> logger, FlatBufferPacketRouter routeTable)
     {
         _logger = logger;
+        _receiveQueue = new ConcurrentQueue<byte[]>();
 
         //PacketWrapper packet = PacketWrapper.GetRootAsPacketWrapper(BuildDummyPacket());
         _routeTable = routeTable;
@@ -32,9 +36,14 @@ public class PacketHandlingActor : IPacketHandler
         _routeTable.BuildPacketHandlerFunctions<PacketHandlingActor>(this);
     }
 
-    public void InvokeHandler(byte[] data)
+    public async Task InvokeHandler(byte[] data)
     {
         _routeTable.Execute(PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data)));
+    }
+
+    public async Task PushRecievedData(byte[] Data)
+    {
+        _receiveQueue.Enqueue(Data);
     }
 
     [PacketHandler(typeof(Dummy))]
@@ -85,10 +94,7 @@ public class PlayerActor : Grain, IPlayerActor
         
     }
 
-    public async Task PushRecievedData(byte[] Data)
-    {
-
-    }
+    
 
     public async Task Echo(int seq)
     {
