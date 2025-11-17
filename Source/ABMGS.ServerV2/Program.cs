@@ -23,15 +23,7 @@ builder.AddServiceDefaults();
 builder.UseSyncnetPlatform();
 //builder.AddCustomPacketHandler<CustomPacketHandler>();
 
-// Orleans Configuration
-builder.UseOrleans( builder => {
-    //builder.UseRedisClustering(options =>
-    //{
-    //    options.ConfigurationOptions = ConfigurationOptions.Parse(
-    //        builder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
-    //});
-    builder.UseLocalhostClustering();
-});
+
 
 var app = builder.Build();
 
