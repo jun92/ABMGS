@@ -1,7 +1,6 @@
-﻿
-namespace SyncnetPlatform.Actors
+
+namespace SyncnetPlatform.Actors;
+
+public class GameSpecificPropertyAttribute : Attribute
 {
-    internal class GameSpecificPropertyAttribute : Attribute
-    {
-    }
 }
