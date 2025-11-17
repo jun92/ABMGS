@@ -1,12 +1,13 @@
-using System.Net.WebSockets;
-using Microsoft.Extensions.Logging;
 using Google.FlatBuffers;
+using Microsoft.Extensions.Logging;
+using SyncnetPlatform.Actors;
+using SyncnetPlatform.Interfaces.Actors.Player;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Sessions;
+using SyncnetPlatform.Network.Handlers;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Protocols.Generated;
-using SyncnetPlatform.Network.Handlers;
-using SyncnetPlatform.Interfaces.Actors.Player;
+using System.Net.WebSockets;
 
 
 namespace SyncnetPlatform.Network.Sessions;
@@ -57,7 +58,7 @@ public class GameSessionService : Grain, IGameSessionService
         // Let the handlers know who is dealing with.
         //await _systemPacketHandler.BindPlayer(uniquePlayerId, SocketObject);
         //_customPacketHandler.BindPlayer(uniquePlayerId);
-        IPlayerActor playerActor = _clusterClient.GetGrain<IPlayerActor>(uniquePlayerId);
+        PacketHandlingActor packetHandlingActor = _clusterClient.GetGrain<PacketHandlingActor>(uniquePlayerId);
 
         bool IsGameLoopValid = true;
 
@@ -77,7 +78,7 @@ public class GameSessionService : Grain, IGameSessionService
                         break;
                     }
                 }
-                playerActor.PushReceivedData(await NBuf.Read());
+                await packetHandlingActor.PushRecievedData(await NBuf.Read());
                 // _routeTable.Execute(PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(await NBuf.Read())));
             }
         }
