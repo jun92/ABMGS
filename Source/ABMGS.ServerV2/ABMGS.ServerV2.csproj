@@ -8,18 +8,26 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Attributes\**" />
+    <Compile Remove="DTOs\**" />
+    <Compile Remove="SyncnetPlatform\**" />
+    <Content Remove="Attributes\**" />
+    <Content Remove="DTOs\**" />
+    <Content Remove="SyncnetPlatform\**" />
+    <EmbeddedResource Remove="Attributes\**" />
+    <EmbeddedResource Remove="DTOs\**" />
+    <EmbeddedResource Remove="SyncnetPlatform\**" />
+    <None Remove="Attributes\**" />
+    <None Remove="DTOs\**" />
+    <None Remove="SyncnetPlatform\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Google.FlatBuffers" Version="25.2.10" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.10" />
     <PackageReference Include="Microsoft.Orleans.Clustering.Redis" Version="9.2.1" />
     <PackageReference Include="Microsoft.Orleans.Server" Version="9.2.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Attributes\" />
-    <Folder Include="DTOs\Sources\FlatBuffer\SyncnetPlatform\Dto\" />
-    <Folder Include="DTOs\Sources\Json\SyncnetPlatform\Dto\" />
-    <Folder Include="SyncnetPlatform\Protocols\" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using SyncnetPlatform.Network.Handlers;
@@ -16,10 +17,20 @@ public static class WebApplicationBuilderExtension
         builder.Services.AddTransient<SystemPacketHandler>();
         builder.Services.AddTransient<FlatBufferPacketRouter>();
         builder.Services.AddTransient<ICustomPacketHandler, CustomPacketHandler>();
+
+        // Orleans Configuration
+        builder.UseOrleans(builder => {
+            //builder.UseRedisClustering(options =>
+            //{
+            //    options.ConfigurationOptions = ConfigurationOptions.Parse(
+            //        builder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
+            //});
+            builder.UseLocalhostClustering();
+        });
     }
 
     public static void AddCustomPacketHandler<CustomHandlerType>(this WebApplicationBuilder builder) where CustomHandlerType: ICustomPacketHandler
     {
-       // builder.Services.AddTransient(typeof(CustomHandlerType));
+       
     }
 }

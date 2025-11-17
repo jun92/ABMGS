@@ -1,4 +1,6 @@
+using Google.FlatBuffers;
 using Microsoft.Extensions.Logging;
+using SyncnetPlatform.Actors;
 using SyncnetPlatform.Enums;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Utils;
@@ -44,12 +46,26 @@ public class FlatBufferPacketRouter : IPacketRouter
                 if(Enum.TryParse(method.ReturnType.Name, out SystemPacket packetType))
                 {
                     _paramExtractionFuncTable[packetType] = FunctionBuilder.BuildFunctionWithReturnType<PacketWrapper>(method);
-                    _logger.LogInformation($"Found and stored the function for getting type of {packetType.ToString()}");
+                    _logger.LogTrace($"Found and stored the function for getting type of {packetType.ToString()}");
                 }
             }
         }
     }
-    public void BuildPacketHandlerFunctions<PacketHandlerType>(PacketHandlerType handler) where PacketHandlerType : ISystemPacketHandler
+    public void BuildParamExtractionFuncs<PacketWrapperType>() where PacketWrapperType : IFlatbufferObject
+    {
+        foreach (MethodInfo method in typeof(PacketWrapper).GetMethods())
+        {
+            if (method.Name.StartsWith(PacketSuffix.SystemPacket.ToString()))
+            {
+                if (Enum.TryParse(method.ReturnType.Name, out SystemPacket packetType))
+                {
+                    _paramExtractionFuncTable[packetType] = FunctionBuilder.BuildFunctionWithReturnType<PacketWrapper>(method);
+                    _logger.LogTrace($"Found and stored the function for getting type of {packetType.ToString()}");
+                }
+            }
+        }
+    }
+    public void BuildPacketHandlerFunctions<PacketHandlerType>(PacketHandlerType handler) where PacketHandlerType : IPacketHandler
     {
         foreach (MethodInfo method in typeof(PacketHandlerType).GetMethods())
         {

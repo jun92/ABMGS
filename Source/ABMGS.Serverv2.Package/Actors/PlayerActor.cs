@@ -1,9 +1,69 @@
-using System.Net.WebSockets;
+using Google.FlatBuffers;
 using Microsoft.Extensions.Logging;
 using SyncnetPlatform.Interfaces.Actors.Player;
+using SyncnetPlatform.Interfaces.Network.Handlers;
+using SyncnetPlatform.Network.Attributes;
+using SyncnetPlatform.Network.Handlers;
 using SyncnetPlatform.Network.Utils;
+using SyncnetPlatform.Protocols.Generated;
+using System.Net.WebSockets;
+using System.Runtime.CompilerServices;
 
 namespace SyncnetPlatform.Actors;
+
+
+
+public interface IPacketHandler : IGrainWithGuidKey
+{
+
+}
+
+public class PacketHandlingActor : IPacketHandler
+{
+    private readonly FlatBufferPacketRouter _routeTable;
+    private readonly ILogger<PacketHandlingActor> _logger;
+    public PacketHandlingActor(ILogger<PacketHandlingActor> logger, FlatBufferPacketRouter routeTable)
+    {
+        _logger = logger;
+
+        //PacketWrapper packet = PacketWrapper.GetRootAsPacketWrapper(BuildDummyPacket());
+        _routeTable = routeTable;
+        _routeTable.BuildParamExtractionFuncs<PacketWrapper>();
+        _routeTable.BuildPacketHandlerFunctions<PacketHandlingActor>(this);
+    }
+
+    public void InvokeHandler(byte[] data)
+    {
+        _routeTable.Execute(PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data)));
+    }
+
+    [PacketHandler(typeof(Dummy))]
+    public async Task HandleDummpy(Dummy dummpy)
+    {
+        _logger.LogError("Dummy packet received. Are you dummy?");
+    }
+
+
+    [PacketHandler(typeof(Ping))]
+    public async Task HandlePing(Ping request)
+    {
+        _logger.LogInformation($"HandlePing, Seq is {request.Seq}");
+    }
+    [PacketHandler(typeof(Pong))]
+    public async Task HandlePong(Pong request)
+    {
+        _logger.LogError("This should not be called.");
+    }
+    //protected ByteBuffer BuildDummyPacket()
+    //{
+    //    FlatBufferBuilder flatBufferBuilder = new FlatBufferBuilder(1024);
+    //    Offset<Dummy> dummy = Dummy.CreateDummy(flatBufferBuilder, 0);
+    //    Offset<PacketWrapper> wrapper = PacketWrapper.CreatePacketWrapper(flatBufferBuilder, SystemPacket.Dummy, dummy.Value);
+    //    flatBufferBuilder.Finish(wrapper.Value);
+    //    return flatBufferBuilder.DataBuffer;
+    //}
+}
+
 
 /// <summary>
 /// 세션에 연결되어 있는 플레이어의 모든 엔티티를 가지고 있는 상위 그레인,
@@ -12,33 +72,27 @@ namespace SyncnetPlatform.Actors;
 public class PlayerActor : Grain, IPlayerActor
 {
     private readonly ILogger<PlayerActor> _logger;
-    private WebSocket? _webSocket;
+
 
     public PlayerActor(ILogger<PlayerActor> logger)
     {
         _logger = logger;
-        _webSocket = null;
-    }
-    public async Task Initialize(WebSocket webSocket)
-    {
-        _webSocket = webSocket;
+
     }
 
+    public async override Task OnActivateAsync(CancellationToken cancellationToken)
+    {
+        
+    }
+
+    public async Task PushRecievedData(byte[] Data)
+    {
+
+    }
 
     public async Task Echo(int seq)
     {
-        if (_webSocket != null)
-        {
-            await _webSocket.SendAsync(
-                new ArraySegment<byte>(SyncnetPacketBuilder.Build<PongArgs>(new PongArgs(seq + 1))), 
-                WebSocketMessageType.Binary, 
-                true, 
-                CancellationToken.None);
-        }
-        else
-        {
-            _logger.LogError($"{nameof(Echo)} was called without valid WebSocket handle");
-        }
+        
     }
 
 }

@@ -18,7 +18,6 @@ public class SystemPacketHandler : PacketHandlerBase, ISystemPacketHandler
     {
         _playerId = playerId;
         IPlayerActor player = GetPlayer(_playerId);
-        await player.Initialize(webSocket);
     }
 
     [PacketHandler(typeof(Dummy))]
