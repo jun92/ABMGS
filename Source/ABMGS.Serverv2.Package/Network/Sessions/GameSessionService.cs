@@ -32,24 +32,7 @@ public class GameSessionService : Grain, IGameSessionService
         _routeTable = routeTable;
         _customPacketHandler = customPacketHandler;
         _systemPacketHandler = systemPacketHandler;
-        Initialize();
     }
-
-    public void Initialize()
-    {
-        //PacketWrapper packet = PacketWrapper.GetRootAsPacketWrapper(BuildDummyPacket());
-        //_routeTable.BuildParamExtractionFuncs(packet);
-        //_routeTable.BuildPacketHandlerFunctions<SystemPacketHandler>(_systemPacketHandler);
-        
-    }
-    //protected ByteBuffer BuildDummyPacket()
-    //{
-    //    FlatBufferBuilder flatBufferBuilder = new FlatBufferBuilder(1024);
-    //    Offset<Dummy> dummy = Dummy.CreateDummy(flatBufferBuilder, 0);
-    //    Offset<PacketWrapper> wrapper = PacketWrapper.CreatePacketWrapper(flatBufferBuilder, SystemPacket.Dummy, dummy.Value);
-    //    flatBufferBuilder.Finish(wrapper.Value);
-    //    return flatBufferBuilder.DataBuffer;
-    //}
 
     public async Task StartGameSession(Guid uniquePlayerId, WebSocket SocketObject, CancellationToken abnormalExitToken)
     {

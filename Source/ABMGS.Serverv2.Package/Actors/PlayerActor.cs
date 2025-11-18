@@ -31,18 +31,18 @@ public class PacketHandlingActor : IPacketHandler, IPacketObserver
     private readonly FlatBufferPacketRouter _routeTable;
     private readonly ILogger<PacketHandlingActor> _logger;
     private readonly ConcurrentQueue<byte[]> _receiveQueue;
+    private readonly ConcurrentQueue<byte[]> _sendQueue;
     private readonly ObserverManager<IPacketObserver> _packetObserverManager;
     public PacketHandlingActor(ILogger<PacketHandlingActor> logger, FlatBufferPacketRouter routeTable)
     {
         _logger = logger;
         _receiveQueue = new ConcurrentQueue<byte[]>();
 
-        //PacketWrapper packet = PacketWrapper.GetRootAsPacketWrapper(BuildDummyPacket());
         _routeTable = routeTable;
         _routeTable.BuildParamExtractionFuncs<PacketWrapper>();
         _routeTable.BuildPacketHandlerFunctions<PacketHandlingActor>(this);
 
-        _packetObserverManager = new ObserverManager<IPacketObserver>(TimeSpan.FromSeconds(5), _logger);
+        _packetObserverManager = new ObserverManager<IPacketObserver>(TimeSpan.FromDays(1), _logger);
         _packetObserverManager.Subscribe(this, this);
     }
 
@@ -78,6 +78,12 @@ public class PacketHandlingActor : IPacketHandler, IPacketObserver
     public async Task HandlePing(Ping request)
     {
         _logger.LogInformation($"HandlePing, Seq is {request.Seq}");
+
+        //new PongArgs(Seq+1)
+        byte[] SendBackData = SyncnetPacketBuilder.Build(new PongArgs(request.Seq + 1));
+        _sendQueue.Enqueue(SendBackData);
+
+
     }
     [PacketHandler(typeof(Pong))]
     public async Task HandlePong(Pong request)
