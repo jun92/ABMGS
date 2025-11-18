@@ -58,7 +58,7 @@ public class GameSessionService : Grain, IGameSessionService
         // Let the handlers know who is dealing with.
         //await _systemPacketHandler.BindPlayer(uniquePlayerId, SocketObject);
         //_customPacketHandler.BindPlayer(uniquePlayerId);
-        PacketHandlingActor packetHandlingActor = _clusterClient.GetGrain<PacketHandlingActor>(uniquePlayerId);
+        IPacketHandler packetHandlingActor = _clusterClient.GetGrain<IPacketHandler>(uniquePlayerId);
 
         bool IsGameLoopValid = true;
 
