@@ -16,6 +16,7 @@ public static class WebApplicationBuilderExtension
         builder.Services.AddTransient<IGameSessionService, GameSessionService>();
         builder.Services.AddTransient<SystemPacketHandler>();
         builder.Services.AddTransient<FlatBufferPacketRouter>();
+        builder.Services.AddSingleton<SendQueueService>();
         builder.Services.AddTransient<ICustomPacketHandler, CustomPacketHandler>();
 
         // Orleans Configuration
