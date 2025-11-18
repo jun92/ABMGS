@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Orleans.Utilities;
 using SyncnetPlatform.Interfaces.Actors.Player;
 using SyncnetPlatform.Interfaces.Network.Handlers;
+using SyncnetPlatform.Interfaces.Network.Utils;
 using SyncnetPlatform.Network.Attributes;
 using SyncnetPlatform.Network.Handlers;
 using SyncnetPlatform.Network.Sessions;
@@ -29,29 +30,26 @@ public interface IPacketObserver : IGrainObserver
 
 public class PacketHandlingActor : Grain, IPacketHandler, IPacketObserver
 {
-    private readonly FlatBufferPacketRouter _routeTable;
+    private readonly IPacketRouter _routeTable;
     private readonly ILogger<PacketHandlingActor> _logger;
     private readonly ConcurrentQueue<byte[]> _receiveQueue;
     private readonly ConcurrentQueue<byte[]> _sendQueue;
-    private readonly ObserverManager<IPacketObserver> _packetObserverManager;
-    public PacketHandlingActor(ILogger<PacketHandlingActor> logger, FlatBufferPacketRouter routeTable)
+    private ObserverManager<IPacketObserver>? _packetObserverManager;
+    public PacketHandlingActor(ILogger<PacketHandlingActor> logger, IPacketRouter routeTable)
     {
         _logger = logger;
+        _routeTable = routeTable;
         _receiveQueue = new ConcurrentQueue<byte[]>();
         _sendQueue = new ConcurrentQueue<byte[]>();
-
-        _routeTable = routeTable;
-        _routeTable.BuildParamExtractionFuncs<PacketWrapper>();
-        _routeTable.BuildPacketHandlerFunctions<PacketHandlingActor>(this);
-        _packetObserverManager = new ObserverManager<IPacketObserver>(TimeSpan.FromDays(1), _logger);
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
+        _packetObserverManager = new ObserverManager<IPacketObserver>(TimeSpan.FromDays(1), _logger);
         _packetObserverManager.Subscribe(this, this);
+        _routeTable.BuildParamExtractionFuncs<PacketWrapper>();
+        _routeTable.BuildPacketHandlerFunctions<PacketHandlingActor>(this);
     }
-    
-
     public async Task InvokeHandler(byte[] data)
     {
         _routeTable.Execute(PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data)));

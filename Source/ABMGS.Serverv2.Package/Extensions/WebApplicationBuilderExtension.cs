@@ -8,6 +8,7 @@ using StackExchange.Redis;
 using SyncnetPlatform.Actors;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Sessions;
+using SyncnetPlatform.Interfaces.Network.Utils;
 using SyncnetPlatform.Network.Handlers;
 using SyncnetPlatform.Network.Sessions;
 using SyncnetPlatform.Network.Utils;
@@ -20,7 +21,7 @@ public static class WebApplicationBuilderExtension
     {
         builder.Services.AddTransient<IGameSessionService, GameSessionService>();
         builder.Services.AddTransient<SystemPacketHandler>();
-        builder.Services.AddTransient<FlatBufferPacketRouter>();
+        builder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
         builder.Services.AddSingleton<SendQueueService>();
         builder.Services.AddTransient<ICustomPacketHandler, CustomPacketHandler>();
         builder.UseOrleansClient(configure =>
@@ -49,6 +50,8 @@ public static class HostApplicationBuilderExtension
 {
     public static void UseSyncnetPlatform(this HostApplicationBuilder appBuilder)
     {
+        appBuilder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
+
         appBuilder.UseOrleans(builder =>
         {
             builder.Configure<ClusterOptions>(options =>
