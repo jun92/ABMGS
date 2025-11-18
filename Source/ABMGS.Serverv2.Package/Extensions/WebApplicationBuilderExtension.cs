@@ -1,6 +1,10 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Orleans.Configuration;
+using Orleans.Hosting;
+using StackExchange.Redis;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using SyncnetPlatform.Network.Handlers;
@@ -18,20 +22,44 @@ public static class WebApplicationBuilderExtension
         builder.Services.AddTransient<FlatBufferPacketRouter>();
         builder.Services.AddSingleton<SendQueueService>();
         builder.Services.AddTransient<ICustomPacketHandler, CustomPacketHandler>();
-
-        // Orleans Configuration
-        builder.UseOrleans(builder => {
-            //builder.UseRedisClustering(options =>
-            //{
-            //    options.ConfigurationOptions = ConfigurationOptions.Parse(
-            //        builder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
-            //});
-            builder.UseLocalhostClustering();
+        builder.UseOrleansClient(configure =>
+        {
+            configure.Configure<ClusterOptions>(options =>
+            {
+                options.ClusterId = "SyncnetPlatformCluster";
+                options.ServiceId = "SyncnetPlatformService";
+            });
+            configure.UseRedisClustering(options =>
+            {
+                options.ConfigurationOptions = ConfigurationOptions.Parse(
+                    builder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
+            });
         });
+        
     }
 
     public static void AddCustomPacketHandler<CustomHandlerType>(this WebApplicationBuilder builder) where CustomHandlerType: ICustomPacketHandler
     {
        
+    }
+}
+
+public static class HostApplicationBuilderExtension
+{
+    public static void UseSyncnetPlatform(this HostApplicationBuilder appBuilder)
+    {
+        appBuilder.UseOrleans(builder =>
+        {
+            builder.Configure<ClusterOptions>(options =>
+            {
+                options.ClusterId = "SyncnetPlatformCluster";
+                options.ServiceId = "SyncnetPlatformService";
+            });
+            builder.UseRedisClustering(options =>
+            {
+                options.ConfigurationOptions = ConfigurationOptions.Parse(
+                    appBuilder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
+            });
+        });
     }
 }
