@@ -22,7 +22,8 @@ public static class WebApplicationBuilderExtension
         builder.Services.AddTransient<IGameSessionService, GameSessionService>();
         builder.Services.AddTransient<SystemPacketHandler>();
         builder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
-        builder.Services.AddSingleton<SendQueueService>();
+        builder.Services.AddSingleton<ISendQueueService, SendQueueService>();
+        builder.Services.AddHostedService(sp => (SendQueueService)sp.GetRequiredService<ISendQueueService>());
         builder.Services.AddTransient<ICustomPacketHandler, CustomPacketHandler>();
         builder.UseOrleansClient(configure =>
         {
