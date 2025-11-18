@@ -1,5 +1,6 @@
 using Google.FlatBuffers;
 using Microsoft.Extensions.Logging;
+using Orleans.Utilities;
 using SyncnetPlatform.Interfaces.Actors.Player;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Network.Attributes;
@@ -20,11 +21,17 @@ public interface IPacketHandler : IGrainWithGuidKey
     Task PushRecievedData(byte[] Data);
 }
 
-public class PacketHandlingActor : IPacketHandler
+public interface IPacketObserver : IGrainObserver
+{
+    Task NewPacketArrived();
+}
+
+public class PacketHandlingActor : IPacketHandler, IPacketObserver
 {
     private readonly FlatBufferPacketRouter _routeTable;
     private readonly ILogger<PacketHandlingActor> _logger;
     private readonly ConcurrentQueue<byte[]> _receiveQueue;
+    private readonly ObserverManager<IPacketObserver> _packetObserverManager;
     public PacketHandlingActor(ILogger<PacketHandlingActor> logger, FlatBufferPacketRouter routeTable)
     {
         _logger = logger;
@@ -34,6 +41,9 @@ public class PacketHandlingActor : IPacketHandler
         _routeTable = routeTable;
         _routeTable.BuildParamExtractionFuncs<PacketWrapper>();
         _routeTable.BuildPacketHandlerFunctions<PacketHandlingActor>(this);
+
+        _packetObserverManager = new ObserverManager<IPacketObserver>(TimeSpan.FromSeconds(5), _logger);
+        _packetObserverManager.Subscribe(this, this);
     }
 
     public async Task InvokeHandler(byte[] data)
@@ -44,6 +54,17 @@ public class PacketHandlingActor : IPacketHandler
     public async Task PushRecievedData(byte[] Data)
     {
         _receiveQueue.Enqueue(Data);
+        await _packetObserverManager.Notify(s => s.NewPacketArrived());
+    }
+    public async Task NewPacketArrived()
+    {
+        if(_receiveQueue.TryDequeue(out byte[]? newDataArrived))
+        {
+            if(newDataArrived != null)
+            {
+                await InvokeHandler(newDataArrived);
+            }
+        }
     }
 
     [PacketHandler(typeof(Dummy))]
@@ -63,14 +84,7 @@ public class PacketHandlingActor : IPacketHandler
     {
         _logger.LogError("This should not be called.");
     }
-    //protected ByteBuffer BuildDummyPacket()
-    //{
-    //    FlatBufferBuilder flatBufferBuilder = new FlatBufferBuilder(1024);
-    //    Offset<Dummy> dummy = Dummy.CreateDummy(flatBufferBuilder, 0);
-    //    Offset<PacketWrapper> wrapper = PacketWrapper.CreatePacketWrapper(flatBufferBuilder, SystemPacket.Dummy, dummy.Value);
-    //    flatBufferBuilder.Finish(wrapper.Value);
-    //    return flatBufferBuilder.DataBuffer;
-    //}
+
 }
 
 
@@ -82,14 +96,14 @@ public class PlayerActor : Grain, IPlayerActor
 {
     private readonly ILogger<PlayerActor> _logger;
 
-    [GameSpecificProperty]
-    private string name;
-    [GameSpecificProperty]
-    private string displayName;
-    [GameSpecificProperty]
-    private int _level;
-    [GameSpecificProperty]
-    private double _exp;
+    //[GameSpecificProperty]
+    //private string name;
+    //[GameSpecificProperty]
+    //private string displayName;
+    //[GameSpecificProperty]
+    //private int _level;
+    //[GameSpecificProperty]
+    //private double _exp;
 
     public PlayerActor(ILogger<PlayerActor> logger)
     {
