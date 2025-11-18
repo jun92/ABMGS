@@ -49,6 +49,7 @@ public class PacketHandlingActor : Grain, IPacketHandler, IPacketObserver
         _packetObserverManager.Subscribe(this, this);
         _routeTable.BuildParamExtractionFuncs<PacketWrapper>();
         _routeTable.BuildPacketHandlerFunctions<PacketHandlingActor>(this);
+        
     }
     public async Task InvokeHandler(byte[] data)
     {
@@ -86,7 +87,7 @@ public class PacketHandlingActor : Grain, IPacketHandler, IPacketObserver
         //new PongArgs(Seq+1)
         byte[] SendBackData = SyncnetPacketBuilder.Build(new PongArgs(request.Seq + 1));
 
-        SendDataGrain sendDataGrain = GrainFactory.GetGrain<SendDataGrain>(this.GetGrainId().GetGuidKey());
+        ISendDataGrain sendDataGrain = GrainFactory.GetGrain<ISendDataGrain>(this.GetGrainId().GetGuidKey());
         await sendDataGrain.Send(this.GetGrainId().GetGuidKey(), SendBackData);
     }
     [PacketHandler(typeof(Pong))]

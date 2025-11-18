@@ -62,7 +62,12 @@ public class SendDataGrain : Grain, ISendDataGrain
         }
     }
 }
-public class SendQueueService : BackgroundService, ISendDataObserver
+
+public interface ISendQueueService
+{
+    Task Register(Guid playerId, WebSocket webSocket);
+}
+public class SendQueueService : BackgroundService, ISendDataObserver, ISendQueueService
 {
     private record SendQueueEntity(Guid PlayerId, byte[] SendData);
     private readonly ILogger<SendQueueService> _logger;
@@ -139,14 +144,14 @@ public class GameSessionService : IGameSessionService
 {
     private readonly ILogger<GameSessionService> _logger;
     private readonly IClusterClient _clusterClient;
-    private readonly SendQueueService _sendQueue;
+    private readonly ISendQueueService _sendQueue;
     private readonly ICustomPacketHandler _customPacketHandler;
     private readonly SystemPacketHandler _systemPacketHandler;
 
     public GameSessionService(
         ILogger<GameSessionService> logger, 
-        IClusterClient clusterClient, 
-        SendQueueService sendQueue,
+        IClusterClient clusterClient,
+        ISendQueueService sendQueue,
         ICustomPacketHandler customPacketHandler,
         SystemPacketHandler systemPacketHandler)
     {
