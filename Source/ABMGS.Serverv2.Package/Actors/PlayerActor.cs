@@ -5,6 +5,7 @@ using SyncnetPlatform.Interfaces.Actors.Player;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Network.Attributes;
 using SyncnetPlatform.Network.Handlers;
+using SyncnetPlatform.Network.Sessions;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Protocols.Generated;
 using System.Collections.Concurrent;
@@ -26,7 +27,7 @@ public interface IPacketObserver : IGrainObserver
     Task NewPacketArrived();
 }
 
-public class PacketHandlingActor : IPacketHandler, IPacketObserver
+public class PacketHandlingActor : Grain, IPacketHandler, IPacketObserver
 {
     private readonly FlatBufferPacketRouter _routeTable;
     private readonly ILogger<PacketHandlingActor> _logger;
@@ -37,6 +38,7 @@ public class PacketHandlingActor : IPacketHandler, IPacketObserver
     {
         _logger = logger;
         _receiveQueue = new ConcurrentQueue<byte[]>();
+        _sendQueue = new ConcurrentQueue<byte[]>();
 
         _routeTable = routeTable;
         _routeTable.BuildParamExtractionFuncs<PacketWrapper>();
@@ -81,9 +83,9 @@ public class PacketHandlingActor : IPacketHandler, IPacketObserver
 
         //new PongArgs(Seq+1)
         byte[] SendBackData = SyncnetPacketBuilder.Build(new PongArgs(request.Seq + 1));
-        _sendQueue.Enqueue(SendBackData);
 
-
+        SendDataGrain sendDataGrain = GrainFactory.GetGrain<SendDataGrain>(this.GetGrainId().GetGuidKey());
+        await sendDataGrain.Send(this.GetGrainId().GetGuidKey(), SendBackData);
     }
     [PacketHandler(typeof(Pong))]
     public async Task HandlePong(Pong request)
