@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="appsettings.Development.json" />
+    <None Remove="appsettings.json" />
+  </ItemGroup>
+<ItemGroup>
+	<PackageReference Include="Microsoft.Orleans.Clustering.Redis" Version="9.2.1" />
+	<PackageReference Include="Microsoft.Orleans.Server" Version="9.2.1" />
+</ItemGroup>
+<ItemGroup>
+  <Page Include="appsettings.Development.json" />
+  <Page Include="appsettings.json" />
+</ItemGroup>
+<ItemGroup>
+  <ProjectReference Include="..\ABMGS.Serverv2.Package\ABMGS.Serverv2.Package.csproj" />
+</ItemGroup>
+<ItemGroup>
+	<Compile Update="appsettings.Development.json">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Compile>
+	<Compile Update="appsettings.json">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</Compile>
+</ItemGroup>
+<ItemGroup>
+  <None Update="Properties\launchSettings.json">
+    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+  </None>
+</ItemGroup>
+
+</Project>

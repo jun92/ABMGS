@@ -8,15 +8,19 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Orleans.Clustering.Redis;
 using Orleans.Configuration;
+
 using Orleans.Services;
 using StackExchange.Redis;
+using SyncnetPlatform.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddApplicationPart(typeof(GameSessionController).Assembly);
+builder.Services.AddHealthChecks();
 builder.AddServiceDefaults();
 
 // SyncnetPlatform Actors
@@ -33,8 +37,9 @@ if (app.Environment.IsDevelopment())
 app.UseRouting();
 app.MapDefaultEndpoints();
 app.MapControllers();
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 app.UseWebSockets();
+app.UseHealthChecks("/health");
 
 await app.RunAsync();
 

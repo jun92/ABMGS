@@ -39,36 +39,36 @@ public class TestMain
         var response = await httpClient.GetAsync("/ws/alive");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        //var wsUri = new UriBuilder(httpClient.BaseAddress!)
-        //{
-        //    Scheme = httpClient.BaseAddress!.Scheme == "https" ? "wss" : "ws",
-        //    Path = "/ws/gamesession"
-        //}.Uri;
+        var wsUri = new UriBuilder(httpClient.BaseAddress!)
+        {
+            Scheme = httpClient.BaseAddress!.Scheme == "https" ? "wss" : "ws",
+            Path = "/ws/gamesession"
+        }.Uri;
 
 
-        //byte[] dataToSend = SyncnetPacketBuilder.Build<PingArgs>(new PingArgs(1));
-        //PacketWrapper verifyPacket = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(dataToSend));
-        //Assert.Equal(SystemPacket.Ping, verifyPacket.SystemPacketType);
+        byte[] dataToSend = SyncnetPacketBuilder.Build<PingArgs>(new PingArgs(1));
+        PacketWrapper verifyPacket = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(dataToSend));
+        Assert.Equal(SystemPacket.Ping, verifyPacket.SystemPacketType);
 
-        //var wsClient = new ClientWebSocket();
-        //await wsClient.ConnectAsync(wsUri, CancellationToken.None);
+        var wsClient = new ClientWebSocket();
+        await wsClient.ConnectAsync(wsUri, CancellationToken.None);
 
-        //Assert.Equal(WebSocketState.Open, wsClient.State);
+        Assert.Equal(WebSocketState.Open, wsClient.State);
 
 
-        //await wsClient.SendAsync(new ArraySegment<byte>(dataToSend), WebSocketMessageType.Binary, true, CancellationToken.None);
-        
-        //ArraySegment<byte> receiveBuffer = new ArraySegment<byte>();
-        //WebSocketReceiveResult result = await wsClient.ReceiveAsync(receiveBuffer, CancellationToken.None);
-        //_output.WriteLine($"Count: {result.Count}");
-        //Assert.True(result.EndOfMessage);
-        //Assert.NotEqual(0, result.Count);
+        await wsClient.SendAsync(new ArraySegment<byte>(dataToSend), WebSocketMessageType.Binary, true, CancellationToken.None);
 
-        //PacketWrapper packetWrapper = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(receiveBuffer.ToArray()));
+        ArraySegment<byte> receiveBuffer = new ArraySegment<byte>();
+        WebSocketReceiveResult result = await wsClient.ReceiveAsync(receiveBuffer, CancellationToken.None);
+        _output.WriteLine($"Count: {result.Count}");
+        Assert.True(result.EndOfMessage);
+        Assert.NotEqual(0, result.Count);
 
-        //Assert.Equal(SystemPacket.Pong, packetWrapper.SystemPacketType);
-        //Assert.Equal(2, packetWrapper.SystemPacketAsPong().Seq);
+        PacketWrapper packetWrapper = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(receiveBuffer.ToArray()));
 
-        //await wsClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "Good Bye",CancellationToken.None);
+        Assert.Equal(SystemPacket.Pong, packetWrapper.SystemPacketType);
+        Assert.Equal(2, packetWrapper.SystemPacketAsPong().Seq);
+
+        await wsClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "Good Bye", CancellationToken.None);
     }
 }

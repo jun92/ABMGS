@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ABMGS.ServerV2.Silo\ABMGS.ServerV2.Silo.csproj" />
     <ProjectReference Include="..\ABMGS.ServerV2\ABMGS.ServerV2.csproj" />
   </ItemGroup>
 
