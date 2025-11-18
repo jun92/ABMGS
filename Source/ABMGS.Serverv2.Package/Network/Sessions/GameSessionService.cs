@@ -186,7 +186,6 @@ public class GameSessionService : IGameSessionService
                     }
                 }
                 await packetHandlingActor.PushRecievedData(await NBuf.Read());
-                // _routeTable.Execute(PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(await NBuf.Read())));
             }
         }
         await Task.CompletedTask;

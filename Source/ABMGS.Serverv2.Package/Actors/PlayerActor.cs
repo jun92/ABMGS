@@ -43,10 +43,14 @@ public class PacketHandlingActor : Grain, IPacketHandler, IPacketObserver
         _routeTable = routeTable;
         _routeTable.BuildParamExtractionFuncs<PacketWrapper>();
         _routeTable.BuildPacketHandlerFunctions<PacketHandlingActor>(this);
-
         _packetObserverManager = new ObserverManager<IPacketObserver>(TimeSpan.FromDays(1), _logger);
+    }
+
+    public override async Task OnActivateAsync(CancellationToken cancellationToken)
+    {
         _packetObserverManager.Subscribe(this, this);
     }
+    
 
     public async Task InvokeHandler(byte[] data)
     {
