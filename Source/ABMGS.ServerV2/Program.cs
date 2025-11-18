@@ -21,10 +21,6 @@ builder.AddServiceDefaults();
 
 // SyncnetPlatform Actors
 builder.UseSyncnetPlatform();
-//builder.AddCustomPacketHandler<CustomPacketHandler>();
-
-//builder.Services.AddHostedService<SendQueueService>();
-
 
 var app = builder.Build();
 
