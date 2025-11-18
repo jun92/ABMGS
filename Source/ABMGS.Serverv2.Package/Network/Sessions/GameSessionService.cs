@@ -139,8 +139,6 @@ public class GameSessionService : IGameSessionService
 {
     private readonly ILogger<GameSessionService> _logger;
     private readonly IClusterClient _clusterClient;
-    private readonly FlatBufferPacketRouter _routeTable;
-   
     private readonly SendQueueService _sendQueue;
     private readonly ICustomPacketHandler _customPacketHandler;
     private readonly SystemPacketHandler _systemPacketHandler;
@@ -150,12 +148,11 @@ public class GameSessionService : IGameSessionService
         IClusterClient clusterClient, 
         SendQueueService sendQueue,
         ICustomPacketHandler customPacketHandler,
-        SystemPacketHandler systemPacketHandler,
-        FlatBufferPacketRouter routeTable)
+        SystemPacketHandler systemPacketHandler)
     {
         _logger = logger;
         _clusterClient = clusterClient;
-        _routeTable = routeTable;
+        
         _sendQueue = sendQueue;
         _customPacketHandler = customPacketHandler;
         _systemPacketHandler = systemPacketHandler;
@@ -165,28 +162,36 @@ public class GameSessionService : IGameSessionService
     {
         ArgumentNullException.ThrowIfNull(SocketObject);
 
-        IPacketHandler packetHandlingActor = _clusterClient.GetGrain<IPacketHandler>(uniquePlayerId);
-        await _sendQueue.Register(uniquePlayerId, SocketObject);
-
-
-        //Loop to receive data from the WebSocket
-        while (!abnormalExitToken.IsCancellationRequested)
+        try
         {
-            using (NetworkBuffer NBuf = new(4096))
-            {
-                while (true)
-                {
-                    ValueWebSocketReceiveResult result = await SocketObject.ReceiveAsync(NBuf.GetReceiveBuffer(), abnormalExitToken);
-                    NBuf.AddBuffer(result.Count);
 
-                    if (result.EndOfMessage == true)
+            IPacketHandler packetHandlingActor = _clusterClient.GetGrain<IPacketHandler>(uniquePlayerId);
+            await _sendQueue.Register(uniquePlayerId, SocketObject);
+
+
+            //Loop to receive data from the WebSocket
+            while (!abnormalExitToken.IsCancellationRequested)
+            {
+                using (NetworkBuffer NBuf = new(4096))
+                {
+                    while (true)
                     {
-                        await NBuf.FinishReceived();
-                        break;
+                        ValueWebSocketReceiveResult result = await SocketObject.ReceiveAsync(NBuf.GetReceiveBuffer(), abnormalExitToken);
+                        NBuf.AddBuffer(result.Count);
+
+                        if (result.EndOfMessage == true)
+                        {
+                            await NBuf.FinishReceived();
+                            break;
+                        }
                     }
+                    await packetHandlingActor.PushRecievedData(await NBuf.Read());
                 }
-                await packetHandlingActor.PushRecievedData(await NBuf.Read());
             }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex.Message);
         }
         await Task.CompletedTask;
     }

@@ -19,18 +19,10 @@ public class FlatBufferPacketRouter : IPacketRouter
 
     public void Execute(PacketWrapper packetWrapper)
     {
-        try
-        {
-            var aa = _paramExtractionFuncTable[packetWrapper.SystemPacketType];
-            var parameters = _paramExtractionFuncTable[packetWrapper.SystemPacketType](packetWrapper);
-            _packetHandlerTable[packetWrapper.SystemPacketType](parameters);
-            // _packetHandlerTable[packetWrapper.SystemPacketType](_paramExtractionFuncTable[packetWrapper.SystemPacketType](packetWrapper));
-
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex.Message);
-        }
+        var aa = _paramExtractionFuncTable[packetWrapper.SystemPacketType];
+        var parameters = _paramExtractionFuncTable[packetWrapper.SystemPacketType](packetWrapper);
+        _packetHandlerTable[packetWrapper.SystemPacketType](parameters);
+        // _packetHandlerTable[packetWrapper.SystemPacketType](_paramExtractionFuncTable[packetWrapper.SystemPacketType](packetWrapper));
     }
     public FlatBufferPacketRouter(ILogger<FlatBufferPacketRouter> logger)
     {
