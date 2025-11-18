@@ -68,16 +68,12 @@ public class SendQueueService : BackgroundService, ISendDataObserver
     private readonly ILogger<SendQueueService> _logger;
     private readonly IDictionary<Guid, WebSocket> _managedSockets = new ConcurrentDictionary<Guid, WebSocket>();
     private readonly ConcurrentQueue<SendQueueEntity> _sendQueue = new ConcurrentQueue<SendQueueEntity>();
-
-    //private readonly IGrainFactory _grainFactory;
-    //private readonly IGrainRuntime _grainRuntime;
+    
     private readonly IClusterClient _clusterClient;
     public SendQueueService(ILogger<SendQueueService> logger, IClusterClient clusterClient)
     {
         _logger = logger;
         _clusterClient = clusterClient;
-        //_grainFactory = grainFactory;
-        //_grainRuntime = grainRuntime;
     }
 
     protected async Task RegisterSocket(Guid playerId, WebSocket webSocket)
@@ -137,15 +133,6 @@ public class SendQueueService : BackgroundService, ISendDataObserver
     {
         Push(playerId,data);
     }
-
-    //public async Task StartAsync(CancellationToken cancellationToken)
-    //{
-    //}
-
-    //public Task StopAsync(CancellationToken cancellationToken)
-    //{
-    //    return Task.CompletedTask;
-    //}
 }
 
 public class GameSessionService : IGameSessionService
@@ -179,13 +166,11 @@ public class GameSessionService : IGameSessionService
         ArgumentNullException.ThrowIfNull(SocketObject);
 
         IPacketHandler packetHandlingActor = _clusterClient.GetGrain<IPacketHandler>(uniquePlayerId);
-
         await _sendQueue.Register(uniquePlayerId, SocketObject);
 
-        bool IsGameLoopValid = true;
 
         //Loop to receive data from the WebSocket
-        while (IsGameLoopValid && !abnormalExitToken.IsCancellationRequested)
+        while (!abnormalExitToken.IsCancellationRequested)
         {
             using (NetworkBuffer NBuf = new(4096))
             {
