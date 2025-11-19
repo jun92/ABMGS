@@ -1,12 +1,14 @@
 using System.Buffers;
 using System.IO.Pipelines;
+using System.Threading.Tasks;
 
 namespace SyncnetPlatform.Network.Utils;
 
-public class NetworkBuffer: IDisposable
+public sealed class NetworkBuffer: IDisposable
 {
     private readonly Pipe _pipe;
     private readonly int _bufferSize;
+    private ReadResult _readResult;
     public NetworkBuffer(int bufferSize)
     {
         _pipe = new Pipe();
@@ -23,11 +25,15 @@ public class NetworkBuffer: IDisposable
 
     public async Task<byte[]> Read()
     {
-        ReadResult readResult = await _pipe.Reader.ReadAsync();
-        return readResult.Buffer.ToArray();
+        _readResult = await _pipe.Reader.ReadAsync();
+        return _readResult.Buffer.ToArray();
 
     }
-    public void Dispose()
+    void IDisposable.Dispose()
     {
+        _pipe.Reader.AdvanceTo(_readResult.Buffer.End);
+        _pipe.Reader.Complete();
+        _pipe.Writer.Complete();
+        
     }
 }
