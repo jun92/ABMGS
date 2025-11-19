@@ -12,8 +12,9 @@ public class SendQueueService : BackgroundService, ISendDataObserver, ISendQueue
 {
     private readonly ILogger<SendQueueService> _logger;
     private readonly IClusterClient _clusterClient;
-    private record SendQueueEntity(Guid PlayerId, byte[] SendData);
-    private readonly IDictionary<Guid, Channel<byte[]>> _managedChannels = new Dictionary<Guid, Channel<byte[]>>();
+    protected readonly IDictionary<Guid, ISendDataObserver> _sendDataObservers = new ConcurrentDictionary<Guid, ISendDataObserver>();
+    protected CancellationTokenSource? _sendExceptionToken;
+    private readonly IDictionary<Guid, Channel<byte[]>> _managedChannels = new ConcurrentDictionary<Guid, Channel<byte[]>>();
     private readonly IDictionary<Guid, Task> _managedSendingTask = new  ConcurrentDictionary<Guid, Task>();
     public SendQueueService(ILogger<SendQueueService> logger, IClusterClient clusterClient)
     {
@@ -37,21 +38,42 @@ public class SendQueueService : BackgroundService, ISendDataObserver, ISendQueue
     protected async Task RegisterObserver(Guid playerId)
     {
         var observer = new SendDataObserver(this, playerId);
-        var observerRef = _clusterClient.CreateObjectReference<ISendDataObserver>(observer);
+        var sendDataObserverRef = _clusterClient.CreateObjectReference<ISendDataObserver>(observer);
+        _sendDataObservers.Add(playerId, sendDataObserverRef);
         var sendDataGrain = _clusterClient.GetGrain<ISendDataGrain>(playerId);
-        await sendDataGrain.Register(observerRef);
+        await sendDataGrain.Register(sendDataObserverRef);
     }
-    public async Task Register(Guid playerId, WebSocket webSocket)
+    protected async Task UnregisterObserver(Guid playerId)
+    {
+        if(_sendDataObservers.TryGetValue(playerId, out var observerRef))
+        {
+            _clusterClient.DeleteObjectReference<ISendDataObserver>(observerRef);
+            _sendDataObservers.Remove(playerId);
+        }
+        var sendDataGrain = _clusterClient.GetGrain<ISendDataGrain>(playerId);
+        await sendDataGrain.Unregister();
+    }
+
+    protected async Task UnregisterSockets(Guid playerId)
+    {
+        if(_managedChannels.TryGetValue(playerId, out var channel))
+        {
+            channel.Writer.TryComplete();
+            _managedChannels.Remove(playerId);
+        }
+        _managedSendingTask.Remove(playerId);
+    }
+    public async Task Register(Guid playerId, WebSocket webSocket, CancellationTokenSource sendExceptionToken)
     {
         await RegisterSocket(playerId, webSocket);
         await RegisterObserver(playerId);
+        _sendExceptionToken = sendExceptionToken;
     }
 
-    public void Unregister(Guid playerId)
+    public async Task Unregister(Guid playerId)
     {
-        _managedChannels[playerId].Writer.Complete();
-        _managedChannels.Remove(playerId);
-        _managedSendingTask.Remove(playerId);
+        await UnregisterSockets(playerId);
+        await UnregisterObserver(playerId);
     }
 
     public async Task PlayerSendLoop(Guid playerId, WebSocket webSocket, Channel<byte[]> channel)
@@ -70,7 +92,9 @@ public class SendQueueService : BackgroundService, ISendDataObserver, ISendQueue
         }
         finally
         {
-            Unregister(playerId);
+            // Firing abnomalExitToekn.Cancel() here.
+            await Unregister(playerId);
+            _sendExceptionToken?.Cancel();
         }
     }
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)

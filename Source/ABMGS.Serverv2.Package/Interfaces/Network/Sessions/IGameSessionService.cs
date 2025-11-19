@@ -4,5 +4,5 @@ namespace SyncnetPlatform.Interfaces.Network.Sessions;
 
 public interface IGameSessionService
 {
-    public Task StartGameSession(Guid uniquePlayerId, WebSocket webSocket, CancellationToken loopCancellationToken);
+    public Task StartGameSession(Guid uniquePlayerId, WebSocket webSocket);
 }

@@ -50,7 +50,15 @@ public class PacketHandlingActor : Grain, IPacketHandler, IPacketObserver
         _routeTable.BuildParamExtractionFuncs<PacketWrapper>();
         _routeTable.BuildPacketHandlerFunctions<PacketHandlingActor>(this);
         
+
     }
+    public override async Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
+    {
+        _packetObserverManager?.Unsubscribe(this);
+        _packetObserverManager?.Clear();
+    }
+
+
     public async Task InvokeHandler(byte[] data)
     {
         _routeTable.Execute(PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data)));

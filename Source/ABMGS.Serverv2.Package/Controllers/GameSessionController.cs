@@ -48,7 +48,7 @@ public class GameSessionController : ControllerBase
         }
 
         WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-        await _gameSessionService.StartGameSession(Guid.NewGuid(), webSocket, CancellationToken.None);
+        await _gameSessionService.StartGameSession(Guid.NewGuid(), webSocket);
     }
 
 }

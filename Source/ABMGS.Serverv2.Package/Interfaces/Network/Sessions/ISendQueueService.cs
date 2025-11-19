@@ -5,5 +5,6 @@ namespace SyncnetPlatform.Interfaces.Network.Sessions;
 
 public interface ISendQueueService
 {
-    Task Register(Guid playerId, WebSocket webSocket);
+    Task Register(Guid playerId, WebSocket webSocket, CancellationTokenSource sendExceptionToken);
+    Task Unregister(Guid playerid);
 }
