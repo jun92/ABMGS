@@ -82,6 +82,10 @@ public class GameSessionService : IGameSessionService
                 }
             }
         }
+
+        //Cleanup 
+        SocketObject.Dispose();
+        SocketObject = null;
         await _sendQueueService.Unregister(uniquePlayerId);
     }
 }

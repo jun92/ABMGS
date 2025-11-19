@@ -22,6 +22,12 @@ public class SendQueueService : BackgroundService, ISendDataObserver, ISendQueue
         _clusterClient = clusterClient;
     }
 
+    public async Task Register(Guid playerId, WebSocket webSocket, CancellationTokenSource sendExceptionToken)
+    {
+        await RegisterSocket(playerId, webSocket);
+        await RegisterObserver(playerId);
+        _sendExceptionToken = sendExceptionToken;
+    }
     protected async Task RegisterSocket(Guid playerId, WebSocket webSocket)
     {
         var newChannel = Channel.CreateBounded<byte[]>(new BoundedChannelOptions(100)
@@ -43,6 +49,13 @@ public class SendQueueService : BackgroundService, ISendDataObserver, ISendQueue
         var sendDataGrain = _clusterClient.GetGrain<ISendDataGrain>(playerId);
         await sendDataGrain.Register(sendDataObserverRef);
     }
+
+    public async Task Unregister(Guid playerId)
+    {
+        if (!_managedChannels.ContainsKey(playerId)) return;
+        await UnregisterSockets(playerId);
+        await UnregisterObserver(playerId);
+    }
     protected async Task UnregisterObserver(Guid playerId)
     {
         if(_sendDataObservers.TryGetValue(playerId, out var observerRef))
@@ -63,18 +76,6 @@ public class SendQueueService : BackgroundService, ISendDataObserver, ISendQueue
         }
         _managedSendingTask.Remove(playerId);
     }
-    public async Task Register(Guid playerId, WebSocket webSocket, CancellationTokenSource sendExceptionToken)
-    {
-        await RegisterSocket(playerId, webSocket);
-        await RegisterObserver(playerId);
-        _sendExceptionToken = sendExceptionToken;
-    }
-
-    public async Task Unregister(Guid playerId)
-    {
-        await UnregisterSockets(playerId);
-        await UnregisterObserver(playerId);
-    }
 
     public async Task PlayerSendLoop(Guid playerId, WebSocket webSocket, Channel<byte[]> channel)
     {
@@ -92,7 +93,6 @@ public class SendQueueService : BackgroundService, ISendDataObserver, ISendQueue
         }
         finally
         {
-            // Firing abnomalExitToekn.Cancel() here.
             await Unregister(playerId);
             _sendExceptionToken?.Cancel();
         }

@@ -74,6 +74,6 @@ public class TestMain
         Assert.Equal(SystemPacket.Pong, packetWrapper.SystemPacketType);
         Assert.Equal(2, packetWrapper.SystemPacketAsPong().Seq);
 
-        // await wsClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "Good Bye", CancellationToken.None);
+        await wsClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "Good Bye", CancellationToken.None);
     }
 }
