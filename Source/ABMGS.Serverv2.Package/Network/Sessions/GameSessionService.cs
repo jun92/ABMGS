@@ -38,36 +38,25 @@ public class GameSessionService : IGameSessionService
         CancellationTokenSource LoopEndToken = new CancellationTokenSource();
         CancellationTokenSource SendExceptionToken = new CancellationTokenSource();
 
-        IPacketHandler packetHandlingActor = _clusterClient.GetGrain<IPacketHandler>(uniquePlayerId);
-        await _sendQueueService.Register(uniquePlayerId, SocketObject, SendExceptionToken);
-
-        while (!SendExceptionToken.IsCancellationRequested && !LoopEndToken.IsCancellationRequested)
+        try
         {
-            using (NetworkBuffer NBuf = new(4096))
+            IPacketHandler packetHandlingActor = _clusterClient.GetGrain<IPacketHandler>(uniquePlayerId);
+            await _sendQueueService.Register(uniquePlayerId, SocketObject, SendExceptionToken);
+
+            while (!SendExceptionToken.IsCancellationRequested && !LoopEndToken.IsCancellationRequested)
             {
+                using NetworkBuffer NBuf = new(4096);
                 while (true)
                 {
                     ValueWebSocketReceiveResult result;
-                    try
-                    {
-                        result = await SocketObject.ReceiveAsync(NBuf.GetReceiveBuffer(), SendExceptionToken.Token);
-                    }
-                    catch(Exception ex) when (
-                    ex is WebSocketException || 
-                    ex is OperationCanceledException ||
-                    ex is ObjectDisposedException)
-                    {
-                        LoopEndToken.Cancel();
-                        break;
-                    }
-
+                    result = await SocketObject.ReceiveAsync(NBuf.GetReceiveBuffer(), SendExceptionToken.Token);
                     NBuf.AddBuffer(result.Count);
 
                     if (result.MessageType == WebSocketMessageType.Close || result.Count == 0)
                     {
                         await SocketObject.CloseAsync(
-                            WebSocketCloseStatus.NormalClosure, 
-                            "Socket Closed", 
+                            WebSocketCloseStatus.NormalClosure,
+                            "Socket Closed",
                             CancellationToken.None);
                         LoopEndToken.Cancel();
                         break;
@@ -82,10 +71,20 @@ public class GameSessionService : IGameSessionService
                 }
             }
         }
+        catch(Exception e) when (
+                        e is WebSocketException ||
+                        e is OperationCanceledException ||
+                        e is ObjectDisposedException)
+        {
+        }
+        finally
+        {
+            //Cleanup 
+            await _sendQueueService.Unregister(uniquePlayerId);
 
-        //Cleanup 
-        SocketObject.Dispose();
-        SocketObject = null;
-        await _sendQueueService.Unregister(uniquePlayerId);
+            SocketObject.Dispose();
+            LoopEndToken.Dispose();
+            SendExceptionToken.Dispose();
+        }
     }
 }

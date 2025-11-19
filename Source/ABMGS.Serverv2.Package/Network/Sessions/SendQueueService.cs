@@ -13,9 +13,10 @@ public class SendQueueService : BackgroundService, ISendDataObserver, ISendQueue
     private readonly ILogger<SendQueueService> _logger;
     private readonly IClusterClient _clusterClient;
     protected readonly IDictionary<Guid, ISendDataObserver> _sendDataObservers = new ConcurrentDictionary<Guid, ISendDataObserver>();
-    protected CancellationTokenSource? _sendExceptionToken;
+    
     private readonly IDictionary<Guid, Channel<byte[]>> _managedChannels = new ConcurrentDictionary<Guid, Channel<byte[]>>();
     private readonly IDictionary<Guid, Task> _managedSendingTask = new  ConcurrentDictionary<Guid, Task>();
+    private readonly IDictionary<Guid, CancellationTokenSource> _managedCancellationToken = new ConcurrentDictionary<Guid, CancellationTokenSource>();
     public SendQueueService(ILogger<SendQueueService> logger, IClusterClient clusterClient)
     {
         _logger = logger;
@@ -24,12 +25,13 @@ public class SendQueueService : BackgroundService, ISendDataObserver, ISendQueue
 
     public async Task Register(Guid playerId, WebSocket webSocket, CancellationTokenSource sendExceptionToken)
     {
-        await RegisterSocket(playerId, webSocket);
+        await RegisterSocket(playerId, webSocket, sendExceptionToken);
         await RegisterObserver(playerId);
-        _sendExceptionToken = sendExceptionToken;
+        
     }
-    protected async Task RegisterSocket(Guid playerId, WebSocket webSocket)
+    protected async Task RegisterSocket(Guid playerId, WebSocket webSocket, CancellationTokenSource sendExceptionToken)
     {
+        CancellationTokenSource sendLoopExitToken = new CancellationTokenSource();
         var newChannel = Channel.CreateBounded<byte[]>(new BoundedChannelOptions(100)
         {
             FullMode = BoundedChannelFullMode.Wait,
@@ -39,7 +41,8 @@ public class SendQueueService : BackgroundService, ISendDataObserver, ISendQueue
             Capacity = 100 // TODO: Should go to config something later.
         });
         _managedChannels.Add(playerId, newChannel);
-        _managedSendingTask.Add(playerId, Task.Run(() => PlayerSendLoop(playerId, webSocket, newChannel)));
+        _managedSendingTask.Add(playerId, Task.Run(() => PlayerSendLoop(playerId, webSocket, newChannel, sendExceptionToken, sendLoopExitToken)));
+        _managedCancellationToken.Add(playerId, sendLoopExitToken);
     }
     protected async Task RegisterObserver(Guid playerId)
     {
@@ -63,6 +66,7 @@ public class SendQueueService : BackgroundService, ISendDataObserver, ISendQueue
             _clusterClient.DeleteObjectReference<ISendDataObserver>(observerRef);
             _sendDataObservers.Remove(playerId);
         }
+
         var sendDataGrain = _clusterClient.GetGrain<ISendDataGrain>(playerId);
         await sendDataGrain.Unregister();
     }
@@ -75,33 +79,42 @@ public class SendQueueService : BackgroundService, ISendDataObserver, ISendQueue
             _managedChannels.Remove(playerId);
         }
         _managedSendingTask.Remove(playerId);
+        if(_managedCancellationToken.TryGetValue(playerId, out var sendLoopExitToken))
+        {
+            sendLoopExitToken.Cancel();
+            _managedCancellationToken.Remove(playerId);
+        }
     }
 
-    public async Task PlayerSendLoop(Guid playerId, WebSocket webSocket, Channel<byte[]> channel)
+    public async Task PlayerSendLoop(Guid playerId, WebSocket webSocket, Channel<byte[]> channel, CancellationTokenSource sendExceptionToken, CancellationTokenSource sendLoopExitToken)
     {
         try
         {
-            await foreach (var payload in channel.Reader.ReadAllAsync())
+            await foreach (var payload in channel.Reader.ReadAllAsync(sendLoopExitToken.Token))
             {
                 if (webSocket.State != WebSocketState.Open) break;
                 await webSocket.SendAsync(
                     new ArraySegment<byte>(payload), 
                     WebSocketMessageType.Binary, 
-                    true, 
-                    CancellationToken.None); // Later change to some valuable cancellation token.
+                    true,
+                    sendLoopExitToken.Token); 
             }
         }
-        finally
+        catch(WebSocketException e)
         {
-            await Unregister(playerId);
-            _sendExceptionToken?.Cancel();
+            sendExceptionToken.Cancel();
+        }
+        catch(OperationCanceledException e)
+        {
+            sendLoopExitToken.Dispose();
+            _managedCancellationToken.Remove(playerId);
         }
     }
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            await Task.Delay(1000);
+            await Task.Delay(1000, stoppingToken);
         }
     }
 

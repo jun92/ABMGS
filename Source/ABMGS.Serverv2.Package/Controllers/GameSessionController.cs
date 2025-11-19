@@ -38,17 +38,15 @@ public class GameSessionController : ControllerBase
     [HttpGet("gamesession")]
     public async Task GameSession()
     {
-
-        //Authenticate the user here
-
         if (!HttpContext.WebSockets.IsWebSocketRequest)
         {
             HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             return;
         }
-
+        
         WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
         await _gameSessionService.StartGameSession(Guid.NewGuid(), webSocket);
+        
     }
 
 }
