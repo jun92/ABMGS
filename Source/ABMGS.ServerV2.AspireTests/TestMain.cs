@@ -72,7 +72,7 @@ public class TestMain
         PacketWrapper packetWrapper = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(receiveBuffer.Take(result.Count).ToArray()));
 
         Assert.Equal(SystemPacket.Pong, packetWrapper.SystemPacketType);
-        // Assert.Equal(2, packetWrapper.SystemPacketAsPong().Seq);
+        Assert.Equal(2, packetWrapper.SystemPacketAsPong().Seq);
 
         // await wsClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "Good Bye", CancellationToken.None);
     }
