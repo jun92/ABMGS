@@ -49,6 +49,7 @@ public class SendQueueService : BackgroundService, ISendDataObserver, ISendQueue
 
     public void Unregister(Guid playerId)
     {
+        _managedChannels[playerId].Writer.Complete();
         _managedChannels.Remove(playerId);
         _managedSendingTask.Remove(playerId);
     }
