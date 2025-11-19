@@ -10,6 +10,11 @@ public class SendDataGrain : Grain, ISendDataGrain
         _sendDataObserver = observer;
     }
 
+    public async Task Unregister()
+    {
+        _sendDataObserver = null;
+    }
+
     public async Task Send(Guid playerId, byte[] data)
     {
         if(_sendDataObserver is not null)
