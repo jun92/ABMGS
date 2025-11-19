@@ -1,4 +1,4 @@
-@ABMGS.ServerV2_HostAddress = https://localhost:7183
+@ABMGS.ServerV2_HostAddress = http://localhost:5100
 
 GET {{ABMGS.ServerV2_HostAddress}}/ws/alive
 #Accept: application/json
