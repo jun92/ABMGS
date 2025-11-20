@@ -4,16 +4,14 @@ namespace SyncnetPlatform.Network.Sessions;
 
 public class SendDataObserver : ISendDataObserver
 {
-    private readonly SendQueueService _sendQueueService;
-    private readonly Guid _playerId;
-    public SendDataObserver(SendQueueService service, Guid PlayerId)
+    private readonly GameSessionService _gameSessionService;
+    public SendDataObserver(GameSessionService service)
     {
-        _sendQueueService = service;
-        _playerId = PlayerId;
+        _gameSessionService = service;
     }
 
-    public async Task SendDataAsync(Guid playerId, byte[] data)
+    public async Task SendDataAsync(byte[] data)
     {
-        await _sendQueueService.SendDataAsync(playerId, data);
+        await _gameSessionService.SendDataAsync(data);
     }
 }

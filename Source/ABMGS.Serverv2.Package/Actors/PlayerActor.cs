@@ -1,7 +1,7 @@
 using Google.FlatBuffers;
 using Microsoft.Extensions.Logging;
 using Orleans.Utilities;
-using SyncnetPlatform.Interfaces.Actors.Player;
+using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using SyncnetPlatform.Interfaces.Network.Utils;
@@ -19,13 +19,13 @@ namespace SyncnetPlatform.Actors;
 
 public interface IPacketHandler : IGrainWithGuidKey
 {
-    Task InvokeHandler(byte[] data);
-    Task PushRecievedData(byte[] Data);
+    public Task InvokeHandler(byte[] data);
+    public Task PushRecievedData(byte[] Data);
 }
 
 public interface IPacketObserver : IGrainObserver
 {
-    Task NewPacketArrived();
+    public Task NewPacketArrived();
 }
 
 public class PacketHandlingActor : Grain, IPacketHandler, IPacketObserver
@@ -33,14 +33,12 @@ public class PacketHandlingActor : Grain, IPacketHandler, IPacketObserver
     private readonly IPacketRouter _routeTable;
     private readonly ILogger<PacketHandlingActor> _logger;
     private readonly ConcurrentQueue<byte[]> _receiveQueue;
-    private readonly ConcurrentQueue<byte[]> _sendQueue;
     private ObserverManager<IPacketObserver>? _packetObserverManager;
     public PacketHandlingActor(ILogger<PacketHandlingActor> logger, IPacketRouter routeTable)
     {
         _logger = logger;
         _routeTable = routeTable;
         _receiveQueue = new ConcurrentQueue<byte[]>();
-        _sendQueue = new ConcurrentQueue<byte[]>();
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
@@ -49,15 +47,12 @@ public class PacketHandlingActor : Grain, IPacketHandler, IPacketObserver
         _packetObserverManager.Subscribe(this, this);
         _routeTable.BuildParamExtractionFuncs<PacketWrapper>();
         _routeTable.BuildPacketHandlerFunctions<PacketHandlingActor>(this);
-        
-
     }
     public override async Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
     {
         _packetObserverManager?.Unsubscribe(this);
         _packetObserverManager?.Clear();
     }
-
 
     public async Task InvokeHandler(byte[] data)
     {
@@ -67,7 +62,10 @@ public class PacketHandlingActor : Grain, IPacketHandler, IPacketObserver
     public async Task PushRecievedData(byte[] Data)
     {
         _receiveQueue.Enqueue(Data);
-        await _packetObserverManager.Notify(s => s.NewPacketArrived());
+        if (_packetObserverManager != null)
+        {
+            await _packetObserverManager.Notify(s => s.NewPacketArrived());
+        }
     }
     public async Task NewPacketArrived()
     {
@@ -96,7 +94,7 @@ public class PacketHandlingActor : Grain, IPacketHandler, IPacketObserver
         byte[] SendBackData = SyncnetPacketBuilder.Build(new PongArgs(request.Seq + 1));
 
         ISendDataGrain sendDataGrain = GrainFactory.GetGrain<ISendDataGrain>(this.GetGrainId().GetGuidKey());
-        await sendDataGrain.Send(this.GetGrainId().GetGuidKey(), SendBackData);
+        await sendDataGrain.Send(SendBackData);
     }
     [PacketHandler(typeof(Pong))]
     public async Task HandlePong(Pong request)

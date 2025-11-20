@@ -8,7 +8,6 @@ public sealed class NetworkBuffer: IDisposable
 {
     private readonly Pipe _pipe;
     private readonly int _bufferSize;
-    //private ReadResult _readResult;
     public NetworkBuffer(int bufferSize)
     {
         _pipe = new Pipe();

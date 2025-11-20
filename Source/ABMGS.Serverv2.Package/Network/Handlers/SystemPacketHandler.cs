@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Logging;
-using SyncnetPlatform.Interfaces.Actors.Player;
+using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Network.Attributes;
 using SyncnetPlatform.Protocols.Generated;
