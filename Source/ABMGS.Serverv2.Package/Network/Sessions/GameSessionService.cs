@@ -1,90 +1,195 @@
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.Extensions.Logging;
-using System.Net.WebSockets;
-
 using SyncnetPlatform.Actors;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using SyncnetPlatform.Network.Handlers;
 using SyncnetPlatform.Network.Utils;
+using System.IO;
+using System.Net.WebSockets;
+using System.Threading.Channels;
 
 namespace SyncnetPlatform.Network.Sessions;
 
-public class GameSessionService : IGameSessionService
+public class GameSessionService : IGameSessionService, ISendDataObserver
 {
     private readonly ILogger<GameSessionService> _logger;
     private readonly IClusterClient _clusterClient;
-    private readonly ISendQueueService _sendQueueService;
-    private readonly ICustomPacketHandler _customPacketHandler;
-    private readonly SystemPacketHandler _systemPacketHandler;
+
+    private readonly Channel<byte[]> _sendingQueueChannel;
+    private ISendDataObserver? _sendDataObserver;
+    private Task? _sendLoopTask;
 
     public GameSessionService(
         ILogger<GameSessionService> logger, 
-        IClusterClient clusterClient,
-        ISendQueueService sendQueue,
-        ICustomPacketHandler customPacketHandler,
-        SystemPacketHandler systemPacketHandler)
+        IClusterClient clusterClient)
     {
         _logger = logger;
         _clusterClient = clusterClient;
-        
-        _sendQueueService = sendQueue;
-        _customPacketHandler = customPacketHandler;
-        _systemPacketHandler = systemPacketHandler;
+
+        _sendingQueueChannel = Channel.CreateBounded<byte[]>(new BoundedChannelOptions(100)
+        {
+            FullMode = BoundedChannelFullMode.Wait,
+            SingleReader = true,
+            SingleWriter = true,
+            AllowSynchronousContinuations = false,
+            Capacity = 100 // TODO: Should go to config something later.
+        });
+        _sendDataObserver = null;
     }
 
-    public async Task StartGameSession(Guid uniquePlayerId, WebSocket SocketObject)
+    public async Task SendDataAsync(byte[] data)
     {
-        ArgumentNullException.ThrowIfNull(SocketObject);
-        CancellationTokenSource LoopEndToken = new CancellationTokenSource();
-        CancellationTokenSource SendExceptionToken = new CancellationTokenSource();
+        await _sendingQueueChannel.Writer.WriteAsync(data);
+    }
 
+    protected async Task SendDataLoop(
+        WebSocket socket, 
+        Channel<byte[]> channel, 
+        CancellationToken sendLoopExitToken)
+    {
         try
         {
-            IPacketHandler packetHandlingActor = _clusterClient.GetGrain<IPacketHandler>(uniquePlayerId);
-            await _sendQueueService.Register(uniquePlayerId, SocketObject, SendExceptionToken);
-
-            while (!SendExceptionToken.IsCancellationRequested && !LoopEndToken.IsCancellationRequested)
+            await foreach (var payload in channel.Reader.ReadAllAsync(sendLoopExitToken))
             {
-                using NetworkBuffer NBuf = new(4096);
-                while (true)
-                {
-                    ValueWebSocketReceiveResult result;
-                    result = await SocketObject.ReceiveAsync(NBuf.GetReceiveBuffer(), SendExceptionToken.Token);
-                    NBuf.AddBuffer(result.Count);
+                if (socket.State != WebSocketState.Open) break;
+                await socket.SendAsync(
+                    new ArraySegment<byte>(payload),
+                    WebSocketMessageType.Binary,
+                    true,
+                    sendLoopExitToken);
+            }
+        }
+        catch(WebSocketException ex)
+        {
+            _logger.LogError(ex, "Socket operation error in SendAsync");
+        }
+        catch(OperationCanceledException ex)
+        {
+            //Triggered by on purpose.
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError(ex, "Exception in Sending Loop");
+        }
+    }
+    protected void RunSendingLoopTask(WebSocket socket, CancellationToken sendLoopExitToken)
+    {
+        _sendLoopTask = Task.Run(() => SendDataLoop(socket, _sendingQueueChannel, sendLoopExitToken));
+    }
 
-                    if (result.MessageType == WebSocketMessageType.Close || result.Count == 0)
+    protected async Task RegisterObserverForSendDataEvent(Guid playerId)
+    {
+        var sendObserver = new SendDataObserver(this);
+        _sendDataObserver = _clusterClient.CreateObjectReference<ISendDataObserver>(sendObserver);
+        var sendDataGrain = _clusterClient.GetGrain<ISendDataGrain>(playerId);
+        await sendDataGrain.Register(_sendDataObserver);
+    }
+    protected async Task UnregisterObserver(Guid playerId)
+    {
+        var sendDataGrain = _clusterClient.GetGrain<ISendDataGrain>(playerId);
+        await sendDataGrain.Unregister();
+        if (_sendDataObserver is { } sdo) _clusterClient.DeleteObjectReference<ISendDataObserver>(sdo);
+        _sendDataObserver = null;
+
+    }
+    protected async Task RunGameLoop(Guid playerId, WebSocket SocketObject, CancellationToken mainLoopExitToken)
+    {
+        IPacketHandler packetHandlingActor = _clusterClient.GetGrain<IPacketHandler>(playerId);
+
+        while (!mainLoopExitToken.IsCancellationRequested)
+        {
+            using NetworkBuffer NBuf = new(4096);
+            while (true)
+            {
+                ValueWebSocketReceiveResult result;
+                try
+                {
+                    result = await SocketObject.ReceiveAsync(NBuf.GetReceiveBuffer(), mainLoopExitToken);
+                }
+                catch(OperationCanceledException)
+                {
+                    // Exit with nothing wrong
+                    return;
+                }
+                NBuf.AddBuffer(result.Count);
+
+                if (result.MessageType == WebSocketMessageType.Close || result.Count == 0)
+                {
+                    try
                     {
                         await SocketObject.CloseAsync(
                             WebSocketCloseStatus.NormalClosure,
                             "Socket Closed",
-                            CancellationToken.None);
-                        LoopEndToken.Cancel();
-                        break;
+                            mainLoopExitToken);
                     }
-
-                    if (result.EndOfMessage == true)
+                    catch(WebSocketException ex)
                     {
-                        await NBuf.FinishReceived();
-                        await packetHandlingActor.PushRecievedData(await NBuf.Read());
-                        break;
+                        _logger.LogError(ex, $"WebSocket exception in {nameof(RunGameLoop)}");
                     }
+                    return;
+                }
+
+                if (result.EndOfMessage)
+                {
+                    await NBuf.FinishReceived();
+                    await packetHandlingActor.PushRecievedData(await NBuf.Read());
+                    break;
                 }
             }
         }
-        catch(Exception e) when (
-                        e is WebSocketException ||
-                        e is OperationCanceledException ||
-                        e is ObjectDisposedException)
+    }
+    public async Task StartGameSession(Guid uniquePlayerId, WebSocket SocketObject)
+    {
+        ArgumentNullException.ThrowIfNull(SocketObject);
+        if (uniquePlayerId == Guid.Empty) throw new ArgumentException("PlayerId is empty", nameof(uniquePlayerId));
+
+        using CancellationTokenSource mainLoopExitTokenCts = new CancellationTokenSource();
+        var mainLoopExitToken = mainLoopExitTokenCts.Token;
+        
+        try
         {
+            await RegisterObserverForSendDataEvent(uniquePlayerId);
+            RunSendingLoopTask(SocketObject, mainLoopExitToken);
+            await RunGameLoop(uniquePlayerId, SocketObject, mainLoopExitToken);
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError(ex, "Error in GameSessionLoop");
+        }
+        
+        finally
+        {
+            await FlushSendQueue();
+            await UnregisterObserver(uniquePlayerId);
+            await ShutdownSocket(SocketObject);
+        }
+    }
+
+    protected async Task FlushSendQueue()
+    {
+        _sendingQueueChannel?.Writer.TryComplete();
+        if (_sendLoopTask is not null)
+        {
+            await _sendLoopTask;
+        }
+    }
+    protected async Task ShutdownSocket(WebSocket socket)
+    {
+        try
+        {
+            if (socket.State == WebSocketState.Open || socket.State == WebSocketState.CloseReceived)
+            {
+                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Session end", CancellationToken.None);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning("Error while closing WebSocket");
         }
         finally
         {
-            //Cleanup 
-            await _sendQueueService.Unregister(uniquePlayerId);
-
-            SocketObject.Dispose();
-            LoopEndToken.Dispose();
-            SendExceptionToken.Dispose();
+            socket.Dispose();
         }
     }
 }

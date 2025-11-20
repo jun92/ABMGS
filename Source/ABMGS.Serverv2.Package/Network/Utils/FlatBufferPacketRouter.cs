@@ -19,10 +19,15 @@ public class FlatBufferPacketRouter : IPacketRouter
 
     public void Execute(PacketWrapper packetWrapper)
     {
-        var aa = _paramExtractionFuncTable[packetWrapper.SystemPacketType];
-        var parameters = _paramExtractionFuncTable[packetWrapper.SystemPacketType](packetWrapper);
-        _packetHandlerTable[packetWrapper.SystemPacketType](parameters);
-        // _packetHandlerTable[packetWrapper.SystemPacketType](_paramExtractionFuncTable[packetWrapper.SystemPacketType](packetWrapper));
+        if(_paramExtractionFuncTable.TryGetValue(packetWrapper.SystemPacketType, out var paramGetfunc))
+        {
+            if(_packetHandlerTable.TryGetValue(packetWrapper.SystemPacketType, out var handleFunc))
+            {
+                handleFunc(paramGetfunc(packetWrapper));
+                return;
+            }
+        }
+        _logger.LogError($"Not found the handler function for type of {packetWrapper.SystemPacketType.ToString()}");
     }
     public FlatBufferPacketRouter(ILogger<FlatBufferPacketRouter> logger)
     {

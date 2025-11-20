@@ -15,11 +15,11 @@ public class SendDataGrain : Grain, ISendDataGrain
         _sendDataObserver = null;
     }
 
-    public async Task Send(Guid playerId, byte[] data)
+    public async Task Send(byte[] data)
     {
         if(_sendDataObserver is not null)
         {
-            await _sendDataObserver.SendDataAsync(playerId, data);
+            await _sendDataObserver.SendDataAsync(data);
         }
     }
 }

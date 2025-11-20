@@ -1,6 +1,6 @@
 using System.Net.WebSockets;
 
-namespace SyncnetPlatform.Interfaces.Actors.Player;
+namespace SyncnetPlatform.Interfaces.Actors;
 
 public interface IPlayerActor : IGrainWithGuidKey
 {
