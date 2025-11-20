@@ -2,6 +2,7 @@ using Google.FlatBuffers;
 using Microsoft.Extensions.Logging;
 using Orleans.Utilities;
 using SyncnetPlatform.Interfaces.Actors;
+using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using SyncnetPlatform.Interfaces.Network.Utils;
 using SyncnetPlatform.Network.Attributes;
@@ -11,12 +12,32 @@ using System.Collections.Concurrent;
 
 namespace SyncnetPlatform.Actors;
 
+public interface ISystemPacketHandler
+{
+
+}
+
+public class SystemPacketHandlerBase : ISystemPacketHandler
+{
+    
+}
+
+public class SystemPacketHandler : SystemPacketHandlerBase
+{
+    [PacketHandler(typeof(Pong))]
+    public void Handle(Pong p)
+    {
+       
+    }
+}
+
 public class PacketHandlingActor : Grain, IPacketHandler, IPacketObserver
 {
     private readonly IPacketRouter _routeTable;
     private readonly ILogger<PacketHandlingActor> _logger;
     private readonly ConcurrentQueue<byte[]> _receiveQueue;
     private ObserverManager<IPacketObserver>? _packetObserverManager;
+    private readonly ISystemPacketHandler _systemPacketHandler;
     public PacketHandlingActor(ILogger<PacketHandlingActor> logger, IPacketRouter routeTable)
     {
         _logger = logger;
@@ -84,7 +105,6 @@ public class PacketHandlingActor : Grain, IPacketHandler, IPacketObserver
     {
         _logger.LogError("This should not be called.");
     }
-
 }
 
 
