@@ -185,7 +185,7 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
         }
         catch (Exception ex)
         {
-            _logger.LogWarning("Error while closing WebSocket");
+            _logger.LogWarning(ex, "Error while closing WebSocket");
         }
         finally
         {
