@@ -1,5 +1,4 @@
 using SyncnetPlatform.Interfaces.Actors;
-using SyncnetPlatform.Actors;
 using Microsoft.Extensions.Logging;
 
 namespace SyncnetPlatform.Network.Handlers;

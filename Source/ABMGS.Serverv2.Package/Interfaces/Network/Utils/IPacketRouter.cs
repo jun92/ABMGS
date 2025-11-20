@@ -1,5 +1,5 @@
 using Google.FlatBuffers;
-using SyncnetPlatform.Actors;
+using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Protocols.Generated;
 
 namespace SyncnetPlatform.Interfaces.Network.Utils;
