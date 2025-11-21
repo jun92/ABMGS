@@ -34,20 +34,20 @@ public class FlatBufferPacketRouter : IPacketRouter
         _logger = logger;
     }
 
-    public void BuildParamExtractionFuncs(PacketWrapper packetWrapper) 
-    {
-        foreach (MethodInfo method in typeof(PacketWrapper).GetMethods())
-        {
-            if(method.Name.StartsWith(PacketSuffix.SystemPacket.ToString()))
-            {
-                if(Enum.TryParse(method.ReturnType.Name, out SystemPacket packetType))
-                {
-                    _paramExtractionFuncTable[packetType] = FunctionBuilder.BuildFunctionWithReturnType<PacketWrapper>(method);
-                    _logger.LogTrace($"Found and stored the function for getting type of {packetType.ToString()}");
-                }
-            }
-        }
-    }
+    //public void BuildParamExtractionFuncs(PacketWrapper packetWrapper) 
+    //{
+    //    foreach (MethodInfo method in typeof(PacketWrapper).GetMethods())
+    //    {
+    //        if(method.Name.StartsWith(PacketSuffix.SystemPacket.ToString()))
+    //        {
+    //            if(Enum.TryParse(method.ReturnType.Name, out SystemPacket packetType))
+    //            {
+    //                _paramExtractionFuncTable[packetType] = FunctionBuilder.BuildFunctionWithReturnType<PacketWrapper>(method);
+    //                _logger.LogTrace($"Found and stored the function for getting type of {packetType.ToString()}");
+    //            }
+    //        }
+    //    }
+    //}
     public void BuildParamExtractionFuncs<PacketWrapperType>() where PacketWrapperType : IFlatbufferObject
     {
         foreach (MethodInfo method in typeof(PacketWrapper).GetMethods())

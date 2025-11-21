@@ -37,8 +37,9 @@ public class PacketHandlingActor : Grain, IPacketHandler, IPacketObserver
     private readonly ILogger<PacketHandlingActor> _logger;
     private readonly ConcurrentQueue<byte[]> _receiveQueue;
     private ObserverManager<IPacketObserver>? _packetObserverManager;
-    private readonly ISystemPacketHandler _systemPacketHandler;
-    public PacketHandlingActor(ILogger<PacketHandlingActor> logger, IPacketRouter routeTable)
+    public PacketHandlingActor(
+        ILogger<PacketHandlingActor> logger, 
+        IPacketRouter routeTable)
     {
         _logger = logger;
         _routeTable = routeTable;
@@ -49,6 +50,7 @@ public class PacketHandlingActor : Grain, IPacketHandler, IPacketObserver
     {
         _packetObserverManager = new ObserverManager<IPacketObserver>(TimeSpan.FromDays(1), _logger);
         _packetObserverManager.Subscribe(this, this);
+
         _routeTable.BuildParamExtractionFuncs<PacketWrapper>();
         _routeTable.BuildPacketHandlerFunctions<PacketHandlingActor>(this);
     }
@@ -56,6 +58,7 @@ public class PacketHandlingActor : Grain, IPacketHandler, IPacketObserver
     {
         _packetObserverManager?.Unsubscribe(this);
         _packetObserverManager?.Clear();
+        _packetObserverManager = null;
     }
 
     public async Task InvokeHandler(byte[] data)
