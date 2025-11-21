@@ -125,7 +125,7 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
                     }
                     catch(WebSocketException ex)
                     {
-                        _logger.LogError(ex, $"WebSocket exception in {nameof(RunGameLoop)}");
+                        _logger.LogError(ex, $"WebSocket exception while closing it: {nameof(RunGameLoop)}");
                     }
                     return;
                 }
@@ -142,9 +142,10 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
     public async Task StartGameSession(Guid uniquePlayerId, WebSocket SocketObject)
     {
         ArgumentNullException.ThrowIfNull(SocketObject);
-        if (uniquePlayerId == Guid.Empty) throw new ArgumentException("PlayerId is empty", nameof(uniquePlayerId));
+        if (uniquePlayerId == Guid.Empty) 
+            throw new ArgumentException("PlayerId is empty", nameof(uniquePlayerId));
 
-        using CancellationTokenSource mainLoopExitTokenCts = new CancellationTokenSource();
+        using var mainLoopExitTokenCts = new CancellationTokenSource();
         var mainLoopExitToken = mainLoopExitTokenCts.Token;
         
         try
@@ -178,9 +179,13 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
     {
         try
         {
-            if (socket.State == WebSocketState.Open || socket.State == WebSocketState.CloseReceived)
+            if (socket.State == WebSocketState.Open || 
+                socket.State == WebSocketState.CloseReceived)
             {
-                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Session end", CancellationToken.None);
+                await socket.CloseAsync(
+                    WebSocketCloseStatus.NormalClosure, 
+                    nameof(WebSocketCloseStatus.NormalClosure), 
+                    CancellationToken.None);
             }
         }
         catch (Exception ex)
