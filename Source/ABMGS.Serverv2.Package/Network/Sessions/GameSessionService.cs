@@ -133,7 +133,7 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
                 if (result.EndOfMessage)
                 {
                     await NBuf.FinishReceived();
-                    await packetHandlingActor.PushRecievedData(await NBuf.Read());
+                    _ = packetHandlingActor.PushRecievedData(await NBuf.Read());
                     break;
                 }
             }
