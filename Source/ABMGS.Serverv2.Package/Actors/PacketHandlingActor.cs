@@ -40,9 +40,6 @@ public class SystemPacketHandler : ISystemPacketHandler
     public async Task HandlePing(Ping request, PacketContext ctx)
     {
         _logger.LogInformation($"HandlePing, Seq is {request.Seq}");
-
-        //ISendDataGrain sendDataGrain = GrainFactory.GetGrain<ISendDataGrain>(this.GetGrainId().GetGuidKey());
-        // await sendDataGrain.Send(SendBackData);
         
         await ctx.SendData(
             ctx.GetPlayerId(),
