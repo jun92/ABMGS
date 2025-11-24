@@ -1,5 +1,6 @@
 using Google.FlatBuffers;
 using Microsoft.Extensions.Logging;
+using SyncnetPlatform.Actors;
 using SyncnetPlatform.Enums;
 using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Interfaces.Network.Handlers;
@@ -69,8 +70,9 @@ public class FlatBufferPacketRouter : IPacketRouter
     }
     public void BuildPacketHandlerFunctions<PacketHandlerType>(PacketHandlerType handler) where PacketHandlerType : IPacketHandler
     {
-        foreach (MethodInfo method in typeof(PacketHandlerType).GetMethods())
+        foreach (MethodInfo method in handler.GetType().GetMethods())
         {
+            _logger.LogInformation("Processing method:" + method.Name);
             PacketHandlerAttribute? attr = method.GetCustomAttribute<PacketHandlerAttribute>();
             if (attr != null)
             {

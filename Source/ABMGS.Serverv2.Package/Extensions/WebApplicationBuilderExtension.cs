@@ -5,6 +5,7 @@ using Microsoft.Extensions.Hosting;
 using Orleans.Configuration;
 using Orleans.Hosting;
 using StackExchange.Redis;
+using SyncnetPlatform.Actors;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using SyncnetPlatform.Interfaces.Network.Utils;
@@ -21,6 +22,7 @@ public static class WebApplicationBuilderExtension
         builder.Services.AddTransient<IGameSessionService, GameSessionService>();
         builder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
         builder.Services.AddSingleton<IPacketContextFactory, PacketContextFactory>();
+        builder.Services.AddTransient<ISystemPacketHandler, SystemPacketHandler>();
         builder.UseOrleansClient(configure =>
         {
             configure.Configure<ClusterOptions>(options =>
@@ -36,11 +38,6 @@ public static class WebApplicationBuilderExtension
         });
         
     }
-
-    public static void AddCustomPacketHandler<CustomHandlerType>(this WebApplicationBuilder builder) where CustomHandlerType: ICustomPacketHandler
-    {
-       
-    }
 }
 
 public static class HostApplicationBuilderExtension
@@ -49,6 +46,7 @@ public static class HostApplicationBuilderExtension
     {
         appBuilder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
         appBuilder.Services.AddSingleton<IPacketContextFactory, PacketContextFactory>();
+        appBuilder.Services.AddTransient<ISystemPacketHandler, SystemPacketHandler>();
 
         appBuilder.UseOrleans(builder =>
         {
