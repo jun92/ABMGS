@@ -1,13 +1,15 @@
 using Google.FlatBuffers;
 using Microsoft.Extensions.Logging;
+using Orleans;
 using SyncnetPlatform.Interfaces.Actors;
+using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using SyncnetPlatform.Interfaces.Network.Utils;
 using SyncnetPlatform.Network.Attributes;
+using SyncnetPlatform.Network.Handlers;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Protocols.Generated;
 using SyncnetPlatform.Utils;
-using SyncnetPlatform.Network.Handlers;
 
 namespace SyncnetPlatform.Actors;
 
@@ -23,12 +25,39 @@ public class SystemPacketHandlerBase : ISystemPacketHandler
 
 public class SystemPacketHandler : SystemPacketHandlerBase
 {
-    [PacketHandler(typeof(Pong))]
-    public void Handle(Pong p)
+    private readonly ILogger<SystemPacketHandler> _logger;
+    public SystemPacketHandler(ILogger<SystemPacketHandler> logger)
     {
-       
+        _logger = logger;
+    }
+
+    [PacketHandler(typeof(Dummy))]
+    public async Task HandleDummpy(Dummy dummpy, PacketContext ctx)
+    {
+        _logger.LogError("Dummy packet received. Are you dummy?");
+    }
+
+
+    [PacketHandler(typeof(Ping))]
+    public async Task HandlePing(Ping request, PacketContext ctx)
+    {
+        _logger.LogInformation($"HandlePing, Seq is {request.Seq}");
+
+        byte[] SendBackData = SyncnetPacketBuilder.Build(new PongArgs(request.Seq + 1));
+
+        //ISendDataGrain sendDataGrain = ctx.SendData() GrainFactory.GetGrain<ISendDataGrain>(this.GetGrainId().GetGuidKey());
+        // await sendDataGrain.Send(SendBackData);
+        
+        await ctx.SendData(ctx.GetPlayerId(), SendBackData);
+    }
+    [PacketHandler(typeof(Pong))]
+    public async Task HandlePong(Pong request, PacketContext ctx)
+    {
+        _logger.LogError("This should not be called.");
     }
 }
+
+
 
 public class PacketHandlingActor : Grain, IPacketHandler
 {

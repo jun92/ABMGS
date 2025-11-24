@@ -1,6 +1,6 @@
 using SyncnetPlatform.Network.Handlers;
 
-namespace SyncnetPlatform.Actors;
+namespace SyncnetPlatform.Interfaces.Network.Handlers;
 
 public interface IPacketContextFactory
 {
