@@ -5,6 +5,7 @@ using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Utils;
 using SyncnetPlatform.Network.Attributes;
+using SyncnetPlatform.Network.Handlers;
 using SyncnetPlatform.Protocols.Generated;
 using System.Linq;
 using System.Reflection;
@@ -14,24 +15,28 @@ namespace SyncnetPlatform.Network.Utils;
 public class FlatBufferPacketRouter : IPacketRouter
 {
     private readonly ILogger<FlatBufferPacketRouter> _logger;
-    private readonly Dictionary<SystemPacket, Action<object>> _packetHandlerTable = [];
+    private readonly Dictionary<SystemPacket, Action<object, PacketContext>> _packetHandlerTable = [];
     private readonly Dictionary<SystemPacket, Func<PacketWrapper, object>> _paramExtractionFuncTable = [];
 
-    public void Execute(PacketWrapper packetWrapper)
+    public FlatBufferPacketRouter(ILogger<FlatBufferPacketRouter> logger)
+    {
+        _logger = logger;
+    }
+    public void Execute(PacketWrapper packetWrapper, PacketContext ctx)
     {
         if(_paramExtractionFuncTable.TryGetValue(packetWrapper.SystemPacketType, out var paramGetfunc))
         {
             if(_packetHandlerTable.TryGetValue(packetWrapper.SystemPacketType, out var handleFunc))
             {
-                handleFunc(paramGetfunc(packetWrapper));
+                handleFunc(paramGetfunc(packetWrapper), ctx);
                 return;
             }
         }
         _logger.LogError($"Not found the handler function for type of {packetWrapper.SystemPacketType.ToString()}");
     }
-    public FlatBufferPacketRouter(ILogger<FlatBufferPacketRouter> logger)
+    public void Execute(object packet, PacketContext ctx)
     {
-        _logger = logger;
+        Execute((PacketWrapper)packet, ctx);
     }
 
     //public void BuildParamExtractionFuncs(PacketWrapper packetWrapper) 
@@ -79,8 +84,4 @@ public class FlatBufferPacketRouter : IPacketRouter
        
     }
 
-    public void Execute(object packet)
-    {
-        Execute((PacketWrapper)packet);
-    }
 }

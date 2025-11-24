@@ -20,9 +20,8 @@ public static class WebApplicationBuilderExtension
     public static void UseSyncnetPlatform(this WebApplicationBuilder builder)
     {
         builder.Services.AddTransient<IGameSessionService, GameSessionService>();
-        //builder.Services.AddTransient<SystemPacketHandler>();
         builder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
-        //builder.Services.AddTransient<ICustomPacketHandler, CustomPacketHandler>();
+        builder.Services.AddSingleton<IPacketContextFactory, PacketContextFactory>();
         builder.UseOrleansClient(configure =>
         {
             configure.Configure<ClusterOptions>(options =>
@@ -50,6 +49,7 @@ public static class HostApplicationBuilderExtension
     public static void UseSyncnetPlatform(this HostApplicationBuilder appBuilder)
     {
         appBuilder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
+        appBuilder.Services.AddSingleton<IPacketContextFactory, PacketContextFactory>();
 
         appBuilder.UseOrleans(builder =>
         {
