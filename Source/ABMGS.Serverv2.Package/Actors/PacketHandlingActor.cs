@@ -13,17 +13,15 @@ using SyncnetPlatform.Utils;
 
 namespace SyncnetPlatform.Actors;
 
-public interface ISystemPacketHandler
+public interface IPacketHandler
 {
 
 }
-
-public class SystemPacketHandlerBase : ISystemPacketHandler
+public interface ISystemPacketHandler : IPacketHandler
 {
-    
 }
 
-public class SystemPacketHandler : SystemPacketHandlerBase
+public class SystemPacketHandler : ISystemPacketHandler
 {
     private readonly ILogger<SystemPacketHandler> _logger;
     public SystemPacketHandler(ILogger<SystemPacketHandler> logger)
@@ -43,12 +41,12 @@ public class SystemPacketHandler : SystemPacketHandlerBase
     {
         _logger.LogInformation($"HandlePing, Seq is {request.Seq}");
 
-        byte[] SendBackData = SyncnetPacketBuilder.Build(new PongArgs(request.Seq + 1));
-
-        //ISendDataGrain sendDataGrain = ctx.SendData() GrainFactory.GetGrain<ISendDataGrain>(this.GetGrainId().GetGuidKey());
+        //ISendDataGrain sendDataGrain = GrainFactory.GetGrain<ISendDataGrain>(this.GetGrainId().GetGuidKey());
         // await sendDataGrain.Send(SendBackData);
         
-        await ctx.SendData(ctx.GetPlayerId(), SendBackData);
+        await ctx.SendData(
+            ctx.GetPlayerId(),
+            SyncnetPacketBuilder.Build(new PongArgs(request.Seq + 1)));
     }
     [PacketHandler(typeof(Pong))]
     public async Task HandlePong(Pong request, PacketContext ctx)
@@ -59,23 +57,26 @@ public class SystemPacketHandler : SystemPacketHandlerBase
 
 
 
-public class PacketHandlingActor : Grain, IPacketHandler
+public class PacketHandlingActor : Grain, IPacketHandlerActor
 {
     private readonly IPacketRouter _routeTable;
     private readonly ILogger<PacketHandlingActor> _logger;
     private readonly QueueWithTCS<byte[]> _receiveQueue;
     private readonly IPacketContextFactory _packetContextFactory;
     private CancellationTokenSource? _ctsForRunRoutingPackets;
+    private readonly ISystemPacketHandler _systemPacketHandler;
     private Task? _runRoutingPackets;
     public PacketHandlingActor(
         ILogger<PacketHandlingActor> logger, 
         IPacketRouter routeTable,
-        IPacketContextFactory packetContextFactory)
+        IPacketContextFactory packetContextFactory,
+        ISystemPacketHandler systemPacketHandler)
     {
         _logger = logger;
         _routeTable = routeTable;
         _receiveQueue = new QueueWithTCS<byte[]>();
         _packetContextFactory = packetContextFactory;
+        _systemPacketHandler = systemPacketHandler;
     }
 
     public override Task OnActivateAsync(CancellationToken cancellationToken)
@@ -85,7 +86,7 @@ public class PacketHandlingActor : Grain, IPacketHandler
         _runRoutingPackets =  RunRoutingPackets(_ctsForRunRoutingPackets.Token);
 
         _routeTable.BuildParamExtractionFuncs<PacketWrapper>();
-        _routeTable.BuildPacketHandlerFunctions<PacketHandlingActor>(this);
+        _routeTable.BuildPacketHandlerFunctions<ISystemPacketHandler>(_systemPacketHandler);
         return Task.CompletedTask;
     }
     public override async Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)

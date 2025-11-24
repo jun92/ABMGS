@@ -95,7 +95,7 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
     }
     protected async Task RunGameLoop(Guid playerId, WebSocket SocketObject, CancellationToken mainLoopExitToken)
     {
-        IPacketHandler packetHandlingActor = _clusterClient.GetGrain<IPacketHandler>(playerId);
+        IPacketHandlerActor packetHandlingActor = _clusterClient.GetGrain<IPacketHandlerActor>(playerId);
 
         while (!mainLoopExitToken.IsCancellationRequested)
         {
