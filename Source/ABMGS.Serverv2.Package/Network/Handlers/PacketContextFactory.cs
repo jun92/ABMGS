@@ -1,7 +1,6 @@
 using SyncnetPlatform.Interfaces.Network.Handlers;
-using SyncnetPlatform.Network.Handlers;
 
-namespace SyncnetPlatform.Actors;
+namespace SyncnetPlatform.Network.Handlers;
 
 public class PacketContextFactory : IPacketContextFactory
 {
