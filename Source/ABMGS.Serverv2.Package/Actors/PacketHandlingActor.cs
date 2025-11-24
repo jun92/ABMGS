@@ -30,26 +30,6 @@ public class SystemPacketHandler : SystemPacketHandlerBase
     }
 }
 
-public class PacketContextFactory : IPacketContextFactory
-{
-    private readonly IGrainFactory _grainFactory;
-
-    public PacketContextFactory(IGrainFactory grainFactory)
-    {
-        _grainFactory = grainFactory;
-    }
-
-    public PacketContext Create(Guid playerId)
-    {
-        return new PacketContext(playerId, _grainFactory);
-    }
-}
-
-public interface IPacketContextFactory
-{
-    public PacketContext Create(Guid playerId);
-}
-
 public class PacketHandlingActor : Grain, IPacketHandler
 {
     private readonly IPacketRouter _routeTable;
