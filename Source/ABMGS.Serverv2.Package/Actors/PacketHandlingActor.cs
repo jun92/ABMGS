@@ -7,6 +7,7 @@ using SyncnetPlatform.Network.Attributes;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Protocols.Generated;
 using SyncnetPlatform.Utils;
+using SyncnetPlatform.Network.Handlers;
 
 namespace SyncnetPlatform.Actors;
 
@@ -28,20 +29,44 @@ public class SystemPacketHandler : SystemPacketHandlerBase
        
     }
 }
+
+public class PacketContextFactory : IPacketContextFactory
+{
+    private readonly IGrainFactory _grainFactory;
+
+    public PacketContextFactory(IGrainFactory grainFactory)
+    {
+        _grainFactory = grainFactory;
+    }
+
+    public PacketContext Create(Guid playerId)
+    {
+        return new PacketContext(playerId, _grainFactory);
+    }
+}
+
+public interface IPacketContextFactory
+{
+    public PacketContext Create(Guid playerId);
+}
+
 public class PacketHandlingActor : Grain, IPacketHandler
 {
     private readonly IPacketRouter _routeTable;
     private readonly ILogger<PacketHandlingActor> _logger;
     private readonly QueueWithTCS<byte[]> _receiveQueue;
+    private readonly IPacketContextFactory _packetContextFactory;
     private CancellationTokenSource? _ctsForRunRoutingPackets;
     private Task? _runRoutingPackets;
     public PacketHandlingActor(
         ILogger<PacketHandlingActor> logger, 
-        IPacketRouter routeTable)
+        IPacketRouter routeTable,
+        IPacketContextFactory packetContextFactory)
     {
         _logger = logger;
         _routeTable = routeTable;
         _receiveQueue = new QueueWithTCS<byte[]>();
+        _packetContextFactory = packetContextFactory;
     }
 
     public override Task OnActivateAsync(CancellationToken cancellationToken)
@@ -63,7 +88,9 @@ public class PacketHandlingActor : Grain, IPacketHandler
 
     public Task InvokeHandler(byte[] data)
     {
-        _routeTable.Execute(PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data)));
+        _routeTable.Execute(
+            PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data)), 
+            _packetContextFactory.Create(this.GetGrainId().GetGuidKey()));
         return Task.CompletedTask;
     }
 
@@ -83,25 +110,25 @@ public class PacketHandlingActor : Grain, IPacketHandler
     }
 
     [PacketHandler(typeof(Dummy))]
-    public async Task HandleDummpy(Dummy dummpy)
+    public async Task HandleDummpy(Dummy dummpy, PacketContext ctx)
     {
         _logger.LogError("Dummy packet received. Are you dummy?");
     }
 
 
     [PacketHandler(typeof(Ping))]
-    public async Task HandlePing(Ping request)
+    public async Task HandlePing(Ping request, PacketContext ctx)
     {
         _logger.LogInformation($"HandlePing, Seq is {request.Seq}");
 
-        //new PongArgs(Seq+1)
+
         byte[] SendBackData = SyncnetPacketBuilder.Build(new PongArgs(request.Seq + 1));
 
         ISendDataGrain sendDataGrain = GrainFactory.GetGrain<ISendDataGrain>(this.GetGrainId().GetGuidKey());
         await sendDataGrain.Send(SendBackData);
     }
     [PacketHandler(typeof(Pong))]
-    public async Task HandlePong(Pong request)
+    public async Task HandlePong(Pong request, PacketContext ctx)
     {
         _logger.LogError("This should not be called.");
     }
