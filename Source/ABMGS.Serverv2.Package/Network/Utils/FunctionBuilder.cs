@@ -27,7 +27,6 @@ public static class FunctionBuilder
         PacketHandlerAttribute? packetHandlerAttribute = method.GetCustomAttribute<PacketHandlerAttribute>();
         ArgumentNullException.ThrowIfNull(packetHandlerAttribute);
 
-        //Expression packetHandlerInstanceExpression = Expression.Constant(classInstance, typeof(HoldingClassType));
         Expression packetHandlerInstanceExpression = Expression.Constant(classInstance, classInstance.GetType());
         ParameterExpression parameter = Expression.Parameter(typeof(object));
         ParameterExpression paramPacketContext = Expression.Parameter(typeof(PacketContext));
