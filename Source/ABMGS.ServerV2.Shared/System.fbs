@@ -2,6 +2,11 @@ include "Custom.fbs";
 
 namespace SyncnetPlatform.Protocols.Generated;
 
+
+struct GuidType {
+    bytes: [ubyte:16];
+}
+
 union SystemPacket {
     Ping,
     Pong,
@@ -27,7 +32,7 @@ table ReqUserInfo {
 }
 
 table ResUserInfo {
-    player_id: [ubyte:16]; //Guid compatible
+    player_id: GuidType;
     player_name: string;
     level :int;
     exp: ulong;

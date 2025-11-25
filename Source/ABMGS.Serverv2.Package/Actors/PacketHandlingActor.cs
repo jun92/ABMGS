@@ -55,6 +55,11 @@ public class SystemPacketHandler : ISystemPacketHandler
     {
         _logger.LogError("This should not be called.");
     }
+    [PacketHandler(typeof(ReqUserInfo))]
+    public async Task HandleReqUserInfo(ReqUserInfo request, PacketContext ctx)
+    {
+        IPlayerActor player = ctx.GetPlayer();
+    }
 }
 
 
