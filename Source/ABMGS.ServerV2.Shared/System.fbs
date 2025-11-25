@@ -3,9 +3,10 @@ include "Custom.fbs";
 namespace SyncnetPlatform.Protocols.Generated;
 
 union SystemPacket {
-    Dummy,
     Ping,
     Pong,
+    ReqUserInfo,
+    ResUserInfo
 }
 
 table PacketWrapper {
@@ -13,15 +14,23 @@ table PacketWrapper {
     custom_packet: CustomPacket;
 }
 
-table Dummy {
-    id: int;
-}
 
 table Ping {
     seq: int;
 }
 table Pong {
     seq: int;
+}
+
+table ReqUserInfo {
+    
+}
+
+table ResUserInfo {
+    player_id: [ubyte:16]; //Guid compatible
+    player_name: string;
+    level :int;
+    exp: ulong;
 }
 
 root_type PacketWrapper;
