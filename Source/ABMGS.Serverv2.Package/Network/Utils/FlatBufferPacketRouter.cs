@@ -1,6 +1,5 @@
 using Google.FlatBuffers;
 using Microsoft.Extensions.Logging;
-using SyncnetPlatform.Actors;
 using SyncnetPlatform.Enums;
 using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Interfaces.Network.Handlers;

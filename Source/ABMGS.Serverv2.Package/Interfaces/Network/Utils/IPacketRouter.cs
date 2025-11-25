@@ -1,6 +1,6 @@
 using Google.FlatBuffers;
-using SyncnetPlatform.Actors;
 using SyncnetPlatform.Interfaces.Actors;
+using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Network.Handlers;
 using SyncnetPlatform.Protocols.Generated;
 
