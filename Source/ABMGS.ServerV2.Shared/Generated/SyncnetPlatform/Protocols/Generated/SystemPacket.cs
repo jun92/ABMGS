@@ -8,9 +8,10 @@ namespace SyncnetPlatform.Protocols.Generated
 public enum SystemPacket : byte
 {
   NONE = 0,
-  Dummy = 1,
-  Ping = 2,
-  Pong = 3,
+  Ping = 1,
+  Pong = 2,
+  ReqUserInfo = 3,
+  ResUserInfo = 4,
 };
 
 
@@ -22,14 +23,17 @@ static public class SystemPacketVerify
     bool result = true;
     switch((SystemPacket)typeId)
     {
-      case SystemPacket.Dummy:
-        result = SyncnetPlatform.Protocols.Generated.DummyVerify.Verify(verifier, tablePos);
-        break;
       case SystemPacket.Ping:
         result = SyncnetPlatform.Protocols.Generated.PingVerify.Verify(verifier, tablePos);
         break;
       case SystemPacket.Pong:
         result = SyncnetPlatform.Protocols.Generated.PongVerify.Verify(verifier, tablePos);
+        break;
+      case SystemPacket.ReqUserInfo:
+        result = SyncnetPlatform.Protocols.Generated.ReqUserInfoVerify.Verify(verifier, tablePos);
+        break;
+      case SystemPacket.ResUserInfo:
+        result = SyncnetPlatform.Protocols.Generated.ResUserInfoVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;
