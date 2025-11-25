@@ -21,6 +21,11 @@ public interface ISystemPacketHandler : IPacketHandler
 {
 }
 
+public interface ICustomPacketHandler : IPacketHandler
+{
+
+}
+
 public class SystemPacketHandler : ISystemPacketHandler
 {
     private readonly ILogger<SystemPacketHandler> _logger;
