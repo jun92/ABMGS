@@ -32,7 +32,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ABMGS.Serverv2.Package\ABMGS.Serverv2.Package.csproj" />
-    <ProjectReference Include="..\ABMGS.ServerV2.Shared\ABMGS.ServerV2.Shared.csproj" />
     <ProjectReference Include="..\AppServiceDefault\AppServiceDefault.csproj" />
   </ItemGroup>
 
