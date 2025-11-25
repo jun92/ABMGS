@@ -16,6 +16,7 @@ namespace SyncnetPlatform.Extensions;
 
 public static class WebApplicationBuilderExtension
 {
+    // For Clients
     public static void UseSyncnetPlatform(this WebApplicationBuilder builder)
     {
         builder.Services.AddTransient<IGameSessionService, GameSessionService>();
@@ -38,7 +39,7 @@ public static class WebApplicationBuilderExtension
         
     }
 }
-
+// For Silos
 public static class HostApplicationBuilderExtension
 {
     public static void UseSyncnetPlatform(this HostApplicationBuilder appBuilder)
@@ -61,4 +62,6 @@ public static class HostApplicationBuilderExtension
             });
         });
     }
+
+    
 }
