@@ -2,18 +2,21 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SyncnetPlatform.Databases;
 
 #nullable disable
 
-namespace ABMGS.ServerV2.Migrations.Migrations
+namespace SyncnetPlatform.Migrations
 {
     [DbContext(typeof(SyncnetDbContext))]
-    partial class SyncnetDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251126133716_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

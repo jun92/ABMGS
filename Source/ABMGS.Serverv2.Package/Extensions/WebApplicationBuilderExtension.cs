@@ -70,7 +70,7 @@ public static class HostApplicationBuilderExtension
         builder.Services.AddDbContextPool<SyncnetDbContext>(opt => {
             opt.UseNpgsql(builder.Configuration.GetConnectionString("npgsql"), optionBuilder =>
             {
-             //   optionBuilder.MigrationsAssembly("ABMGS.ServerV2.Migrations");
+                optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
             });
         });
 

@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace ABMGS.ServerV2.Migrations.Migrations
+namespace SyncnetPlatform.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
