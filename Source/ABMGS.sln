@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABMGS.ServerV2.AspireTest",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABMGS.ServerV2.Silo", "ABMGS.ServerV2.Silo\ABMGS.ServerV2.Silo.csproj", "{2764B941-615C-6D1B-5B18-BA7EA8D73FF3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ABMGS.ServerV2.Migrations", "ABMGS.ServerV2.Migrations\ABMGS.ServerV2.Migrations.csproj", "{096FE426-11EA-DDD0-CB60-9B97C47DCAAD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +52,10 @@ Global
 		{2764B941-615C-6D1B-5B18-BA7EA8D73FF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2764B941-615C-6D1B-5B18-BA7EA8D73FF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2764B941-615C-6D1B-5B18-BA7EA8D73FF3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{096FE426-11EA-DDD0-CB60-9B97C47DCAAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{096FE426-11EA-DDD0-CB60-9B97C47DCAAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{096FE426-11EA-DDD0-CB60-9B97C47DCAAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{096FE426-11EA-DDD0-CB60-9B97C47DCAAD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -21,8 +21,7 @@ builder.Configuration
 builder.UseSyncnetPlatform();
 
 var host = builder.Build();
+
 await host.RunAsync();
 
-
-  
 

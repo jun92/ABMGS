@@ -7,20 +7,9 @@
     <RootNamespace>SyncnetPlatform</RootNamespace>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Attributes\**" />
-    <Compile Remove="DTOs\**" />
-    <Compile Remove="SyncnetPlatform\**" />
-    <Content Remove="Attributes\**" />
-    <Content Remove="DTOs\**" />
-    <Content Remove="SyncnetPlatform\**" />
-    <EmbeddedResource Remove="Attributes\**" />
-    <EmbeddedResource Remove="DTOs\**" />
-    <EmbeddedResource Remove="SyncnetPlatform\**" />
-    <None Remove="Attributes\**" />
-    <None Remove="DTOs\**" />
-    <None Remove="SyncnetPlatform\**" />
-  </ItemGroup>
+
+
+  
 
   <ItemGroup>
     <PackageReference Include="Google.FlatBuffers" Version="25.2.10" />
