@@ -12,6 +12,9 @@ var silo = builder.AddProject<Projects.ABMGS_ServerV2_Silo>("silo")
     .WithReference(redis)
     .WithReference(rdbms)
     .WithReplicas(2);
+    ;
+
+    
 
 builder.AddProject<Projects.ABMGS_ServerV2>("orleans-frontend")
     .WaitFor(redis)

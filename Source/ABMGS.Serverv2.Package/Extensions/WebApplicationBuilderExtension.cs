@@ -20,7 +20,7 @@ namespace SyncnetPlatform.Extensions;
 public static class WebApplicationBuilderExtension
 {
     // For Clients
-    public static void UseSyncnetPlatform(this WebApplicationBuilder builder)
+    public static void AddSyncnetPlatformClient(this WebApplicationBuilder builder)
     {
         builder.Services.AddTransient<IGameSessionService, GameSessionService>();
         builder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
@@ -47,19 +47,22 @@ public static class WebApplicationBuilderExtension
                     builder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
             });
         });
-
-        // Database migraion.
-        //WebApplication app = builder.Build();
-        //using IServiceScope scope = app.Services.CreateScope();
-        //SyncnetDbContext context = scope.ServiceProvider.GetRequiredService<SyncnetDbContext>();
-        //context.Database.Migrate();
-        
     }
 }
 // For Silos
+
+//public static class  HostExtension
+//{
+//    public static void UseSyncnetPlatform(this IHost app)
+//    {
+//        using IServiceScope scope = app.Services.CreateScope();
+//        SyncnetDbContext context = scope.ServiceProvider.GetRequiredService<SyncnetDbContext>();
+//        context.Database.MigrateAsync().GetAwaiter().GetResult();
+//    }
+//}
 public static class HostApplicationBuilderExtension
-{
-    public static void UseSyncnetPlatform(this HostApplicationBuilder builder)
+{    
+    public static void AddSyncnetPlatform(this HostApplicationBuilder builder)
     {
         builder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
         builder.Services.AddSingleton<IPacketContextFactory, PacketContextFactory>();
@@ -85,10 +88,10 @@ public static class HostApplicationBuilderExtension
             });
         });
 
-        // Database migraion.
-        IHost app = builder.Build();
-        using IServiceScope scope = app.Services.CreateScope();
-        SyncnetDbContext context = scope.ServiceProvider.GetRequiredService<SyncnetDbContext>();
-        context.Database.MigrateAsync().GetAwaiter().GetResult();
+        using (var scope = builder.Services.BuildServiceProvider().CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<SyncnetDbContext>();
+            db.Database.Migrate();
+        }
     }
 }

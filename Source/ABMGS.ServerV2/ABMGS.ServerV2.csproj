@@ -7,16 +7,10 @@
     <RootNamespace>SyncnetPlatform</RootNamespace>
   </PropertyGroup>
 
-
-
-  
-
   <ItemGroup>
     <PackageReference Include="Google.FlatBuffers" Version="25.2.10" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.10" />
-    <PackageReference Include="Microsoft.Orleans.Clustering.Redis" Version="9.2.1" />
-    <PackageReference Include="Microsoft.Orleans.Server" Version="9.2.1" />
   </ItemGroup>
 
   <ItemGroup>

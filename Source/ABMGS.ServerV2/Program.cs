@@ -8,10 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
-builder.AddServiceDefaults();
+// builder.AddServiceDefaults();
 
 // SyncnetPlatform Actors
-builder.UseSyncnetPlatform();
+builder.AddSyncnetPlatformClient();
 
 var app = builder.Build();
 
