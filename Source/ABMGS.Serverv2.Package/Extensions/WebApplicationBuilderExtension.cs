@@ -91,6 +91,4 @@ public static class HostApplicationBuilderExtension
         SyncnetDbContext context = scope.ServiceProvider.GetRequiredService<SyncnetDbContext>();
         context.Database.MigrateAsync().GetAwaiter().GetResult();
     }
-
-    
 }
