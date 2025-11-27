@@ -18,7 +18,7 @@ builder.Configuration
     .AddJsonFile($"appsettings.{EnvironmentName}.json", true, true)
     .AddEnvironmentVariables();
 
-builder.AddSyncnetPlatform();
+builder.AddSyncnetPlatformSilo();
 
 var host = builder.Build();
 

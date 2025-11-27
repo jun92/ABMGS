@@ -11,7 +11,7 @@ builder.Services.AddHealthChecks();
 // builder.AddServiceDefaults();
 
 // SyncnetPlatform Actors
-builder.AddSyncnetPlatformClient();
+builder.AddSyncnetPlatformFrontend();
 
 var app = builder.Build();
 
