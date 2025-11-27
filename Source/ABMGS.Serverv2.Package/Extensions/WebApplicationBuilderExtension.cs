@@ -20,7 +20,7 @@ namespace SyncnetPlatform.Extensions;
 public static class WebApplicationBuilderExtension
 {
     // For Clients
-    public static void AddSyncnetPlatformClient(this WebApplicationBuilder builder)
+    public static void AddSyncnetPlatformFrontend(this WebApplicationBuilder builder)
     {
         builder.Services.AddTransient<IGameSessionService, GameSessionService>();
         builder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
@@ -49,20 +49,10 @@ public static class WebApplicationBuilderExtension
         });
     }
 }
-// For Silos
 
-//public static class  HostExtension
-//{
-//    public static void UseSyncnetPlatform(this IHost app)
-//    {
-//        using IServiceScope scope = app.Services.CreateScope();
-//        SyncnetDbContext context = scope.ServiceProvider.GetRequiredService<SyncnetDbContext>();
-//        context.Database.MigrateAsync().GetAwaiter().GetResult();
-//    }
-//}
 public static class HostApplicationBuilderExtension
 {    
-    public static void AddSyncnetPlatform(this HostApplicationBuilder builder)
+    public static void AddSyncnetPlatformSilo(this HostApplicationBuilder builder)
     {
         builder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
         builder.Services.AddSingleton<IPacketContextFactory, PacketContextFactory>();
