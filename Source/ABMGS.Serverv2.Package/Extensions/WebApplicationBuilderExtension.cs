@@ -13,6 +13,7 @@ using SyncnetPlatform.Interfaces.Network.Utils;
 using SyncnetPlatform.Network.Handlers;
 using SyncnetPlatform.Network.Sessions;
 using SyncnetPlatform.Network.Utils;
+using SyncnetPlatform.Repositories;
 using System.Threading.Tasks;
 
 namespace SyncnetPlatform.Extensions;
@@ -33,6 +34,8 @@ public static class WebApplicationBuilderExtension
            //     optionBuilder.MigrationsAssembly("ABMGS.ServerV2.Migrations");
             });
         });
+        builder.Services.AddTransient<IPlayerModelRepositoy, rdbPlayerModelRepository>();
+
 
         builder.UseOrleansClient(configure =>
         {
@@ -50,19 +53,37 @@ public static class WebApplicationBuilderExtension
     }
 }
 
+public class SyncnetSiloOptionsBuilder
+{
+    public bool UseBuiltinDbContext { get; set; }
+
+    public void RegisterDbContext<DbContextType>(HostApplicationBuilder builder) where DbContextType : DbContext
+    {
+        builder.Services.AddDbContextPool<DbContextType>(opt =>
+        {
+            opt.UseNpgsql(builder.Configuration.GetConnectionString("npgsql"), optionBuilder =>
+            {
+                optionBuilder.MigrationsAssembly(typeof(DbContextType).Assembly.FullName);
+            });
+        });
+        using (var scope = builder.Services.BuildServiceProvider().CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<DbContextType>();
+            db.Database.Migrate();
+        }
+    }
+}
+
 public static class HostApplicationBuilderExtension
 {    
-    public static void AddSyncnetPlatformSilo(this HostApplicationBuilder builder)
+    public static void AddSyncnetPlatformSilo(
+        this HostApplicationBuilder builder, 
+        Action<SyncnetSiloOptionsBuilder> optionBuilder)
     {
         builder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
         builder.Services.AddSingleton<IPacketContextFactory, PacketContextFactory>();
         builder.Services.AddTransient<ISystemPacketHandler, SystemPacketHandler>();
-        builder.Services.AddDbContextPool<SyncnetDbContext>(opt => {
-            opt.UseNpgsql(builder.Configuration.GetConnectionString("npgsql"), optionBuilder =>
-            {
-                optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
-            });
-        });
+        builder.Services.AddTransient<IPlayerModelRepositoy, rdbPlayerModelRepository>();
 
         builder.UseOrleans(builder =>
         {
@@ -77,11 +98,25 @@ public static class HostApplicationBuilderExtension
                     builder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
             });
         });
+        SyncnetSiloOptionsBuilder options = new();
+        options.UseBuiltinDbContext = true;
 
-        using (var scope = builder.Services.BuildServiceProvider().CreateScope())
+        optionBuilder(options);
+
+        if (options.UseBuiltinDbContext)
         {
-            var db = scope.ServiceProvider.GetRequiredService<SyncnetDbContext>();
-            db.Database.Migrate();
+            builder.Services.AddDbContextPool<SyncnetDbContext>(opt =>
+            {
+                opt.UseNpgsql(builder.Configuration.GetConnectionString("npgsql"), optionBuilder =>
+                {
+                    optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
+                });
+            });
+            using (var scope = builder.Services.BuildServiceProvider().CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<SyncnetDbContext>();
+                db.Database.Migrate();
+            }
         }
     }
 }
