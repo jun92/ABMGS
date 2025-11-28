@@ -8,13 +8,13 @@ using Npgsql.EntityFrameworkCore.PostgreSQL;
 
 namespace SyncnetPlatform.Databases;
 
-public class SyncnetDbContext : DbContext
+public class SyncnetDbContext(DbContextOptions<SyncnetDbContext> options) : DbContext(options)
 {
-    public DbSet<PlayerDataModelExtend>? players;
+    public DbSet<PlayerDataModel> players;
 
-    public SyncnetDbContext(DbContextOptions<SyncnetDbContextExtend> options): base(options)
-    {
-    }
+    //public SyncnetDbContext(DbContextOptions<SyncnetDbContext> options): base(options)
+    //{
+    //}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -24,21 +24,21 @@ public class SyncnetDbContext : DbContext
 
     protected void OnModelCreating_Player(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<PlayerDataModelExtend>().ToTable("players");
-        modelBuilder.Entity<PlayerDataModelExtend>().HasKey(p => p.Id);
-        modelBuilder.Entity<PlayerDataModelExtend>().Property(p => p.Id).ValueGeneratedOnAdd();
-        modelBuilder.Entity<PlayerDataModelExtend>().HasIndex(p => p.PlayerId).IsUnique();
+        modelBuilder.Entity<PlayerDataModel>().ToTable("players");
+        modelBuilder.Entity<PlayerDataModel>().HasKey(p => p.Id);
+        modelBuilder.Entity<PlayerDataModel>().Property(p => p.Id).ValueGeneratedOnAdd();
+        modelBuilder.Entity<PlayerDataModel>().HasIndex(p => p.PlayerId).IsUnique();
 
     }
 }
 
-public class SyncnetDbContextExtend : SyncnetDbContext
-{
-    public SyncnetDbContextExtend(DbContextOptions<SyncnetDbContextExtend> options) : base(options)
-    {
+//public class SyncnetDbContextExtend : SyncnetDbContext
+//{
+//    public SyncnetDbContextExtend(DbContextOptions<SyncnetDbContextExtend> options) : base(options)
+//    {
 
-    }
-}
+//    }
+//}
 
 public class PlayerDataModel
 {
@@ -48,6 +48,6 @@ public class PlayerDataModel
 }
 
 
-public partial class PlayerDataModelExtend : PlayerDataModel
-{
-}
+//public partial class PlayerDataModelExtend : PlayerDataModel
+//{
+//}

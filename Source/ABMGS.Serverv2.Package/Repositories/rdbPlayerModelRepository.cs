@@ -26,8 +26,6 @@ public class rdbPlayerModelRepository : IPlayerModelRepositoy
         PlayerDataModel newPlayerModel = new PlayerDataModel { 
             PlayerId = playerId,
             PlayerName = playerName,
-            Level = 0,
-            Exp = 0,
         };
         await _syncnetDbContext.players.AddAsync(newPlayerModel);
     }

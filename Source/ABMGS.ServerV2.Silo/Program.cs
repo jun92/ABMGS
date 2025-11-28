@@ -23,7 +23,7 @@ builder.Configuration
 builder.AddSyncnetPlatformSilo(optionsBulider =>
 {
     optionsBulider.UseBuiltinDbContext = false;
-    optionsBulider.RegisterDbContext<SyncnetDbContextExtend>(builder);
+    optionsBulider.RegisterDbContext<SyncnetDbContext>(builder);
 });
 
 var host = builder.Build();
