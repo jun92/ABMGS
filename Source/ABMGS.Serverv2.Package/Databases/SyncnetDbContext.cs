@@ -8,7 +8,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL;
 
 namespace SyncnetPlatform.Databases;
 
-public class SyncnetDbContext(DbContextOptions<SyncnetDbContext> options) : DbContext(options)
+public class SyncnetDbContext(DbContextOptions options) : DbContext(options)
 {
     public DbSet<PlayerDataModel> players;
 

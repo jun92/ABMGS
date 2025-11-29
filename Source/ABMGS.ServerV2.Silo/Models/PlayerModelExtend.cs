@@ -20,13 +20,14 @@ public class SyncnetDbContextExtend : SyncnetDbContext
 {
 
     public DbSet<PlayerDataModelExtend> playerExtend;
-    public SyncnetDbContextExtend(DbContextOptions<SyncnetDbContext> options) : base(options)
+    public SyncnetDbContextExtend(DbContextOptions<SyncnetDbContextExtend> options) : base(options)
     {
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<PlayerDataModelExtend>().HasOne<PlayerDataModel>(p => p.PlayerDataModel);
+        //modelBuilder.Entity<PlayerDataModel>().HasOne<PlayerDataModelExtend>(p => p.);
         base.OnModelCreating(modelBuilder);
     }
 

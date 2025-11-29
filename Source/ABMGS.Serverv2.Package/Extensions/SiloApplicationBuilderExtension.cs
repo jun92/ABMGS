@@ -68,8 +68,9 @@ public class SyncnetSiloOptionsBuilder
 {
     public bool UseBuiltinDbContext { get; set; }
 
-    public void RegisterDbContext<DbContextType>(HostApplicationBuilder builder) where DbContextType : DbContext
+    public void RegisterDbContext<DbContextType>(HostApplicationBuilder builder) where DbContextType : SyncnetDbContext
     {
+        UseBuiltinDbContext = false;
         builder.Services.AddDbContextPool<DbContextType>(opt =>
         {
             opt.UseNpgsql(builder.Configuration.GetConnectionString("npgsql"), optionBuilder =>
@@ -77,6 +78,8 @@ public class SyncnetSiloOptionsBuilder
                 optionBuilder.MigrationsAssembly(typeof(DbContextType).Assembly.FullName);
             });
         });
+
+        builder.Services.AddScoped<SyncnetDbContext>(sp => sp.GetRequiredService<DbContextType>());
         using (var scope = builder.Services.BuildServiceProvider().CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<DbContextType>();
