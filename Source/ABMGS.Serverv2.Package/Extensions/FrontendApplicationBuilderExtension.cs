@@ -29,10 +29,7 @@ public static class FrontendApplicationBuilderExtension
         builder.Services.AddTransient<ISystemPacketHandler, SystemPacketHandler>();
 
         builder.Services.AddDbContextPool<SyncnetDbContext>(opt => {
-            opt.UseNpgsql(builder.Configuration.GetConnectionString("npgsql"), optionBuilder =>
-            {
-           //     optionBuilder.MigrationsAssembly("ABMGS.ServerV2.Migrations");
-            });
+            opt.UseNpgsql(builder.Configuration.GetConnectionString("npgsql"));
         });
         builder.Services.AddTransient<IPlayerModelRepositoy, rdbPlayerModelRepository>();
 

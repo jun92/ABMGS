@@ -25,7 +25,7 @@ builder.AddSyncnetPlatformSilo(optionsBulider =>
     optionsBulider.UseBuiltinDbContext = false;
     optionsBulider.RegisterDbContext<SyncnetDbContextExtend>(builder);
 });
-builder.Services.AddScoped<SyncnetDbContext>(sp => sp.GetRequiredService<SyncnetDbContextExtend>());
+
 var host = builder.Build();
 
 await host.RunAsync();

@@ -80,6 +80,7 @@ public class SyncnetSiloOptionsBuilder
         });
 
         builder.Services.AddScoped<SyncnetDbContext>(sp => sp.GetRequiredService<DbContextType>());
+
         using (var scope = builder.Services.BuildServiceProvider().CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<DbContextType>();
