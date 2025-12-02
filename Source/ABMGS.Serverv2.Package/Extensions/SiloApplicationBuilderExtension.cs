@@ -10,12 +10,8 @@ using SyncnetPlatform.Interfaces.Network.Utils;
 using SyncnetPlatform.Network.Handlers;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Repositories;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SyncnetPlatform.Extensions;
-
 
 public static class SiloApplicationBuilderExtension
 {
@@ -49,12 +45,6 @@ public static class SiloApplicationBuilderExtension
                 optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
             });
         });
-        //using (var scope = builder.Services.BuildServiceProvider().CreateScope())
-        //{
-        //    var db = scope.ServiceProvider.GetRequiredService<SyncnetDbContext>();
-        //    db.Database.Migrate();
-        //}
-
     }
     public static void AddSyncnetPlatformSilo(this HostApplicationBuilder builder)
     {
@@ -95,14 +85,7 @@ public class SyncnetSiloOptionsBuilder
                 optionBuilder.MigrationsAssembly(typeof(DbContextType).Assembly.FullName);
             });
         });
-
         builder.Services.AddScoped<SyncnetDbContext>(sp => sp.GetRequiredService<DbContextType>());
-
-        //using (var scope = builder.Services.BuildServiceProvider().CreateScope())
-        //{
-        //    var db = scope.ServiceProvider.GetRequiredService<DbContextType>();
-        //    db.Database.Migrate();
-        //}
     }
 }
 
