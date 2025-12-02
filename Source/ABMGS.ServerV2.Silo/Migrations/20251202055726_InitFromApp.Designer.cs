@@ -5,15 +5,14 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using SyncnetPlatform.Databases;
 
 #nullable disable
 
-namespace SyncnetPlatform.Migrations
+namespace ABMGS.ServerV2.Silo.Migrations
 {
-    [DbContext(typeof(SyncnetDbContext))]
-    [Migration("20251126133716_InitialCreate")]
-    partial class InitialCreate
+    [DbContext(typeof(SyncnetDbContextExtend))]
+    [Migration("20251202055726_InitFromApp")]
+    partial class InitFromApp
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +24,7 @@ namespace SyncnetPlatform.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("SyncnetPlatform.Databases.Player", b =>
+            modelBuilder.Entity("PlayerDataModelExtend", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -39,6 +38,23 @@ namespace SyncnetPlatform.Migrations
                     b.Property<int>("Level")
                         .HasColumnType("integer");
 
+                    b.HasKey("Id");
+
+                    b.ToTable("players_extend");
+                });
+
+            modelBuilder.Entity("SyncnetPlatform.Databases.PlayerDataModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Introduction")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<Guid>("PlayerId")
                         .HasColumnType("uuid");
 
@@ -51,7 +67,7 @@ namespace SyncnetPlatform.Migrations
                     b.HasIndex("PlayerId")
                         .IsUnique();
 
-                    b.ToTable("Player");
+                    b.ToTable("players", (string)null);
                 });
 #pragma warning restore 612, 618
         }

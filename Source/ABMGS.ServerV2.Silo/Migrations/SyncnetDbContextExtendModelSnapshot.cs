@@ -35,12 +35,7 @@ namespace ABMGS.ServerV2.Silo.Migrations
                     b.Property<int>("Level")
                         .HasColumnType("integer");
 
-                    b.Property<int>("PlayerDataModelId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("PlayerDataModelId");
 
                     b.ToTable("players_extend");
                 });
@@ -52,6 +47,10 @@ namespace ABMGS.ServerV2.Silo.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Introduction")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<Guid>("PlayerId")
                         .HasColumnType("uuid");
@@ -66,17 +65,6 @@ namespace ABMGS.ServerV2.Silo.Migrations
                         .IsUnique();
 
                     b.ToTable("players", (string)null);
-                });
-
-            modelBuilder.Entity("PlayerDataModelExtend", b =>
-                {
-                    b.HasOne("SyncnetPlatform.Databases.PlayerDataModel", "PlayerDataModel")
-                        .WithMany()
-                        .HasForeignKey("PlayerDataModelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PlayerDataModel");
                 });
 #pragma warning restore 612, 618
         }

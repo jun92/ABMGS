@@ -5,14 +5,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using SyncnetPlatform.Databases;
 
 #nullable disable
 
-namespace ABMGS.ServerV2.Silo.Migrations
+namespace SyncnetPlatform.Migrations
 {
-    [DbContext(typeof(SyncnetDbContextExtend))]
-    [Migration("20251129061522_InitialCreate")]
-    partial class InitialCreate
+    [DbContext(typeof(SyncnetDbContext))]
+    [Migration("20251202054148_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -23,30 +24,6 @@ namespace ABMGS.ServerV2.Silo.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("PlayerDataModelExtend", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("Exp")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<int>("Level")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("PlayerDataModelId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PlayerDataModelId");
-
-                    b.ToTable("players_extend");
-                });
 
             modelBuilder.Entity("SyncnetPlatform.Databases.PlayerDataModel", b =>
                 {
@@ -69,17 +46,6 @@ namespace ABMGS.ServerV2.Silo.Migrations
                         .IsUnique();
 
                     b.ToTable("players", (string)null);
-                });
-
-            modelBuilder.Entity("PlayerDataModelExtend", b =>
-                {
-                    b.HasOne("SyncnetPlatform.Databases.PlayerDataModel", "PlayerDataModel")
-                        .WithMany()
-                        .HasForeignKey("PlayerDataModelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PlayerDataModel");
                 });
 #pragma warning restore 612, 618
         }

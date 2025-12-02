@@ -11,14 +11,12 @@ namespace SyncnetPlatform.Databases;
 public class SyncnetDbContext(DbContextOptions options) : DbContext(options)
 {
     public DbSet<PlayerDataModel> players;
-
-    //public SyncnetDbContext(DbContextOptions<SyncnetDbContext> options): base(options)
-    //{
-    //}
+    // public DbSet<IdProviderMappingModel> idProviderMapping;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         OnModelCreating_Player(modelBuilder);
+        // OnModelCreating_IdProviderMapping(modelBuilder);
         base.OnModelCreating(modelBuilder);
     }
 
@@ -30,24 +28,38 @@ public class SyncnetDbContext(DbContextOptions options) : DbContext(options)
         modelBuilder.Entity<PlayerDataModel>().HasIndex(p => p.PlayerId).IsUnique();
 
     }
+    protected void OnModelCreating_IdProviderMapping(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<IdProviderMappingModel>().ToTable("id_provider_mapping");
+        modelBuilder.Entity<IdProviderMappingModel>().HasKey(p => p.Id);
+        modelBuilder.Entity<IdProviderMappingModel>().Property(p => p.Id).ValueGeneratedOnAdd();
+        modelBuilder.Entity<IdProviderMappingModel>().HasIndex(p => new { p.ProviderId, p.SyncnetPlayerId });
+    }
 }
 
-//public class SyncnetDbContextExtend : SyncnetDbContext
-//{
-//    public SyncnetDbContextExtend(DbContextOptions<SyncnetDbContextExtend> options) : base(options)
-//    {
+public enum IdProviderType
+{
+    Guest = 100,
+    GooglePlay,
+    Steam,
+    Apple,
+    EpicGames
+}
 
-//    }
-//}
+public class IdProviderMappingModel
+{
+    public int Id { get; set; }
+    public string ProviderId { get; set; } = string.Empty;
+    public int SyncnetPlayerId { get; set; }
+    public IdProviderType IdProviderType { get; set; }
+}
 
 public class PlayerDataModel
 {
     public int Id { get; set; }
     public Guid PlayerId { get; set; }
     public string PlayerName { get; set; } = string.Empty;
+    public string Introduction { get; set; } = string.Empty;
 }
 
 
-//public partial class PlayerDataModelExtend : PlayerDataModel
-//{
-//}

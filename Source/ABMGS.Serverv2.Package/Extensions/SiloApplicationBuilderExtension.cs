@@ -19,9 +19,7 @@ namespace SyncnetPlatform.Extensions;
 
 public static class SiloApplicationBuilderExtension
 {
-    public static void AddSyncnetPlatformSilo(
-        this HostApplicationBuilder builder,
-        Action<SyncnetSiloOptionsBuilder> optionBuilder)
+    private static void SyncnetPlatformSiloCommon(HostApplicationBuilder builder)
     {
         builder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
         builder.Services.AddSingleton<IPacketContextFactory, PacketContextFactory>();
@@ -41,25 +39,42 @@ public static class SiloApplicationBuilderExtension
                     builder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
             });
         });
+    }
+    private static void SyncnetPlatformSiloDbContext(HostApplicationBuilder builder)
+    {
+        builder.Services.AddDbContextPool<SyncnetDbContext>(opt =>
+        {
+            opt.UseNpgsql(builder.Configuration.GetConnectionString("npgsql"), optionBuilder =>
+            {
+                optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
+            });
+        });
+        using (var scope = builder.Services.BuildServiceProvider().CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<SyncnetDbContext>();
+            db.Database.Migrate();
+        }
+
+    }
+    public static void AddSyncnetPlatformSilo(this HostApplicationBuilder builder)
+    {
+        SyncnetPlatformSiloCommon(builder);
+        SyncnetPlatformSiloDbContext(builder);
+    }
+    public static void AddSyncnetPlatformSilo(
+        this HostApplicationBuilder builder,
+        Action<SyncnetSiloOptionsBuilder>? optionBuilder)
+    {
         SyncnetSiloOptionsBuilder options = new();
         options.UseBuiltinDbContext = true;
-
-        optionBuilder(options);
+        if(optionBuilder != null)
+        {
+            optionBuilder(options);
+        }
 
         if (options.UseBuiltinDbContext)
         {
-            builder.Services.AddDbContextPool<SyncnetDbContext>(opt =>
-            {
-                opt.UseNpgsql(builder.Configuration.GetConnectionString("npgsql"), optionBuilder =>
-                {
-                    optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
-                });
-            });
-            using (var scope = builder.Services.BuildServiceProvider().CreateScope())
-            {
-                var db = scope.ServiceProvider.GetRequiredService<SyncnetDbContext>();
-                db.Database.Migrate();
-            }
+            SyncnetPlatformSiloDbContext(builder);
         }
     }
 }

@@ -20,11 +20,20 @@ builder.Configuration
     .AddJsonFile($"appsettings.{EnvironmentName}.json", true, true)
     .AddEnvironmentVariables();
 
-builder.AddSyncnetPlatformSilo(optionsBulider =>
+bool UseMyCustomDb = true;
+
+if( UseMyCustomDb )
 {
-    optionsBulider.UseBuiltinDbContext = false;
-    optionsBulider.RegisterDbContext<SyncnetDbContextExtend>(builder);
-});
+    builder.AddSyncnetPlatformSilo(optionsBulider =>
+    {
+        optionsBulider.UseBuiltinDbContext = false;
+        optionsBulider.RegisterDbContext<SyncnetDbContextExtend>(builder);
+    });
+}
+else
+{
+    builder.AddSyncnetPlatformSilo();
+}
 
 var host = builder.Build();
 

@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ABMGS.ServerV2.Silo.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitFromApp : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -19,7 +19,8 @@ namespace ABMGS.ServerV2.Silo.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     PlayerId = table.Column<Guid>(type: "uuid", nullable: false),
-                    PlayerName = table.Column<string>(type: "text", nullable: false)
+                    PlayerName = table.Column<string>(type: "text", nullable: false),
+                    Introduction = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -33,18 +34,11 @@ namespace ABMGS.ServerV2.Silo.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     Level = table.Column<int>(type: "integer", nullable: false),
-                    Exp = table.Column<decimal>(type: "numeric(20,0)", nullable: false),
-                    PlayerDataModelId = table.Column<int>(type: "integer", nullable: false)
+                    Exp = table.Column<decimal>(type: "numeric(20,0)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_players_extend", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_players_extend_players_PlayerDataModelId",
-                        column: x => x.PlayerDataModelId,
-                        principalTable: "players",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -52,21 +46,16 @@ namespace ABMGS.ServerV2.Silo.Migrations
                 table: "players",
                 column: "PlayerId",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_players_extend_PlayerDataModelId",
-                table: "players_extend",
-                column: "PlayerDataModelId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "players_extend");
+                name: "players");
 
             migrationBuilder.DropTable(
-                name: "players");
+                name: "players_extend");
         }
     }
 }
