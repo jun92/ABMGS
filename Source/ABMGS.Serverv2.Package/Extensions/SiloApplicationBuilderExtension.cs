@@ -49,11 +49,11 @@ public static class SiloApplicationBuilderExtension
                 optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
             });
         });
-        using (var scope = builder.Services.BuildServiceProvider().CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<SyncnetDbContext>();
-            db.Database.Migrate();
-        }
+        //using (var scope = builder.Services.BuildServiceProvider().CreateScope())
+        //{
+        //    var db = scope.ServiceProvider.GetRequiredService<SyncnetDbContext>();
+        //    db.Database.Migrate();
+        //}
 
     }
     public static void AddSyncnetPlatformSilo(this HostApplicationBuilder builder)
