@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -10,9 +11,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ABMGS.ServerV2.Silo.Migrations
 {
     [DbContext(typeof(SyncnetDbContextExtend))]
-    partial class SyncnetDbContextExtendModelSnapshot : ModelSnapshot
+    [Migration("20251202064430_Init")]
+    partial class Init
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -40,31 +43,6 @@ namespace ABMGS.ServerV2.Silo.Migrations
                     b.ToTable("players_extend");
                 });
 
-            modelBuilder.Entity("SyncnetPlatform.Databases.IdProviderMappingModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("IdProviderType")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ProviderId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("SyncnetPlayerId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProviderId", "SyncnetPlayerId");
-
-                    b.ToTable("id_provider_mapping", (string)null);
-                });
-
             modelBuilder.Entity("SyncnetPlatform.Databases.PlayerDataModel", b =>
                 {
                     b.Property<int>("Id")
@@ -72,10 +50,6 @@ namespace ABMGS.ServerV2.Silo.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Introduction")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<Guid>("PlayerId")
                         .HasColumnType("uuid");

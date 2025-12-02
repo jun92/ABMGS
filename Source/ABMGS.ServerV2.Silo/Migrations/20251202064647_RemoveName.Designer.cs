@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ABMGS.ServerV2.Silo.Migrations
 {
     [DbContext(typeof(SyncnetDbContextExtend))]
-    [Migration("20251202055726_InitFromApp")]
-    partial class InitFromApp
+    [Migration("20251202064647_RemoveName")]
+    partial class RemoveName
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -41,6 +41,31 @@ namespace ABMGS.ServerV2.Silo.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("players_extend");
+                });
+
+            modelBuilder.Entity("SyncnetPlatform.Databases.IdProviderMappingModel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("IdProviderType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ProviderId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("SyncnetPlayerId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProviderId", "SyncnetPlayerId");
+
+                    b.ToTable("id_provider_mapping", (string)null);
                 });
 
             modelBuilder.Entity("SyncnetPlatform.Databases.PlayerDataModel", b =>

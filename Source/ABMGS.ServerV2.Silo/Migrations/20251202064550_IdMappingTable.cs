@@ -6,15 +6,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ABMGS.ServerV2.Silo.Migrations
 {
     /// <inheritdoc />
-    public partial class PackageUpdate : Migration
+    public partial class IdMappingTable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "Introduction",
-                table: "players");
-
             migrationBuilder.CreateTable(
                 name: "id_provider_mapping",
                 columns: table => new
@@ -41,13 +37,6 @@ namespace ABMGS.ServerV2.Silo.Migrations
         {
             migrationBuilder.DropTable(
                 name: "id_provider_mapping");
-
-            migrationBuilder.AddColumn<string>(
-                name: "Introduction",
-                table: "players",
-                type: "text",
-                nullable: false,
-                defaultValue: "");
         }
     }
 }

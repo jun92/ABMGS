@@ -7,7 +7,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ABMGS.ServerV2.Silo.Migrations
 {
     /// <inheritdoc />
-    public partial class InitFromApp : Migration
+    public partial class Init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -19,8 +19,7 @@ namespace ABMGS.ServerV2.Silo.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     PlayerId = table.Column<Guid>(type: "uuid", nullable: false),
-                    PlayerName = table.Column<string>(type: "text", nullable: false),
-                    Introduction = table.Column<string>(type: "text", nullable: false)
+                    PlayerName = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -10,14 +10,14 @@ namespace SyncnetPlatform.Extensions;
 
 public static class IHostExtension
 {
-    public static IHost Migrate<DbContextType>(this IHost host) where DbContextType : SyncnetDbContext
+    public static IHost SyncnetDbMigrate<DbContextType>(this IHost host) where DbContextType : SyncnetDbContext
     {
         using var scope = host.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<DbContextType>();
         db.Database.Migrate();
         return host;
     }
-    public static IHost Migrate(this IHost host)
+    public static IHost SyncnetDbMigrate(this IHost host)
     {
         using var scope = host.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<SyncnetDbContext>();

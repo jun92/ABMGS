@@ -11,8 +11,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ABMGS.ServerV2.Silo.Migrations
 {
     [DbContext(typeof(SyncnetDbContextExtend))]
-    [Migration("20251202063855_PackageUpdate")]
-    partial class PackageUpdate
+    [Migration("20251202064550_IdMappingTable")]
+    partial class IdMappingTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -75,6 +75,10 @@ namespace ABMGS.ServerV2.Silo.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Introduction")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<Guid>("PlayerId")
                         .HasColumnType("uuid");
