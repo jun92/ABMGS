@@ -11,12 +11,12 @@ namespace SyncnetPlatform.Databases;
 public class SyncnetDbContext(DbContextOptions options) : DbContext(options)
 {
     public DbSet<PlayerDataModel> players;
-    // public DbSet<IdProviderMappingModel> idProviderMapping;
+    public DbSet<IdProviderMappingModel> idProviderMapping;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         OnModelCreating_Player(modelBuilder);
-        // OnModelCreating_IdProviderMapping(modelBuilder);
+        OnModelCreating_IdProviderMapping(modelBuilder);
         base.OnModelCreating(modelBuilder);
     }
 
@@ -59,7 +59,6 @@ public class PlayerDataModel
     public int Id { get; set; }
     public Guid PlayerId { get; set; }
     public string PlayerName { get; set; } = string.Empty;
-    public string Introduction { get; set; } = string.Empty;
 }
 
 

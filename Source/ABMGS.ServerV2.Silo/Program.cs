@@ -36,7 +36,14 @@ else
 }
 
 var host = builder.Build();
-
+if(UseMyCustomDb)
+{
+    host.Migrate<SyncnetDbContext>();
+}
+else
+{
+    host.Migrate();
+}
 await host.RunAsync();
 
 

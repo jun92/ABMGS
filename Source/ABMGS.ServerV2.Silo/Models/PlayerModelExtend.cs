@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 public class SyncnetDbContextExtend : SyncnetDbContext
 {
 
-    public DbSet<PlayerDataModelExtend> playerExtend;
+    public DbSet<PlayerDataModelExtend> playerExtend { get; set; }
     public SyncnetDbContextExtend(DbContextOptions<SyncnetDbContextExtend> options) : base(options)
     {
     }

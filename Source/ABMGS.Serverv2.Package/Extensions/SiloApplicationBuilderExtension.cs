@@ -65,6 +65,8 @@ public static class SiloApplicationBuilderExtension
         this HostApplicationBuilder builder,
         Action<SyncnetSiloOptionsBuilder>? optionBuilder)
     {
+        SyncnetPlatformSiloCommon(builder);
+
         SyncnetSiloOptionsBuilder options = new();
         options.UseBuiltinDbContext = true;
         if(optionBuilder != null)
@@ -96,11 +98,11 @@ public class SyncnetSiloOptionsBuilder
 
         builder.Services.AddScoped<SyncnetDbContext>(sp => sp.GetRequiredService<DbContextType>());
 
-        using (var scope = builder.Services.BuildServiceProvider().CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<DbContextType>();
-            db.Database.Migrate();
-        }
+        //using (var scope = builder.Services.BuildServiceProvider().CreateScope())
+        //{
+        //    var db = scope.ServiceProvider.GetRequiredService<DbContextType>();
+        //    db.Database.Migrate();
+        //}
     }
 }
 
