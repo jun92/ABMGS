@@ -1,0 +1,25 @@
+
+namespace SyncnetPlatform.Protocols.Generated;
+
+struct GuidType {
+    bytes: [ubyte:16];
+}
+
+table ReqCreateNewUser {
+    player_name: string;
+}
+
+table ResCreateNewUser {
+    error_code: int;
+}
+
+table ReqUserInfo {
+    
+}
+
+table ResUserInfo {
+    player_id: GuidType;
+    player_name: string;
+    level :int;
+    exp: ulong;
+}

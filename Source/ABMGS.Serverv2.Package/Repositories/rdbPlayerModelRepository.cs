@@ -21,42 +21,27 @@ public class rdbPlayerModelRepository : IPlayerModelRepositoy
     }
 
 
-    public async Task Create(Guid playerId, string playerName)
+    public async Task Create(PlayerDataModel newPlayerModel)
     {
-        PlayerDataModel newPlayerModel = new PlayerDataModel { 
-            PlayerId = playerId,
-            PlayerName = playerName,
-        };
         await _syncnetDbContext.players.AddAsync(newPlayerModel);
     }
 
-    public async Task<PlayerDataModel> Get(Guid playerId)
+    public async Task<PlayerDataModel?> Get(Guid playerId)
     {
         var playerModel = await _syncnetDbContext.players.Where(w => w.PlayerId == playerId).FirstOrDefaultAsync();
-        if( playerModel == null )
-        {
-            throw new KeyNotFoundException();
-        }
         return playerModel;
     }
 
-    public async Task<PlayerDataModel> Get(int id)
+    public async Task<PlayerDataModel?> Get(int id)
     {
         var playerModel = await _syncnetDbContext.players.Where(w => w.Id == id).FirstOrDefaultAsync();
-        if (playerModel == null)
-        {
-            throw new KeyNotFoundException();
-        }
         return playerModel;
-
     }
-
-
 }
 
 public interface IPlayerModelRepositoy
 {
-    Task Create(Guid playerId, string playerName);
-    Task<PlayerDataModel> Get(Guid playerId);
-    Task<PlayerDataModel> Get(int id);
+    Task Create(PlayerDataModel newPlayerDataModel);
+    Task<PlayerDataModel?> Get(Guid playerId);
+    Task<PlayerDataModel?> Get(int id);
 }

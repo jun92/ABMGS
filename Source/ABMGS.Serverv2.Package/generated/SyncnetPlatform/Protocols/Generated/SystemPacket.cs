@@ -10,8 +10,10 @@ public enum SystemPacket : byte
   NONE = 0,
   Ping = 1,
   Pong = 2,
-  ReqUserInfo = 3,
-  ResUserInfo = 4,
+  ReqCreateNewUser = 3,
+  ResCreateNewUser = 4,
+  ReqUserInfo = 5,
+  ResUserInfo = 6,
 };
 
 
@@ -28,6 +30,12 @@ static public class SystemPacketVerify
         break;
       case SystemPacket.Pong:
         result = SyncnetPlatform.Protocols.Generated.PongVerify.Verify(verifier, tablePos);
+        break;
+      case SystemPacket.ReqCreateNewUser:
+        result = SyncnetPlatform.Protocols.Generated.ReqCreateNewUserVerify.Verify(verifier, tablePos);
+        break;
+      case SystemPacket.ResCreateNewUser:
+        result = SyncnetPlatform.Protocols.Generated.ResCreateNewUserVerify.Verify(verifier, tablePos);
         break;
       case SystemPacket.ReqUserInfo:
         result = SyncnetPlatform.Protocols.Generated.ReqUserInfoVerify.Verify(verifier, tablePos);

@@ -15,7 +15,12 @@ public class SyncnetDbContextExtend : SyncnetDbContext
     {
         modelBuilder.Entity<PlayerDataModelExtend>().HasKey(p => p.Id);
         modelBuilder.Entity<PlayerDataModelExtend>().Property(p => p.Id).ValueGeneratedOnAdd();
-        modelBuilder.Entity<PlayerDataModelExtend>().HasOne<PlayerDataModel>().WithMany().HasForeignKey(p => p.PlayerId).OnDelete(DeleteBehavior.Cascade);
+        // modelBuilder.Entity<PlayerDataModelExtend>().HasOne<PlayerDataModel>().WithMany().HasForeignKey(p => p.PlayerId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<PlayerDataModelExtend>()
+            .HasOne<PlayerDataModel>()
+            .WithMany()
+            .OnDelete(DeleteBehavior.Cascade)
+            .HasForeignKey(p => p.PlayerId);
         base.OnModelCreating(modelBuilder);
     }
 
