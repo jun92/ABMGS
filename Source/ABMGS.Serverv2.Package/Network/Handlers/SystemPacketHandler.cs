@@ -34,5 +34,12 @@ public class SystemPacketHandler : ISystemPacketHandler
     {
         IPlayerActor player = ctx.GetPlayer();
     }
+
+    [PacketHandler(typeof(ReqCreateNewUser))]
+    public async Task HandleReqCreateNewUser(ReqCreateNewUser request, PacketContext ctx)
+    {
+        var player = ctx.GetPlayer();
+
+    }
 }
 
