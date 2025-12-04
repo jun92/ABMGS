@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SyncnetPlatform.Databases;
 using SyncnetPlatform.Interfaces.Actors;
@@ -23,27 +24,28 @@ public class PlayerDataActor: Grain, IPlayerDataActor
 {
     private readonly ILogger<PlayerDataActor> _logger;
     private readonly IEnumerable<IPlayerDataBehavior> _playerDataBehavior;
-    private readonly SyncnetDbContext _db;
+    private readonly IDbContextFactory<SyncnetDbContext> _dbFactory; 
     public PlayerDataActor(
         ILogger<PlayerDataActor> logger, 
         IEnumerable<IPlayerDataBehavior> playerDataBehaviors,
-        SyncnetDbContext db
+        IDbContextFactory<SyncnetDbContext> dbFactory
         )
     {
         _logger = logger;
         _playerDataBehavior = playerDataBehaviors;
-        _db = db;
+        _dbFactory = dbFactory;
     }
 
     protected PlayerDataContext CreatePlayerDataContext() => new()
     {
         PlayerId = this.GetPrimaryKey(),
-        Db = _db,
+        Db = _dbFactory.CreateDbContext(),
         logger = _logger
     };
 
     public async Task CreateNewPlayerData(string playerName)
     {
+        var _db = await _dbFactory.CreateDbContextAsync();
         await _db.players.AddAsync(new PlayerDataModel
         {
             PlayerId = this.GetPrimaryKey(),
