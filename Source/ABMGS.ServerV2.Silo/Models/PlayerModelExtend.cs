@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SyncnetPlatform.Actors;
 using SyncnetPlatform.Databases;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -29,12 +30,33 @@ public class SyncnetDbContextExtend : SyncnetDbContext
 
 }
 
+public class PlayerDataBehavior : IPlayerDataBehavior
+{
+    public async Task OnCreateNewPlayer(PlayerDataContext ctx)
+    {
+        var db = ctx.Db as SyncnetDbContextExtend;
+        if( db != null )
+        {
+            await db.playerExtend.AddAsync(new PlayerDataModelExtend
+            {
+                PlayerId = ctx.PlayerId,
+                Level = 1,
+                Exp = 0
+            });
+        }
+        else
+        {
+            throw new InvalidDataException();
+        }
+    }
+}
+
 // Extend table for RPG game
 [Table("players_rpg_extend")]
 public class PlayerDataModelExtend
 {
     public int Id { get; set; }
-    public int PlayerId { get; set; }
+    public Guid PlayerId { get; set; }
     public int Level { get; set; }
     public ulong Exp { get; set; }
 }

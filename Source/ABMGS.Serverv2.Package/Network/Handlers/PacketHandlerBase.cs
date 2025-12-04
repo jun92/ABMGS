@@ -18,8 +18,8 @@ public class PacketContext
     }
     public Guid GetPlayerId() => _playerId;
     public IPlayerActor GetPlayer() => _grainFactory.GetGrain<IPlayerActor>(_playerId);
-    public IPlayerDataActor GetPlayerData(Guid playerGuid) => _grainFactory.GetGrain<IPlayerDataActor>(_playerId);
-    public IPlayerInventoryActor GetPlayerInventory(Guid playerGuid) => _grainFactory.GetGrain<IPlayerInventoryActor>(_playerId);
+    public IPlayerDataActor GetPlayerData() => _grainFactory.GetGrain<IPlayerDataActor>(_playerId);
+    public IPlayerInventoryActor GetPlayerInventory() => _grainFactory.GetGrain<IPlayerInventoryActor>(_playerId);
     public async Task SendData(Guid toPlayerId, byte[] data)
     {
         ISendDataGrain sendDataGrain = _grainFactory.GetGrain<ISendDataGrain>(_playerId);

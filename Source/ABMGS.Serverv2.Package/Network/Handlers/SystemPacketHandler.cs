@@ -38,7 +38,8 @@ public class SystemPacketHandler : ISystemPacketHandler
     [PacketHandler(typeof(ReqCreateNewUser))]
     public async Task HandleReqCreateNewUser(ReqCreateNewUser request, PacketContext ctx)
     {
-        var player = ctx.GetPlayer();
+        var PlayerData = ctx.GetPlayerData();
+        await PlayerData.CreateNewPlayerData(request.PlayerName);
 
     }
 }

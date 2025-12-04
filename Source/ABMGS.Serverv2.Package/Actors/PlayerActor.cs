@@ -30,16 +30,16 @@ public class PlayerActor : Grain, IPlayerActor
 
     public async override Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        Guid PlayerId = this.GetPrimaryKey();
-        PlayerDataModel? playerDataModel = await _repository.Get(PlayerId);
-        if (playerDataModel == null) {
-            await _repository.Create(new PlayerDataModel
-            {
-                PlayerId = PlayerId,
-                PlayerName = String.Empty,
-                Introduction = String.Empty
-            });
-        }
+        //Guid PlayerId = this.GetPrimaryKey();
+        //PlayerDataModel? playerDataModel = await _repository.Get(PlayerId);
+        //if (playerDataModel == null) {
+        //    await _repository.Create(new PlayerDataModel
+        //    {
+        //        PlayerId = PlayerId,
+        //        PlayerName = String.Empty,
+        //        Introduction = String.Empty
+        //    });
+        //}
         
     }
     
