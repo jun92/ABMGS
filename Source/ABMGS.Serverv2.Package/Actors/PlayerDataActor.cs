@@ -9,9 +9,6 @@ public interface IPlayerDataBehavior
 {
     Task OnCreateNewPlayer(PlayerDataContext ctx);
 }
-
-
-
 public class PlayerDataContext
 {
     public Guid PlayerId { get; set; }
