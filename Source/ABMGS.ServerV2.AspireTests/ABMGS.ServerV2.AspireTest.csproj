@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ABMGS.ServerV2.Package\ABMGS.Serverv2.Package.csproj" />
+    <ProjectReference Include="..\ABMGS.Serverv2.Package\ABMGS.Serverv2.Package.csproj" />
     <ProjectReference Include="..\AppHost\AppHost.csproj" />
   </ItemGroup>
 
