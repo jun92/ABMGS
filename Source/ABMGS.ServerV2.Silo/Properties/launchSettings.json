@@ -1,14 +1,14 @@
 {
-  "profiles": {
-    "Dev": {
-      "commandName": "Project",
-      "workingDirectory": ".",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "hotReloadEnabled": false
-    }
-  },
+    "profiles": {
+        "Development": {
+            "commandName": "Project",
+            "workingDirectory": ".",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "hotReloadEnabled": false
+        }
+    },
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "iisSettings": {
     "windowsAuthentication": false,

@@ -8,31 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Attributes\**" />
-    <Compile Remove="DTOs\**" />
-    <Compile Remove="SyncnetPlatform\**" />
-    <Content Remove="Attributes\**" />
-    <Content Remove="DTOs\**" />
-    <Content Remove="SyncnetPlatform\**" />
-    <EmbeddedResource Remove="Attributes\**" />
-    <EmbeddedResource Remove="DTOs\**" />
-    <EmbeddedResource Remove="SyncnetPlatform\**" />
-    <None Remove="Attributes\**" />
-    <None Remove="DTOs\**" />
-    <None Remove="SyncnetPlatform\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Google.FlatBuffers" Version="25.2.10" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="9.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.10" />
-    <PackageReference Include="Microsoft.Orleans.Clustering.Redis" Version="9.2.1" />
-    <PackageReference Include="Microsoft.Orleans.Server" Version="9.2.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ABMGS.Serverv2.Package\ABMGS.Serverv2.Package.csproj" />
-    <ProjectReference Include="..\ABMGS.ServerV2.Shared\ABMGS.ServerV2.Shared.csproj" />
     <ProjectReference Include="..\AppServiceDefault\AppServiceDefault.csproj" />
   </ItemGroup>
 

@@ -6,6 +6,8 @@ using Microsoft.Extensions.Options;
 using Orleans.Configuration;
 using StackExchange.Redis;
 using SyncnetPlatform.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using SyncnetPlatform.Databases;
 
 string? EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
@@ -18,11 +20,30 @@ builder.Configuration
     .AddJsonFile($"appsettings.{EnvironmentName}.json", true, true)
     .AddEnvironmentVariables();
 
-builder.UseSyncnetPlatform();
+bool UseMyCustomDb = false;
+
+if( UseMyCustomDb )
+{
+    builder.AddSyncnetPlatformSilo(optionsBulider =>
+    {
+        optionsBulider.UseBuiltinDbContext = false;
+        optionsBulider.RegisterDbContext<SyncnetDbContextExtend>(builder);
+    });
+}
+else
+{
+    builder.AddSyncnetPlatformSilo();
+}
 
 var host = builder.Build();
+if(UseMyCustomDb)
+{
+    host.SyncnetDbMigrate<SyncnetDbContextExtend>();
+}
+else
+{
+    host.SyncnetDbMigrate();
+}
 await host.RunAsync();
 
-
-  
 

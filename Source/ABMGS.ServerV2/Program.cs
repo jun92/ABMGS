@@ -1,17 +1,4 @@
 using SyncnetPlatform.Extensions;
-using SyncnetPlatform.Interfaces.Network.Handlers;
-using SyncnetPlatform.Interfaces.Network.Sessions;
-using SyncnetPlatform.Network.Handlers;
-using SyncnetPlatform.Network.Sessions;
-using SyncnetPlatform.Network.Utils;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using Orleans.Clustering.Redis;
-using Orleans.Configuration;
-
-using Orleans.Services;
-using StackExchange.Redis;
-using SyncnetPlatform.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,10 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddHealthChecks();
-builder.AddServiceDefaults();
+// builder.AddServiceDefaults();
 
 // SyncnetPlatform Actors
-builder.UseSyncnetPlatform();
+builder.AddSyncnetPlatformFrontend();
 
 var app = builder.Build();
 
