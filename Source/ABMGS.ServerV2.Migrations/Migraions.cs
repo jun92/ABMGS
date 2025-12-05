@@ -24,7 +24,7 @@ public class SyncnetDbContextFactory : IDesignTimeDbContextFactory<SyncnetDbCont
     public SyncnetDbContext CreateDbContext(string[] args)
     {
         var options = new DbContextOptionsBuilder<SyncnetDbContext>()
-            .UseNpgsql(_applicationBuilder.Configuration.GetConnectionString("npgsql"), options => {
+            .UseNpgsql(_applicationBuilder.Configuration.GetConnectionString("SyncnetPlatform"), options => {
                 options.MigrationsAssembly("ABMGS.Serverv2.Package");
             })
             .Options;

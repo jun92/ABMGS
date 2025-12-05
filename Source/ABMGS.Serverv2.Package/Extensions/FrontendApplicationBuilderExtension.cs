@@ -29,7 +29,7 @@ public static class FrontendApplicationBuilderExtension
         builder.Services.AddTransient<ISystemPacketHandler, SystemPacketHandler>();
 
         builder.Services.AddDbContextPool<SyncnetDbContext>(opt => {
-            opt.UseNpgsql(builder.Configuration.GetConnectionString("npgsql"));
+            opt.UseNpgsql(builder.Configuration.GetConnectionString("SyncnetPlatform"));
         });
         builder.Services.AddTransient<IPlayerModelRepositoy, rdbPlayerModelRepository>();
 
