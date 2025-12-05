@@ -20,7 +20,7 @@ builder.Configuration
     .AddJsonFile($"appsettings.{EnvironmentName}.json", true, true)
     .AddEnvironmentVariables();
 
-bool UseMyCustomDb = true;
+bool UseMyCustomDb = false;
 
 if( UseMyCustomDb )
 {
