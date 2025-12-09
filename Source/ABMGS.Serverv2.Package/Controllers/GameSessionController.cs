@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Net.WebSockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Authentication;
 
 namespace SyncnetPlatform.Controllers;
 
@@ -13,15 +15,18 @@ public class GameSessionController : ControllerBase
     private readonly ILogger<GameSessionController> _logger;
     private readonly IClusterClient _clusterClient;
     private readonly IGameSessionService _gameSessionService;
+    private readonly IAuthenticationService _authenticationService;
     
     public GameSessionController(
         ILogger<GameSessionController> logger, 
         IClusterClient clusterClient,
-        IGameSessionService gameSessionService)
+        IGameSessionService gameSessionService,
+        IAuthenticationService authenticationService)
     {
         _logger = logger;
         _clusterClient = clusterClient;
         _gameSessionService = gameSessionService;
+        _authenticationService = authenticationService;
     }
 
     [ProducesResponseType(StatusCodes.Status203NonAuthoritative)]
@@ -32,7 +37,34 @@ public class GameSessionController : ControllerBase
         return Ok();
     }
 
-
+    // Issuing syncnet platform's own JWT token for further usage.
+    [HttpGet("issue/{platformType}")]
+    public IActionResult IssueToken([FromRoute] string platformType)
+    {
+        try
+        {
+            if (Enum.TryParse<SupportedPlatformType>(platformType, out SupportedPlatformType supportedPlatformType))
+            {
+                switch (supportedPlatformType)
+                {
+                    case SupportedPlatformType.GooglePlay:
+                        break;
+                    case SupportedPlatformType.Apple:
+                        break;
+                    case SupportedPlatformType.Steam:
+                        break;
+                }
+            }
+            else
+            {
+                return BadRequest($"unsupported platform type - {platformType} ");
+            }
+        }
+        catch (Exception ex)
+        {
+            
+        }
+    }
 
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [HttpGet("gamesession")]
@@ -49,4 +81,12 @@ public class GameSessionController : ControllerBase
         
     }
 
+}
+
+
+public enum SupportedPlatformType
+{
+    GooglePlay,
+    Apple,
+    Steam,
 }
