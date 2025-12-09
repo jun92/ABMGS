@@ -20,7 +20,7 @@ public static class SiloApplicationBuilderExtension
         builder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
         builder.Services.AddSingleton<IPacketContextFactory, PacketContextFactory>();
         builder.Services.AddTransient<ISystemPacketHandler, SystemPacketHandler>();
-        builder.Services.AddTransient<IPlayerModelRepositoy, rdbPlayerModelRepository>();
+        builder.Services.AddTransient<IPlayerModelRepository, RdbPlayerModelRepository>();
 
         builder.UseOrleans(builder =>
         {
@@ -45,13 +45,6 @@ public static class SiloApplicationBuilderExtension
                 optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
             });
         });
-        //builder.Services.AddDbContextFactory<SyncnetDbContext>(opt =>
-        //{
-        //    opt.UseNpgsql(builder.Configuration.GetConnectionString("npgsql"), optionBuilder =>
-        //    {
-        //        optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
-        //    });
-        //});
     }
     public static void AddSyncnetPlatformSilo(this HostApplicationBuilder builder)
     {
@@ -92,13 +85,6 @@ public class SyncnetSiloOptionsBuilder
                 optionBuilder.MigrationsAssembly(typeof(DbContextType).Assembly.FullName);
             });
         });
-        //builder.Services.AddDbContextFactory<DbContextType>(opt =>
-        //{
-        //    opt.UseNpgsql(builder.Configuration.GetConnectionString("npgsql"), optionBuilder =>
-        //    {
-        //        optionBuilder.MigrationsAssembly(typeof(DbContextType).Assembly.FullName);
-        //    });
-        //});
         builder.Services.AddScoped<SyncnetDbContext>(sp => sp.GetRequiredService<DbContextType>());
     }
 }

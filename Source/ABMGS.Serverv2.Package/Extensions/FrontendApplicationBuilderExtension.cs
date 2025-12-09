@@ -31,7 +31,7 @@ public static class FrontendApplicationBuilderExtension
         builder.Services.AddDbContextPool<SyncnetDbContext>(opt => {
             opt.UseNpgsql(builder.Configuration.GetConnectionString("SyncnetPlatform"));
         });
-        builder.Services.AddTransient<IPlayerModelRepositoy, rdbPlayerModelRepository>();
+        builder.Services.AddTransient<IPlayerModelRepository, RdbPlayerModelRepository>();
 
 
         builder.UseOrleansClient(configure =>
