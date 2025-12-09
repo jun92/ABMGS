@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 public class SyncnetDbContextExtend : SyncnetDbContext
 {
 
-    public DbSet<PlayerDataModelExtend> playerExtend { get; set; }
+    public DbSet<PlayerDataModelExtend> PlayerExtend { get; set; }
     public SyncnetDbContextExtend(DbContextOptions<SyncnetDbContextExtend> options) : base(options)
     {
     }
@@ -16,8 +16,6 @@ public class SyncnetDbContextExtend : SyncnetDbContext
     {
         modelBuilder.Entity<PlayerDataModelExtend>().HasKey(p => p.Id);
         modelBuilder.Entity<PlayerDataModelExtend>().Property(p => p.Id).ValueGeneratedOnAdd();
-
-        // modelBuilder.Entity<PlayerDataModelExtend>().HasOne<PlayerDataModel>().WithMany().HasForeignKey(p => p.PlayerId).OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<PlayerDataModelExtend>()
             .HasOne<PlayerDataModel>()
             .WithMany()
@@ -35,9 +33,9 @@ public class PlayerDataBehavior : IPlayerDataBehavior
     public async Task OnCreateNewPlayer(PlayerDataContext ctx)
     {
         var db = ctx.Db as SyncnetDbContextExtend;
-        if( db != null )
+        if (db != null)
         {
-            await db.playerExtend.AddAsync(new PlayerDataModelExtend
+            await db.PlayerExtend.AddAsync(new PlayerDataModelExtend
             {
                 PlayerId = ctx.PlayerId,
                 Level = 1,

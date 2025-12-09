@@ -1,14 +1,8 @@
 using Microsoft.Extensions.Logging;
-using SyncnetPlatform.Databases;
 using SyncnetPlatform.Interfaces.Actors;
-using SyncnetPlatform.Interfaces.Network.Handlers;
-using SyncnetPlatform.Network.Handlers;
 using SyncnetPlatform.Repositories;
-using System.Net.WebSockets;
-using System.Runtime.CompilerServices;
 
 namespace SyncnetPlatform.Actors;
-
 
 public interface IPlayerBehavior
 {
@@ -18,36 +12,24 @@ public interface IPlayerBehavior
 public class PlayerActor : Grain, IPlayerActor
 {
     private readonly ILogger<PlayerActor> _logger;
-    private readonly IPlayerModelRepositoy _repository;
+    private readonly IPlayerModelRepository _repository;
 
     public PlayerActor(
         ILogger<PlayerActor> logger,
-        IPlayerModelRepositoy repository)
+        IPlayerModelRepository repository)
     {
         _logger = logger;
         _repository = repository;
     }
 
-    public async override Task OnActivateAsync(CancellationToken cancellationToken)
+    public override Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        //Guid PlayerId = this.GetPrimaryKey();
-        //PlayerDataModel? playerDataModel = await _repository.Get(PlayerId);
-        //if (playerDataModel == null) {
-        //    await _repository.Create(new PlayerDataModel
-        //    {
-        //        PlayerId = PlayerId,
-        //        PlayerName = String.Empty,
-        //        Introduction = String.Empty
-        //    });
-        //}
-        
+        return Task.CompletedTask;
     }
-    
-    
 
-    public async Task Echo(int seq)
+    public Task Echo(int seq)
     {
-        
+        return Task.CompletedTask;
     }
 
 }

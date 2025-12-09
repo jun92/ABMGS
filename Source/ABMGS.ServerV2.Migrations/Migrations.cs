@@ -1,5 +1,3 @@
-
-
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
@@ -9,16 +7,16 @@ using SyncnetPlatform.Databases;
 public class SyncnetDbContextFactory : IDesignTimeDbContextFactory<SyncnetDbContext>
 {
     protected HostApplicationBuilder _applicationBuilder;
-    public SyncnetDbContextFactory(): base()
+    public SyncnetDbContextFactory() : base()
     {
-        string? EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        string? environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
         _applicationBuilder = Host.CreateApplicationBuilder();
 
         _applicationBuilder.Configuration
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", false, true)
-            .AddJsonFile($"appsettings.{EnvironmentName}.json", true, true)
+            .AddJsonFile($"appsettings.{environmentName}.json", true, true)
             .AddEnvironmentVariables();
     }
     public SyncnetDbContext CreateDbContext(string[] args)
@@ -32,8 +30,3 @@ public class SyncnetDbContextFactory : IDesignTimeDbContextFactory<SyncnetDbCont
         return new SyncnetDbContext(options);
     }
 }
-
-
-
-
-

@@ -2,19 +2,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SyncnetPlatform.Databases;
 using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace SyncnetPlatform.Repositories;
 
-public class rdbPlayerModelRepository : IPlayerModelRepositoy
+public class RdbPlayerModelRepository : IPlayerModelRepository
 {
-    private readonly ILogger<rdbPlayerModelRepository> _logger;
+    private readonly ILogger<RdbPlayerModelRepository> _logger;
     private readonly SyncnetDbContext _syncnetDbContext;
 
-    public rdbPlayerModelRepository(
+    public RdbPlayerModelRepository(
         SyncnetDbContext syncnetDbContext,
-        ILogger<rdbPlayerModelRepository> logger)
+        ILogger<RdbPlayerModelRepository> logger)
     {
         _syncnetDbContext = syncnetDbContext;
         _logger = logger;
@@ -39,7 +38,7 @@ public class rdbPlayerModelRepository : IPlayerModelRepositoy
     }
 }
 
-public interface IPlayerModelRepositoy
+public interface IPlayerModelRepository
 {
     Task Create(PlayerDataModel newPlayerDataModel);
     Task<PlayerDataModel?> Get(Guid playerId);
