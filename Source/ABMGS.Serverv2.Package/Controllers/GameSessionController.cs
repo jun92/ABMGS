@@ -41,29 +41,25 @@ public class GameSessionController : ControllerBase
     [HttpGet("issue/{platformType}")]
     public IActionResult IssueToken([FromRoute] string platformType)
     {
-        try
+        
+        if (Enum.TryParse<SupportedPlatformType>(platformType, out SupportedPlatformType supportedPlatformType))
         {
-            if (Enum.TryParse<SupportedPlatformType>(platformType, out SupportedPlatformType supportedPlatformType))
+            switch (supportedPlatformType)
             {
-                switch (supportedPlatformType)
-                {
-                    case SupportedPlatformType.GooglePlay:
-                        break;
-                    case SupportedPlatformType.Apple:
-                        break;
-                    case SupportedPlatformType.Steam:
-                        break;
-                }
+                case SupportedPlatformType.GooglePlay:
+                    break;
+                case SupportedPlatformType.Apple:
+                    break;
+                case SupportedPlatformType.Steam:
+                    break;
             }
-            else
-            {
-                return BadRequest($"unsupported platform type - {platformType} ");
-            }
+            return Ok();
         }
-        catch (Exception ex)
+        else
         {
-            
+            return BadRequest($"unsupported platform type - {platformType} ");
         }
+        
     }
 
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
