@@ -33,7 +33,6 @@ public static class FrontendApplicationBuilderExtension
         });
         builder.Services.AddTransient<IPlayerModelRepository, RdbPlayerModelRepository>();
 
-
         builder.UseOrleansClient(configure =>
         {
             configure.Configure<ClusterOptions>(options =>

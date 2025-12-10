@@ -22,16 +22,31 @@ public class GoogleAuthenticationConst
 
 }
 
-public interface IAuthenticationService
+public interface ISyncnetAuthenticationService
 {
-
-}
-public class PlayerAuthenticationService : IAuthenticationService
-{
-
+    Task<string> GetPlayerIdByGooglePlayAuth(string serverAuthCode);
 }
 
-public class GooglePlayAuthenticationService
+public interface IGooglePlayAuthenticationService
+{
+    Task<string> Auth(string serverAuthCode);
+}
+public class PlayerAuthenticationService : ISyncnetAuthenticationService
+{
+    private readonly IGooglePlayAuthenticationService _googleAuthService;
+
+    public PlayerAuthenticationService(IGooglePlayAuthenticationService googleAuthService)
+    {
+        _googleAuthService = googleAuthService;
+    }
+
+    public async Task<string> GetPlayerIdByGooglePlayAuth(string serverAuthCode)
+    {
+        return await _googleAuthService.Auth(serverAuthCode);
+    }
+}
+
+public class GooglePlayAuthenticationService : IGooglePlayAuthenticationService
 {
     private readonly ILogger<GooglePlayAuthenticationService> _logger;
     private readonly IHttpClientFactory _httpClientFactory;
@@ -47,7 +62,12 @@ public class GooglePlayAuthenticationService
         _configuration = configure;
     }
 
-    public async Task HandleSeverAuthCode(string serverAuthCode )
+    public async Task<string> Auth(string serverAuthCode)
+    {
+        return await HandleSeverAuthCode(serverAuthCode);
+    }
+
+    public async Task<string> HandleSeverAuthCode(string serverAuthCode )
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(serverAuthCode);
 
@@ -68,11 +88,14 @@ public class GooglePlayAuthenticationService
         response.EnsureSuccessStatusCode();
 
         var result = JsonSerializer.Deserialize<GoogleTokenResponse>(await response.Content.ReadAsStringAsync());
+        return await ValidateGoogleJwt(result?.access_token ?? "");
 
     }
 
-    public async Task ValidateGoogleJwt(string idToken)
+    public async Task<string> ValidateGoogleJwt(string idToken)
     {
+        ArgumentNullException.ThrowIfNullOrEmpty(idToken);
+
         GoogleAuthenticationConfiguration configuration = new GoogleAuthenticationConfiguration();
 
         var settings = new GoogleJsonWebSignature.ValidationSettings()
@@ -81,6 +104,7 @@ public class GooglePlayAuthenticationService
         };
 
         var payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
+        return payload.Subject;
     }
 
 }
