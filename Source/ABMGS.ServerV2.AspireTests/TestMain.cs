@@ -36,7 +36,7 @@ public class TestMain
         var httpClient = app.CreateHttpClient("orleans-frontend");
         //using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         await app.ResourceNotifications.WaitForResourceHealthyAsync("orleans-frontend", CancellationToken.None);
-        var response = await httpClient.GetAsync("/ws/alive");
+        var response = await httpClient.GetAsync("/api/healthy");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var wsUri = new UriBuilder(httpClient.BaseAddress!)
