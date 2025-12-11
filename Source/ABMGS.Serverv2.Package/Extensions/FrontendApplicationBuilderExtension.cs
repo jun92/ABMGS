@@ -7,6 +7,7 @@ using Orleans.Configuration;
 using Orleans.Hosting;
 using StackExchange.Redis;
 using SyncnetPlatform.Authentication.GooglePlay;
+using SyncnetPlatform.Authentication.SyncnetAuthProvider;
 using SyncnetPlatform.Databases;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Sessions;
@@ -36,6 +37,12 @@ public static class FrontendApplicationBuilderExtension
         builder.Services.AddTransient<IGooglePlayAuthenticationService, GooglePlayAuthenticationService>();
         builder.Services.AddTransient<ISyncnetAuthenticationService, PlayerAuthenticationService>();
         builder.Services.AddHttpClient();
+        var aaa = builder.Configuration.GetSection(nameof(SyncnetAuthenticationOptions));
+
+        builder.Services.Configure<SyncnetAuthenticationOptions>(
+            builder.Configuration.GetSection(nameof(SyncnetAuthenticationOptions))
+        );
+        builder.Services.AddTransient<ISyncnetJwtAuthenticationService, SyncnetAuthenticationService>();
 
         builder.UseOrleansClient(configure =>
         {
