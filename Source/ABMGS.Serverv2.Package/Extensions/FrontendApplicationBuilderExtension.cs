@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Orleans.Configuration;
 using Orleans.Hosting;
 using StackExchange.Redis;
+using SyncnetPlatform.Authentication.GooglePlay;
 using SyncnetPlatform.Databases;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Sessions;
@@ -32,6 +33,9 @@ public static class FrontendApplicationBuilderExtension
             opt.UseNpgsql(builder.Configuration.GetConnectionString("SyncnetPlatform"));
         });
         builder.Services.AddTransient<IPlayerModelRepository, RdbPlayerModelRepository>();
+        builder.Services.AddTransient<IGooglePlayAuthenticationService, GooglePlayAuthenticationService>();
+        builder.Services.AddTransient<ISyncnetAuthenticationService, PlayerAuthenticationService>();
+        builder.Services.AddHttpClient();
 
         builder.UseOrleansClient(configure =>
         {
