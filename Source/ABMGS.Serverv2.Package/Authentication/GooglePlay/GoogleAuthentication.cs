@@ -88,7 +88,7 @@ public class GooglePlayAuthenticationService : IGooglePlayAuthenticationService
         response.EnsureSuccessStatusCode();
 
         var result = JsonSerializer.Deserialize<GoogleTokenResponse>(await response.Content.ReadAsStringAsync());
-        return await ValidateGoogleJwt(result?.access_token ?? "");
+        return await ValidateGoogleJwt(result?.id_token ?? "");
 
     }
 
