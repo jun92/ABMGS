@@ -2,6 +2,7 @@ using Google.Apis.Auth;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -50,16 +51,18 @@ public class GooglePlayAuthenticationService : IGooglePlayAuthenticationService
 {
     private readonly ILogger<GooglePlayAuthenticationService> _logger;
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IConfiguration _configuration;
+    // private readonly IConfiguration _configuration;
+    private readonly GoogleAuthenticationConfiguration _googleAuthenticationOptions;
     public GooglePlayAuthenticationService(
         ILogger<GooglePlayAuthenticationService> logger,
         IHttpClientFactory httpClientFactory,
-        IConfiguration configure
+        
+        IOptions<GoogleAuthenticationConfiguration> options
         ) 
     { 
         _logger = logger; 
         _httpClientFactory = httpClientFactory;
-        _configuration = configure;
+        _googleAuthenticationOptions = options.Value;
     }
 
     public async Task<string> Auth(string serverAuthCode)
@@ -72,14 +75,14 @@ public class GooglePlayAuthenticationService : IGooglePlayAuthenticationService
         ArgumentNullException.ThrowIfNullOrWhiteSpace(serverAuthCode);
 
         using var http = _httpClientFactory.CreateClient();
-        GoogleAuthenticationConfiguration configuration = new GoogleAuthenticationConfiguration();
+        // GoogleAuthenticationConfiguration configuration = new GoogleAuthenticationConfiguration();
 
         var response = await http.PostAsJsonAsync(
             GoogleAuthenticationConst.TokenRequestUrl,
             new GoogleTokenRequest
             {
-               client_id = configuration.ClientId,
-               client_secret = configuration.ClientSecret,
+               client_id = _googleAuthenticationOptions.ClientId,
+               client_secret = _googleAuthenticationOptions.ClientSecret,
                code = serverAuthCode,
                grant_type = GoogleAuthenticationConst.GrantType,
                redirect_uri = GoogleAuthenticationConst.RedirectUri
