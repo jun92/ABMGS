@@ -49,6 +49,8 @@ public class TestMain
         response.EnsureSuccessStatusCode();
 
         string token = await response.Content.ReadAsStringAsync();
+
+        token = token.Replace("\"", "");
        
 
         var wsUri = new UriBuilder(httpClient.BaseAddress!)
@@ -63,9 +65,9 @@ public class TestMain
         Assert.Equal(SystemPacket.Ping, verifyPacket.SystemPacketType);
 
         var wsClient = new ClientWebSocket();
+        wsClient.Options.SetRequestHeader("Authorization", $"Bearer {token}");
         await wsClient.ConnectAsync(wsUri, CancellationToken.None);
 
-        wsClient.Options.SetRequestHeader("Authorization", $"Bearer {token}");
 
         Assert.Equal(WebSocketState.Open, wsClient.State);
 

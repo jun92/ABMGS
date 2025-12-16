@@ -90,9 +90,9 @@ public static class FrontendApplicationBuilderExtension
 
     public static void UseFrontendSyncnetPlatform(this WebApplication app)
     {
-        app.UseWebSockets();
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseWebSockets();
     }
 }
 
