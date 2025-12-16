@@ -59,7 +59,6 @@ public class PlayerAuthenticationService : ISyncnetAuthenticationService
     {
         return _guestAuthService.Auth(identifier);
     }
-
 }
 
 public class GuestAuthenticationService : IGuestAuthenticationService
@@ -73,7 +72,6 @@ public class GuestAuthenticationService : IGuestAuthenticationService
     }
     public Guid Auth(string identifier)
     {
-
         if(_idMapToExternalId.FirstOrDefault(s => s.Key.Equals(identifier)) is {} entity)
         {
             return entity.Value;
@@ -82,7 +80,6 @@ public class GuestAuthenticationService : IGuestAuthenticationService
         {
             Guid newOne = Guid.NewGuid();
             _idMapToExternalId.Add(identifier, newOne);
-
             return newOne;
         }
     }
@@ -131,24 +128,19 @@ public class GooglePlayAuthenticationService : IGooglePlayAuthenticationService
 
         var result = JsonSerializer.Deserialize<GoogleTokenResponse>(await response.Content.ReadAsStringAsync());
         return await ValidateGoogleJwt(result?.id_token ?? "");
-
     }
 
     public async Task<string> ValidateGoogleJwt(string idToken)
     {
         ArgumentNullException.ThrowIfNullOrEmpty(idToken);
-
         GoogleAuthenticationConfiguration configuration = new GoogleAuthenticationConfiguration();
-
         var settings = new GoogleJsonWebSignature.ValidationSettings()
         {
             Audience = new[] { configuration.ClientId },
         };
-
         var payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
         return payload.Subject;
     }
-
 }
 
 public class GoogleAuthenticationConfiguration
