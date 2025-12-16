@@ -2,16 +2,16 @@ using SyncnetPlatform.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddSyncnetPlatformFrontend();
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// builder.Services.AddOpenApi();
 builder.Services.AddControllers();
-builder.Services.AddHealthChecks();
+// builder.Services.AddHealthChecks();
 // builder.AddServiceDefaults();
 
 // SyncnetPlatform Actors
-builder.AddSyncnetPlatformFrontend();
 
 var app = builder.Build();
 
@@ -21,12 +21,17 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
 app.UseRouting();
-app.MapDefaultEndpoints();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseFrontendSyncnetPlatform();
+
 app.MapControllers();
-app.UseHttpsRedirection();
-app.UseWebSockets();
-app.UseHealthChecks("/health");
+//app.UseEndpoints(endpoints =>
+//{
+//    endpoints.MapControllers();
+//});
 
 await app.RunAsync();
 
