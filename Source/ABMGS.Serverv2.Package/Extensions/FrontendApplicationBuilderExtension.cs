@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Orleans.Configuration;
 using Orleans.Hosting;
 using StackExchange.Redis;
@@ -16,6 +17,7 @@ using SyncnetPlatform.Network.Handlers;
 using SyncnetPlatform.Network.Sessions;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Repositories;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace SyncnetPlatform.Extensions;
@@ -50,6 +52,27 @@ public static class FrontendApplicationBuilderExtension
         // Guest Id cached as long as the backend is running.
         builder.Services.AddSingleton<IGuestAuthenticationService, GuestAuthenticationService>();
 
+        string IssuerSigningKey = builder.Configuration["SyncnetAuthenticationOptions:SecretKey"] ?? throw new InvalidOperationException("Secret key is no supplied");
+
+        builder.Services.AddAuthentication("Bearer")
+            .AddJwtBearer("Bearer", options => {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(IssuerSigningKey))
+                };
+            });
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy("GameSocketPolicy", policy => {
+                policy.RequireAuthenticatedUser();
+            });
+        });
+
         builder.UseOrleansClient(configure =>
         {
             configure.Configure<ClusterOptions>(options =>
@@ -63,6 +86,13 @@ public static class FrontendApplicationBuilderExtension
                     builder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
             });
         });
+    }
+
+    public static void UseFrontendSyncnetPlatform(this WebApplication app)
+    {
+        app.UseWebSockets();
+        app.UseAuthentication();
+        app.UseAuthorization();
     }
 }
 

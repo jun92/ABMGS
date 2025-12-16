@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -65,6 +66,7 @@ public class GameSessionController : ControllerBase
     }
 
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Authorize(policy: "GameSocketPolicy")]
     [HttpGet("gamesession")]
     public async Task GameSession()
     {
@@ -78,7 +80,6 @@ public class GameSessionController : ControllerBase
         await _gameSessionService.StartGameSession(Guid.NewGuid(), webSocket);
         
     }
-
 }
 
 

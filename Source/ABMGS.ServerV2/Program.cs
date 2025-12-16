@@ -21,11 +21,12 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseFrontendSyncnetPlatform();
 app.UseRouting();
 app.MapDefaultEndpoints();
 app.MapControllers();
 app.UseHttpsRedirection();
-app.UseWebSockets();
 app.UseHealthChecks("/health");
 
 await app.RunAsync();
