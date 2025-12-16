@@ -47,6 +47,9 @@ public static class FrontendApplicationBuilderExtension
         );
         builder.Services.AddTransient<ISyncnetJwtAuthenticationService, SyncnetAuthenticationService>();
 
+        // Guest Id cached as long as the backend is running.
+        builder.Services.AddSingleton<IGuestAuthenticationService, GuestAuthenticationService>();
+
         builder.UseOrleansClient(configure =>
         {
             configure.Configure<ClusterOptions>(options =>

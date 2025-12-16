@@ -41,30 +41,35 @@ public class AuthController : ControllerBase
         return Ok(_syncnetJwtAuthenticationService.IssueNewToken(playerId));
     }
 
-    // Issuing syncnet platform's own JWT token for further usage.
-    [HttpPost("auth/token/{platformType}/{serverCode}")]
-    public async Task<IActionResult> IssueToken([FromRoute] string platformType, [FromRoute] string serverCode)
+    /// <summary>
+    /// Issuing syncnet platform's own JWT token for further usage.
+    /// </summary>
+    /// <param name="platformType">google, guest, apple, steam</param>
+    /// <param name="identifier">Google: serverAuthCode, Guest: randome generated string</param>
+    /// <returns></returns>
+    [HttpPost("auth/token/{platformType}/{identifier}")]
+    public async Task<IActionResult> IssueToken([FromRoute] string platformType, [FromRoute] string identifier)
     {
+        Guid syncnetPlatformId = Guid.Empty;
 
         if (Enum.TryParse(platformType, out SupportedPlatformType supportedPlatformType))
         {
             switch (supportedPlatformType)
             {
                 case SupportedPlatformType.googleplay:
-                    await _authenticationService.GetPlayerIdByGooglePlayAuth(serverCode);
+                    await _authenticationService.GetPlayerIdByGooglePlayAuth(serverAuthCode: identifier);
                     break;
                 case SupportedPlatformType.apple:
+                    syncnetPlatformId = _authenticationService.GetPlayerIdByGuest(identifier);
                     break;
                 case SupportedPlatformType.steam:
                     break;
             }
-            return Ok();
+            return Ok(_syncnetJwtAuthenticationService.IssueNewToken(syncnetPlatformId.ToString()));
         }
         else
         {
             return BadRequest($"unsupported platform type - {platformType} ");
         }
-
     }
-
 }

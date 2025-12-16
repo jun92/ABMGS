@@ -26,24 +26,65 @@ public class GoogleAuthenticationConst
 public interface ISyncnetAuthenticationService
 {
     Task<string> GetPlayerIdByGooglePlayAuth(string serverAuthCode);
+    Guid GetPlayerIdByGuest(string identifier);
 }
 
 public interface IGooglePlayAuthenticationService
 {
     Task<string> Auth(string serverAuthCode);
 }
+
+public interface IGuestAuthenticationService
+{
+    Guid Auth(string identifier);
+}
 public class PlayerAuthenticationService : ISyncnetAuthenticationService
 {
     private readonly IGooglePlayAuthenticationService _googleAuthService;
+    private readonly IGuestAuthenticationService _guestAuthService;
 
-    public PlayerAuthenticationService(IGooglePlayAuthenticationService googleAuthService)
+    public PlayerAuthenticationService(
+        IGooglePlayAuthenticationService googleAuthService,
+        IGuestAuthenticationService guestAuthService)
     {
         _googleAuthService = googleAuthService;
+        _guestAuthService = guestAuthService;
     }
 
     public async Task<string> GetPlayerIdByGooglePlayAuth(string serverAuthCode)
     {
         return await _googleAuthService.Auth(serverAuthCode);
+    }
+    public Guid GetPlayerIdByGuest(string identifier)
+    {
+        return _guestAuthService.Auth(identifier);
+    }
+
+}
+
+public class GuestAuthenticationService : IGuestAuthenticationService
+{
+    private readonly ILogger<GuestAuthenticationService> _logger;
+    private readonly IDictionary<string, Guid> _idMapToExternalId;
+    public GuestAuthenticationService(ILogger<GuestAuthenticationService> logger)
+    {
+        _logger = logger;
+        _idMapToExternalId = new Dictionary<string, Guid>();
+    }
+    public Guid Auth(string identifier)
+    {
+
+        if(_idMapToExternalId.FirstOrDefault(s => s.Key.Equals(identifier)) is {} entity)
+        {
+            return entity.Value;
+        }
+        else
+        {
+            Guid newOne = Guid.NewGuid();
+            _idMapToExternalId.Add(identifier, newOne);
+
+            return newOne;
+        }
     }
 }
 
@@ -51,7 +92,6 @@ public class GooglePlayAuthenticationService : IGooglePlayAuthenticationService
 {
     private readonly ILogger<GooglePlayAuthenticationService> _logger;
     private readonly IHttpClientFactory _httpClientFactory;
-    // private readonly IConfiguration _configuration;
     private readonly GoogleAuthenticationConfiguration _googleAuthenticationOptions;
     public GooglePlayAuthenticationService(
         ILogger<GooglePlayAuthenticationService> logger,
@@ -75,7 +115,6 @@ public class GooglePlayAuthenticationService : IGooglePlayAuthenticationService
         ArgumentNullException.ThrowIfNullOrWhiteSpace(serverAuthCode);
 
         using var http = _httpClientFactory.CreateClient();
-        // GoogleAuthenticationConfiguration configuration = new GoogleAuthenticationConfiguration();
 
         var response = await http.PostAsJsonAsync(
             GoogleAuthenticationConst.TokenRequestUrl,

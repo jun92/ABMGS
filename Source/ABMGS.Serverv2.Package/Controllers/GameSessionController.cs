@@ -87,4 +87,5 @@ public enum SupportedPlatformType
     googleplay,
     apple,
     steam,
+    guest
 }
