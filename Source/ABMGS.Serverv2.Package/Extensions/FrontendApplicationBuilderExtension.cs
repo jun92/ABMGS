@@ -59,7 +59,9 @@ public static class FrontendApplicationBuilderExtension
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
+                    ValidIssuer = builder.Configuration["SyncnetAuthenticationOptions:Issuer"],
                     ValidateAudience = true,
+                    ValidAudience = builder.Configuration["SyncnetAuthenticationOptions:Audience"],
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(
