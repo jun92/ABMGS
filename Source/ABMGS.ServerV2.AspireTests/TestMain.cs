@@ -1,19 +1,22 @@
+using Google.FlatBuffers;
+using SyncnetPlatform.Network.Utils;
+using SyncnetPlatform.Protocols.Generated;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using System.Net.WebSockets;
-using SyncnetPlatform.Network.Utils;
-using SyncnetPlatform.Protocols.Generated;
-using Google.FlatBuffers;
 using Xunit.Abstractions;
+using YamlDotNet.Core.Tokens;
 
 namespace ABMGS.ServerV2.AspireTest;
 
 public class TestMain
 {
     private readonly ITestOutputHelper _output;
+    private readonly Random _random = new Random();
 
     public TestMain(ITestOutputHelper output)
     {
@@ -39,6 +42,15 @@ public class TestMain
         var response = await httpClient.GetAsync("/api/healthy");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
+        string randomString = new string(Enumerable.Repeat("0123456789", 6).Select(s => s[_random.Next(s.Length)]).ToArray());
+
+
+        response = await httpClient.PostAsync($"/api/auth/token/guest/{randomString}", null);
+        response.EnsureSuccessStatusCode();
+
+        string token = await response.Content.ReadAsStringAsync();
+       
+
         var wsUri = new UriBuilder(httpClient.BaseAddress!)
         {
             Scheme = httpClient.BaseAddress!.Scheme == "https" ? "wss" : "ws",
@@ -52,6 +64,8 @@ public class TestMain
 
         var wsClient = new ClientWebSocket();
         await wsClient.ConnectAsync(wsUri, CancellationToken.None);
+
+        wsClient.Options.SetRequestHeader("Authorization", $"Bearer {token}");
 
         Assert.Equal(WebSocketState.Open, wsClient.State);
 
