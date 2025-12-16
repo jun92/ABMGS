@@ -60,9 +60,11 @@ public class AuthController : ControllerBase
                     await _authenticationService.GetPlayerIdByGooglePlayAuth(serverAuthCode: identifier);
                     break;
                 case SupportedPlatformType.apple:
-                    syncnetPlatformId = _authenticationService.GetPlayerIdByGuest(identifier);
                     break;
                 case SupportedPlatformType.steam:
+                    break;
+                case SupportedPlatformType.guest:
+                    syncnetPlatformId = _authenticationService.GetPlayerIdByGuest(identifier);
                     break;
             }
             return Ok(_syncnetJwtAuthenticationService.IssueNewToken(syncnetPlatformId.ToString()));

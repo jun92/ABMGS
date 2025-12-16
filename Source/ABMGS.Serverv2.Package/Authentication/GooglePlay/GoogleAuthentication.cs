@@ -72,9 +72,10 @@ public class GuestAuthenticationService : IGuestAuthenticationService
     }
     public Guid Auth(string identifier)
     {
-        if(_idMapToExternalId.FirstOrDefault(s => s.Key.Equals(identifier)) is {} entity)
+
+        if(_idMapToExternalId.ContainsKey(identifier))
         {
-            return entity.Value;
+            return _idMapToExternalId.First(s => s.Key == identifier).Value;
         }
         else
         {

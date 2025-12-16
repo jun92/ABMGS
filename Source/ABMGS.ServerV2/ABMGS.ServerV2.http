@@ -9,3 +9,6 @@ GET {{ABMGS.ServerV2_HostAddress}}/api/healthy
 
 ###
 GET {{ABMGS.ServerV2_HostAddress}}/api/auth/token/test/20250815
+
+###
+POST {{ABMGS.ServerV2_HostAddress}}/api/auth/token/guest/123456
