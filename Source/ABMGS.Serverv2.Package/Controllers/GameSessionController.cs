@@ -1,8 +1,12 @@
-using SyncnetPlatform.Interfaces.Network.Sessions;
-using Microsoft.AspNetCore.Mvc;
-using System.Net.WebSockets;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using SyncnetPlatform.Authentication.GooglePlay;
+using SyncnetPlatform.Interfaces.Network.Sessions;
+using System.Net.WebSockets;
 
 namespace SyncnetPlatform.Controllers;
 
@@ -13,28 +17,56 @@ public class GameSessionController : ControllerBase
     private readonly ILogger<GameSessionController> _logger;
     private readonly IClusterClient _clusterClient;
     private readonly IGameSessionService _gameSessionService;
+    private readonly ISyncnetAuthenticationService _authenticationService;
     
     public GameSessionController(
         ILogger<GameSessionController> logger, 
         IClusterClient clusterClient,
-        IGameSessionService gameSessionService)
+        IGameSessionService gameSessionService,
+        ISyncnetAuthenticationService authenticationService)
     {
         _logger = logger;
         _clusterClient = clusterClient;
         _gameSessionService = gameSessionService;
+        _authenticationService = authenticationService;
     }
 
-    [ProducesResponseType(StatusCodes.Status203NonAuthoritative)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [HttpGet("alive")]
-    public IActionResult Authenticate()
+    //[ProducesResponseType(StatusCodes.Status203NonAuthoritative)]
+    //[ProducesResponseType(StatusCodes.Status400BadRequest)]
+    //[HttpGet("alive")]
+    //public IActionResult Authenticate()
+    //{
+    //    return Ok();
+    //}
+
+    // Issuing syncnet platform's own JWT token for further usage.
+    [HttpGet("auth/token/{platformType}")]
+    public IActionResult IssueToken([FromRoute] string platformType)
     {
-        return Ok();
+        
+        if (Enum.TryParse(platformType, out SupportedPlatformType supportedPlatformType))
+        {
+            switch (supportedPlatformType)
+            {
+                case SupportedPlatformType.googleplay:
+
+                    break;
+                case SupportedPlatformType.apple:
+                    break;
+                case SupportedPlatformType.steam:
+                    break;
+            }
+            return Ok();
+        }
+        else
+        {
+            return BadRequest($"unsupported platform type - {platformType} ");
+        }
+        
     }
 
-
-
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [Authorize(policy: "GameSocketPolicy")]
     [HttpGet("gamesession")]
     public async Task GameSession()
     {
@@ -48,5 +80,13 @@ public class GameSessionController : ControllerBase
         await _gameSessionService.StartGameSession(Guid.NewGuid(), webSocket);
         
     }
+}
 
+
+public enum SupportedPlatformType
+{
+    googleplay,
+    apple,
+    steam,
+    guest
 }

@@ -1,19 +1,22 @@
+using Google.FlatBuffers;
+using SyncnetPlatform.Network.Utils;
+using SyncnetPlatform.Protocols.Generated;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using System.Net.WebSockets;
-using SyncnetPlatform.Network.Utils;
-using SyncnetPlatform.Protocols.Generated;
-using Google.FlatBuffers;
 using Xunit.Abstractions;
+using YamlDotNet.Core.Tokens;
 
 namespace ABMGS.ServerV2.AspireTest;
 
 public class TestMain
 {
     private readonly ITestOutputHelper _output;
+    private readonly Random _random = new Random();
 
     public TestMain(ITestOutputHelper output)
     {
@@ -36,8 +39,19 @@ public class TestMain
         var httpClient = app.CreateHttpClient("orleans-frontend");
         //using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         await app.ResourceNotifications.WaitForResourceHealthyAsync("orleans-frontend", CancellationToken.None);
-        var response = await httpClient.GetAsync("/ws/alive");
+        var response = await httpClient.GetAsync("/api/healthy");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        string randomString = new string(Enumerable.Repeat("0123456789", 6).Select(s => s[_random.Next(s.Length)]).ToArray());
+
+
+        response = await httpClient.PostAsync($"/api/auth/token/guest/{randomString}", null);
+        response.EnsureSuccessStatusCode();
+
+        string token = await response.Content.ReadAsStringAsync();
+
+        token = token.Replace("\"", "");
+       
 
         var wsUri = new UriBuilder(httpClient.BaseAddress!)
         {
@@ -51,7 +65,9 @@ public class TestMain
         Assert.Equal(SystemPacket.Ping, verifyPacket.SystemPacketType);
 
         var wsClient = new ClientWebSocket();
+        wsClient.Options.SetRequestHeader("Authorization", $"Bearer {token}");
         await wsClient.ConnectAsync(wsUri, CancellationToken.None);
+
 
         Assert.Equal(WebSocketState.Open, wsClient.State);
 
