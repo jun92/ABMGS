@@ -42,8 +42,8 @@ public class AuthController : ControllerBase
     }
 
     // Issuing syncnet platform's own JWT token for further usage.
-    [HttpPost("auth/token/{platformType}")]
-    public async Task<IActionResult> IssueToken([FromRoute] string platformType)
+    [HttpPost("auth/token/{platformType}/{serverCode}")]
+    public async Task<IActionResult> IssueToken([FromRoute] string platformType, [FromRoute] string serverCode)
     {
 
         if (Enum.TryParse(platformType, out SupportedPlatformType supportedPlatformType))
@@ -51,7 +51,7 @@ public class AuthController : ControllerBase
             switch (supportedPlatformType)
             {
                 case SupportedPlatformType.googleplay:
-                    await _authenticationService.GetPlayerIdByGooglePlayAuth("testservercode");
+                    await _authenticationService.GetPlayerIdByGooglePlayAuth(serverCode);
                     break;
                 case SupportedPlatformType.apple:
                     break;

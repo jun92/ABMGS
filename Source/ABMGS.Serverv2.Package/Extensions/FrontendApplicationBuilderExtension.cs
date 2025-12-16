@@ -42,6 +42,9 @@ public static class FrontendApplicationBuilderExtension
         builder.Services.Configure<SyncnetAuthenticationOptions>(
             builder.Configuration.GetSection(nameof(SyncnetAuthenticationOptions))
         );
+        builder.Services.Configure<GoogleAuthenticationConfiguration>(
+            builder.Configuration.GetSection(nameof(GoogleAuthenticationConfiguration))
+        );
         builder.Services.AddTransient<ISyncnetJwtAuthenticationService, SyncnetAuthenticationService>();
 
         builder.UseOrleansClient(configure =>
