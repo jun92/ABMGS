@@ -64,7 +64,7 @@ public class AuthController : ControllerBase
                 case SupportedPlatformType.steam:
                     break;
                 case SupportedPlatformType.guest:
-                    syncnetPlatformId = _authenticationService.GetPlayerIdByGuest(identifier);
+                    syncnetPlatformId = await _authenticationService.GetPlayerIdByGuest(identifier);
                     break;
             }
             return Ok(_syncnetJwtAuthenticationService.IssueNewToken(syncnetPlatformId.ToString()));

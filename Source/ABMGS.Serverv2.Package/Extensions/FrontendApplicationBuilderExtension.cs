@@ -36,6 +36,8 @@ public static class FrontendApplicationBuilderExtension
             opt.UseNpgsql(builder.Configuration.GetConnectionString("SyncnetPlatform"));
         });
         builder.Services.AddTransient<IPlayerModelRepository, RdbPlayerModelRepository>();
+        builder.Services.AddTransient<IExternalIdentityRepository, RdbExternalIdentityRepository>();
+
         builder.Services.AddTransient<IGooglePlayAuthenticationService, GooglePlayAuthenticationService>();
         builder.Services.AddTransient<ISyncnetAuthenticationService, PlayerAuthenticationService>();
         builder.Services.AddHttpClient();
@@ -50,7 +52,7 @@ public static class FrontendApplicationBuilderExtension
         builder.Services.AddTransient<ISyncnetJwtAuthenticationService, SyncnetAuthenticationService>();
 
         // Guest Id cached as long as the backend is running.
-        builder.Services.AddSingleton<IGuestAuthenticationService, GuestAuthenticationService>();
+        builder.Services.AddScoped<IGuestAuthenticationService, GuestAuthenticationService>();
 
         string IssuerSigningKey = builder.Configuration["SyncnetAuthenticationOptions:SecretKey"] ?? throw new InvalidOperationException("Secret key is no supplied");
 
@@ -74,6 +76,7 @@ public static class FrontendApplicationBuilderExtension
                 policy.RequireAuthenticatedUser();
             });
         });
+
 
         builder.UseOrleansClient(configure =>
         {

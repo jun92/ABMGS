@@ -43,7 +43,7 @@ public class PlayerDataActor: Grain, IPlayerDataActor
     public async Task CreateNewPlayerData(string playerName)
     {
         var _db = await _dbFactory.CreateDbContextAsync();
-        await _db.players.AddAsync(new PlayerDataModel
+        await _db.Players.AddAsync(new PlayerData
         {
             PlayerId = this.GetPrimaryKey(),
             PlayerName = playerName
