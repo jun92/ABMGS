@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using SyncnetPlatform.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -26,7 +27,7 @@ public class GoogleAuthenticationConst
 public interface ISyncnetAuthenticationService
 {
     Task<string> GetPlayerIdByGooglePlayAuth(string serverAuthCode);
-    Guid GetPlayerIdByGuest(string identifier);
+    Task<Guid> GetPlayerIdByGuest(string identifier);
 }
 
 public interface IGooglePlayAuthenticationService
@@ -36,7 +37,7 @@ public interface IGooglePlayAuthenticationService
 
 public interface IGuestAuthenticationService
 {
-    Guid Auth(string identifier);
+    Task<Guid> Auth(string identifier);
 }
 public class PlayerAuthenticationService : ISyncnetAuthenticationService
 {
@@ -55,34 +56,27 @@ public class PlayerAuthenticationService : ISyncnetAuthenticationService
     {
         return await _googleAuthService.Auth(serverAuthCode);
     }
-    public Guid GetPlayerIdByGuest(string identifier)
+    public async Task<Guid> GetPlayerIdByGuest(string identifier)
     {
-        return _guestAuthService.Auth(identifier);
+        return await _guestAuthService.Auth(identifier);
     }
 }
 
 public class GuestAuthenticationService : IGuestAuthenticationService
 {
     private readonly ILogger<GuestAuthenticationService> _logger;
-    private readonly IDictionary<string, Guid> _idMapToExternalId;
-    public GuestAuthenticationService(ILogger<GuestAuthenticationService> logger)
+    private readonly IExternalIdentityRepository _externalIdentityRepository;
+    public GuestAuthenticationService(
+        ILogger<GuestAuthenticationService> logger,
+        IExternalIdentityRepository externalIdentityRepository
+        )
     {
         _logger = logger;
-        _idMapToExternalId = new Dictionary<string, Guid>();
+        _externalIdentityRepository = externalIdentityRepository;
     }
-    public Guid Auth(string identifier)
+    public async Task<Guid> Auth(string identifier)
     {
-
-        if(_idMapToExternalId.ContainsKey(identifier))
-        {
-            return _idMapToExternalId.First(s => s.Key == identifier).Value;
-        }
-        else
-        {
-            Guid newOne = Guid.NewGuid();
-            _idMapToExternalId.Add(identifier, newOne);
-            return newOne;
-        }
+        return await _externalIdentityRepository.GetOrCreate(Databases.IdProviderType.Guest, identifier);
     }
 }
 

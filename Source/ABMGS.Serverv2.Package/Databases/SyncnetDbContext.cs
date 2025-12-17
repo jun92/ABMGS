@@ -11,31 +11,44 @@ namespace SyncnetPlatform.Databases;
 
 public class SyncnetDbContext(DbContextOptions options) : DbContext(options)
 {
-    public DbSet<PlayerDataModel> players { get; set; }
-    // public DbSet<IdProviderMappingModel> idProviderMapping { get; set; }
+    public DbSet<PlayerData> Players { get; set; }
+    public DbSet<PlayerExternalIdentities> ExternalIdentities { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         OnModelCreating_Player(modelBuilder);
-        // OnModelCreating_IdProviderMapping(modelBuilder);
+        OnModelCreating_ExternalIdentities(modelBuilder);
         base.OnModelCreating(modelBuilder);
     }
 
     protected void OnModelCreating_Player(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<PlayerDataModel>().ToTable("players");
-        modelBuilder.Entity<PlayerDataModel>().HasKey(p => p.Id);
-        modelBuilder.Entity<PlayerDataModel>().Property(p => p.Id).ValueGeneratedOnAdd();
-        modelBuilder.Entity<PlayerDataModel>().HasIndex(p => p.PlayerId).IsUnique();
+        modelBuilder.Entity<PlayerData>(e =>
+        {
+            e.HasKey(p => p.Id);
+            e.Property(p => p.Id).ValueGeneratedOnAdd();
+
+            e.HasIndex(p => p.PlayerId).IsUnique();
+        });
 
     }
-    //protected void OnModelCreating_IdProviderMapping(ModelBuilder modelBuilder)
-    //{
-    //    modelBuilder.Entity<IdProviderMappingModel>().ToTable("id_provider_mapping");
-    //    modelBuilder.Entity<IdProviderMappingModel>().HasKey(p => p.Id);
-    //    modelBuilder.Entity<IdProviderMappingModel>().Property(p => p.Id).ValueGeneratedOnAdd();
-    //    modelBuilder.Entity<IdProviderMappingModel>().HasIndex(p => new { p.ProviderId, p.SyncnetPlayerId });
-    //}
+    protected void OnModelCreating_ExternalIdentities(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<PlayerExternalIdentities>(e =>
+        {
+            e.HasKey(p => p.Id);
+            e.Property(p => p.Id).ValueGeneratedOnAdd();
+
+            e.Property(p => p.IdProvider).HasConversion<string>().HasMaxLength(64);
+
+            e.Property(p => p.IdExternal).IsRequired().HasMaxLength(256);
+            e.Property(p => p.Created).HasDefaultValueSql("now() AT TIME ZONE 'utc'");
+            
+            e.HasIndex(p => new {p.IdProvider, p.IdExternal }).IsUnique();
+        });
+    }
+   
 }
 
 public enum IdProviderType
@@ -47,21 +60,23 @@ public enum IdProviderType
     EpicGames
 }
 
-//[Table("id_provider_mapping")]
-//public class IdProviderMappingModel
-//{
-//    public int Id { get; set; }
-//    public string ProviderId { get; set; } = string.Empty;
-//    public int SyncnetPlayerId { get; set; }
-//    public IdProviderType IdProviderType { get; set; }
-//}
-[Table("players")]
-
-public class PlayerDataModel
+[Table("player_data")]
+public class PlayerData
 {
     public int Id { get; set; }
     public Guid PlayerId { get; set; }
     public string PlayerName { get; set; } = string.Empty;
 }
 
+
+[Table("player_external_identities")]
+public class PlayerExternalIdentities
+{
+    public int Id { get; set; }
+    public IdProviderType IdProvider { get; set; }
+    public string IdExternal { get; set; } = String.Empty;
+    public Guid SyncnetId { get; set; }
+    public DateTime Created { get; set; } = DateTime.UtcNow;
+
+}
 
