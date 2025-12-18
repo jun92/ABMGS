@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using SyncnetPlatform.Databases;
 using System;
 using System.Linq;
@@ -73,16 +74,36 @@ public class RdbExternalIdentityRepository : IExternalIdentityRepository
             p.IdExternal == idExternal);
         if (entity == null)
         {
-            entity = new PlayerExternalIdentities
+            try
             {
-                Id = 0,
-                IdProvider = idProviderType,
-                IdExternal = idExternal,
-                SyncnetId = Guid.NewGuid(),
-                Created = DateTime.UtcNow
-            };
-            await _db.ExternalIdentities.AddAsync(entity);
-            await _db.SaveChangesAsync();
+                entity = new PlayerExternalIdentities
+                {
+                    Id = 0,
+                    IdProvider = idProviderType,
+                    IdExternal = idExternal,
+                    SyncnetId = Guid.NewGuid(),
+                    Created = DateTime.UtcNow
+                };
+                await _db.ExternalIdentities.AddAsync(entity);
+                await _db.SaveChangesAsync();
+            }
+            catch(DbUpdateException ex) when (ex.InnerException is PostgresException pg)
+            {
+                if(pg.SqlState == PostgresErrorCodes.UniqueViolation)
+                {
+                    // Reload the entity.
+                    entity = await _db.ExternalIdentities
+                        .SingleAsync(p => 
+                        p.IdProvider == idProviderType &&
+                        p.IdExternal == idExternal);
+
+                    return entity.SyncnetId;
+                }
+                else
+                {
+                    throw;
+                }
+            }
         }
         return entity.SyncnetId;
     }
