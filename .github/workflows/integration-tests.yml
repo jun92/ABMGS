@@ -10,7 +10,7 @@ on:
     branches: [ "main" ]
 env:
   ASPNETCORE_ENVIRONMENT: Development
-  ConnectionStrings__redis: redis:6379 # override aspire's default values
+  ConnectionStrings__redis: redis:6380 # override aspire's default values
 
 jobs:
   build:
