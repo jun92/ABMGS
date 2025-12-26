@@ -4,10 +4,13 @@
 name: Integration Tests
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  workflow_dispatch:
+    
+#on:
+  # push:
+  #   branches: [ "main" ]
+  # pull_request:
+  #   branches: [ "main" ]
 env:
   ASPNETCORE_ENVIRONMENT: Development
   ConnectionStrings__redis: redis:6380 # override aspire's default values
