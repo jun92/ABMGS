@@ -11,9 +11,12 @@ updates:
    schedule:
      interval: weekly
    groups:
-     dependencies:
+     nuget-dependencies:
        patterns:
          - "*"
+       update-types:
+          - "minor"
+          - "patch"
        
   
  
