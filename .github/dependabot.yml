@@ -10,3 +10,10 @@ updates:
    directory: "/Source"
    schedule:
      interval: weekly
+   groups:
+     dependencies:
+       patterns:
+         - "*"
+       
+  
+ 
