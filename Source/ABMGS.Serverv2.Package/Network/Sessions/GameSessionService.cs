@@ -4,7 +4,6 @@ using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using SyncnetPlatform.Network.Handlers;
-using SyncnetPlatform.Network.Utils;
 using System.IO;
 using System.Net.WebSockets;
 using System.Threading.Channels;
@@ -80,8 +79,7 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
 
     protected async Task RegisterObserverForSendDataEvent(Guid playerId)
     {
-        var sendObserver = new SendDataObserver(this);
-        _sendDataObserver = _clusterClient.CreateObjectReference<ISendDataObserver>(sendObserver);
+        _sendDataObserver = _clusterClient.CreateObjectReference<ISendDataObserver>(this);
         var sendDataGrain = _clusterClient.GetGrain<ISendDataGrain>(playerId);
         await sendDataGrain.Register(_sendDataObserver);
     }
@@ -97,22 +95,24 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
     {
         IPacketHandlerActor packetHandlingActor = _clusterClient.GetGrain<IPacketHandlerActor>(playerId);
 
+        byte[] receiveBuffer = new byte[4096];
+        using var ms = new MemoryStream();
+
         while (!mainLoopExitToken.IsCancellationRequested)
         {
-            using NetworkBuffer NBuf = new(4096);
+            ms.SetLength(0);
             while (true)
             {
                 ValueWebSocketReceiveResult result;
                 try
                 {
-                    result = await SocketObject.ReceiveAsync(NBuf.GetReceiveBuffer(), mainLoopExitToken);
+                    result = await SocketObject.ReceiveAsync(new Memory<byte>(receiveBuffer), mainLoopExitToken);
                 }
                 catch(OperationCanceledException)
                 {
                     // Exit with nothing wrong
                     return;
                 }
-                NBuf.AddBuffer(result.Count);
 
                 if (result.MessageType == WebSocketMessageType.Close || result.Count == 0)
                 {
@@ -130,10 +130,11 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
                     return;
                 }
 
+                ms.Write(receiveBuffer, 0, result.Count);
+
                 if (result.EndOfMessage)
                 {
-                    await NBuf.FinishReceived();
-                    _ = packetHandlingActor.PushRecievedData(await NBuf.Read());
+                    await packetHandlingActor.PushRecievedData(ms.ToArray());
                     break;
                 }
             }
