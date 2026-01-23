@@ -1,15 +1,17 @@
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
+using Microsoft.Extensions.DependencyInjection;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace ABMGS.ServerV2.AspireTest;
 
 public class AspireAppFixture : IAsyncLifetime
 {
+    public DistributedApplication App { get; private set; } = null!;
 
-    public DistributedApplication App { get; private set;  }
+    public ResourceNotificationService ResourceNotificationService { get; private set; } = null!;
 
-    public ResourceNotificationService ResourceNotificationService { get; private set; }
     public async Task InitializeAsync()
     {
         var builder = await DistributedApplicationTestingBuilder.CreateAsync<Projects.AppHost>();
@@ -19,9 +21,10 @@ public class AspireAppFixture : IAsyncLifetime
 
         await App.StartAsync();
     }
+
     public async Task DisposeAsync()
     {
-        if(App != null )
+        if (App is not null)
         {
             await App.DisposeAsync();
         }
@@ -33,5 +36,4 @@ public class AspireAppFixture : IAsyncLifetime
         await App.ResourceNotifications.WaitForResourceHealthyAsync(frontendName);
         return httpClient;
     }
-
 }

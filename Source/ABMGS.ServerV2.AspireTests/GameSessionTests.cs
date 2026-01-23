@@ -19,24 +19,35 @@ using YamlDotNet.Core.Tokens;
 namespace ABMGS.ServerV2.AspireTest;
 
 [Collection("AspireCollection")]
-public class ABMGS_TestMain
+public class GameSessionTests : IAsyncLifetime
 {
     private readonly AspireAppFixture _appFixture;
     private readonly ITestOutputHelper _output;
     private readonly Random _random = new Random();
-    private readonly HttpClient _frontendHttpClient;
+    private HttpClient _frontendHttpClient = null!;
 
-    public ABMGS_TestMain(AspireAppFixture fixture, ITestOutputHelper output)
+    private const string FrontendResourceName = "orleans-frontend";
+    private const string HealthyPath = "/api/healthy";
+    private const string GameSessionPath = "/ws/gamesession";
+    private const string GuestAuthPath = "/api/auth/token/guest/";
+
+    public GameSessionTests(AspireAppFixture fixture, ITestOutputHelper output)
     {
         _appFixture = fixture;
         _output = output;
-        _frontendHttpClient = _appFixture.CreateHttpClientToFrontEnd("orleans-frontend").GetAwaiter().GetResult();
     }
+
+    public async Task InitializeAsync()
+    {
+        _frontendHttpClient = await _appFixture.CreateHttpClientToFrontEnd(FrontendResourceName);
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
     public async Task HeathCheck()
     {
-        var response = await _frontendHttpClient.GetAsync("/api/healthy");
+        var response = await _frontendHttpClient.GetAsync(HealthyPath);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
@@ -46,13 +57,13 @@ public class ABMGS_TestMain
         var wsUri = new UriBuilder(_frontendHttpClient.BaseAddress!)
         {
             Scheme = _frontendHttpClient.BaseAddress!.Scheme == "https" ? "wss" : "ws",
-            Path = "/ws/gamesession"
+            Path = GameSessionPath
         }.Uri;
 
         var dataToSend = BuildPingPacket(1);
         var token = await GetGuestAuthToken();
 
-        var wsClient = await OpenAuthoredWebSocket(wsUri, token);
+        using var wsClient = await OpenAuthoredWebSocket(wsUri, token);
 
         await wsClient.SendAsync(new ArraySegment<byte>(dataToSend), WebSocketMessageType.Binary, true, CancellationToken.None);
      
@@ -63,7 +74,9 @@ public class ABMGS_TestMain
         Assert.True(result.EndOfMessage);
         Assert.NotEqual(0, result.Count);
 
-        PacketWrapper packetWrapper = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(receiveBuffer.Take(result.Count).ToArray()));
+        byte[] actualData = new byte[result.Count];
+        Array.Copy(receiveBuffer, actualData, result.Count);
+        PacketWrapper packetWrapper = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(actualData));
 
         Assert.Equal(SystemPacket.Pong, packetWrapper.SystemPacketType);
         Assert.Equal(2, packetWrapper.SystemPacketAsPong().Seq);
@@ -81,26 +94,30 @@ public class ABMGS_TestMain
     }
     protected async Task CloseAuthoredWebSocket(ClientWebSocket socket)
     {
-        await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Good Bye", CancellationToken.None);
-
+        if (socket.State == WebSocketState.Open)
+        {
+            await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Good Bye", CancellationToken.None);
+        }
     }
 
     protected async Task<string> GetGuestAuthToken()
     {
         string guestId = CreateRandomString(6);
-        var response = await _frontendHttpClient.PostAsync($"/api/auth/token/guest/{guestId}", null);
+        // Using Path.Combine or string interpolation carefully
+        var response = await _frontendHttpClient.PostAsync($"{GuestAuthPath}{guestId}", null);
         response.EnsureSuccessStatusCode();
         string token = await response.Content.ReadAsStringAsync();
-        return token.Replace("\"", "");
+        // The API likely returns "token" (quoted string).
+        return token.Trim('"');
     }
+
     protected string CreateRandomString(int length)
     {
-        return new string(
-            Enumerable
-                .Repeat("0123456789", length)
-                .Select(s => s[_random.Next(s.Length)])
-                .ToArray());
+        const string chars = "0123456789";
+        return new string(Enumerable.Repeat(chars, length)
+            .Select(s => s[_random.Next(s.Length)]).ToArray());
     }
+
     protected byte[] BuildPingPacket(int seq = 1)
     {
         byte[] dataToSend = SyncnetPacketBuilder.Build<PingArgs>(new PingArgs(seq));
@@ -109,5 +126,3 @@ public class ABMGS_TestMain
         return dataToSend;
     }
 }
-
-

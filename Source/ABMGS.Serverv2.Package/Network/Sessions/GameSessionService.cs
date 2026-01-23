@@ -10,8 +10,13 @@ using System.Threading.Channels;
 
 namespace SyncnetPlatform.Network.Sessions;
 
+/// <summary>
+/// Manages a WebSocket game session, handling receiving and sending data.
+/// </summary>
 public class GameSessionService : IGameSessionService, ISendDataObserver
 {
+    private const int MaxChannelCapacity = 100;
+
     private readonly ILogger<GameSessionService> _logger;
     private readonly IClusterClient _clusterClient;
 
@@ -26,13 +31,13 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
         _logger = logger;
         _clusterClient = clusterClient;
 
-        _sendingQueueChannel = Channel.CreateBounded<byte[]>(new BoundedChannelOptions(100)
+        _sendingQueueChannel = Channel.CreateBounded<byte[]>(new BoundedChannelOptions(MaxChannelCapacity)
         {
             FullMode = BoundedChannelFullMode.Wait,
             SingleReader = true,
-            SingleWriter = true,
+            SingleWriter = false, // Set to false to allow multiple sources (e.g. system notifications + player logic) to send data safely.
             AllowSynchronousContinuations = false,
-            Capacity = 100 // TODO: Should go to config something later.
+            Capacity = MaxChannelCapacity
         });
         _sendDataObserver = null;
     }
@@ -63,18 +68,19 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
         {
             _logger.LogError(ex, "Socket operation error in SendAsync");
         }
-        catch(OperationCanceledException ex)
+        catch(OperationCanceledException)
         {
-            //Triggered by on purpose.
+            // Triggered on purpose.
         }
         catch(Exception ex)
         {
             _logger.LogError(ex, "Exception in Sending Loop");
         }
     }
+
     protected void RunSendingLoopTask(WebSocket socket, CancellationToken sendLoopExitToken)
     {
-        _sendLoopTask = Task.Run(() => SendDataLoop(socket, _sendingQueueChannel, sendLoopExitToken));
+        _sendLoopTask = Task.Run(() => SendDataLoop(socket, _sendingQueueChannel, sendLoopExitToken), sendLoopExitToken);
     }
 
     protected async Task RegisterObserverForSendDataEvent(Guid playerId)
@@ -83,6 +89,7 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
         var sendDataGrain = _clusterClient.GetGrain<ISendDataGrain>(playerId);
         await sendDataGrain.Register(_sendDataObserver);
     }
+
     protected async Task UnregisterObserver(Guid playerId)
     {
         var sendDataGrain = _clusterClient.GetGrain<ISendDataGrain>(playerId);
@@ -118,16 +125,27 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
                 {
                     try
                     {
+                        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
                         await SocketObject.CloseAsync(
                             WebSocketCloseStatus.NormalClosure,
                             "Socket Closed",
-                            mainLoopExitToken);
+                            timeoutCts.Token);
                     }
                     catch(WebSocketException ex)
                     {
                         _logger.LogError(ex, $"WebSocket exception while closing it: {nameof(RunGameLoop)}");
                     }
+                    catch (OperationCanceledException) { /* Timeout or cancelled */ }
                     return;
+                }
+
+                // Optimization: Avoid MemoryStream copy for single-frame messages
+                if (ms.Length == 0 && result.EndOfMessage)
+                {
+                    byte[] payload = new byte[result.Count];
+                    Array.Copy(receiveBuffer, payload, result.Count);
+                    await packetHandlingActor.PushRecievedData(payload);
+                    break;
                 }
 
                 ms.Write(receiveBuffer, 0, result.Count);
@@ -163,6 +181,10 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
         finally
         {
             await FlushSendQueue();
+
+            // Cancel the main loop token to stop any lingering tasks relying on it
+            mainLoopExitTokenCts.Cancel();
+
             await UnregisterObserver(uniquePlayerId);
             await ShutdownSocket(SocketObject);
         }
@@ -173,7 +195,14 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
         _sendingQueueChannel?.Writer.TryComplete();
         if (_sendLoopTask is not null)
         {
-            await _sendLoopTask;
+            try
+            {
+                 await _sendLoopTask;
+            }
+            catch(Exception ex)
+            {
+                _logger.LogWarning(ex, "Error while waiting for send loop to finish");
+            }
         }
     }
     protected async Task ShutdownSocket(WebSocket socket)
@@ -183,10 +212,11 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
             if (socket.State == WebSocketState.Open || 
                 socket.State == WebSocketState.CloseReceived)
             {
+                using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
                 await socket.CloseAsync(
                     WebSocketCloseStatus.NormalClosure, 
                     nameof(WebSocketCloseStatus.NormalClosure), 
-                    CancellationToken.None);
+                    timeoutCts.Token);
             }
         }
         catch (Exception ex)

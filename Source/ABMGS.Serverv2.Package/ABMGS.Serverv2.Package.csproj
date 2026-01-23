@@ -30,9 +30,14 @@
   </ItemGroup>
   
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-		<Exec Command="flatc -n -o ./generated ./fbs/System.fbs" />
-		<Exec Command="flatc -n -o ./generated ./fbs/Player.fbs" />
-		<Exec Command="flatc -n -o ./generated ./fbs/Custom.fbs" />
+        <PropertyGroup>
+            <FlatcTool Condition="$([MSBuild]::IsOSPlatform('Linux'))">./flatc</FlatcTool>
+            <FlatcTool Condition="$([MSBuild]::IsOSPlatform('OSX'))">./flatc</FlatcTool>
+            <FlatcTool Condition="'$(FlatcTool)' == ''">flatc.exe</FlatcTool>
+        </PropertyGroup>
+		<Exec Command="$(FlatcTool) -n -o ./generated ./fbs/System.fbs" />
+		<Exec Command="$(FlatcTool) -n -o ./generated ./fbs/Player.fbs" />
+		<Exec Command="$(FlatcTool) -n -o ./generated ./fbs/Custom.fbs" />
 	</Target>
 
 </Project>
