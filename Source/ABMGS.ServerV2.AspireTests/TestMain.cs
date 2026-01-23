@@ -101,7 +101,7 @@ public class ABMGS_TestMain : IAsyncLifetime
         response.EnsureSuccessStatusCode();
         string token = await response.Content.ReadAsStringAsync();
 
-        return JsonSerializer.Deserialize<string>(token) ?? "";
+        return JsonSerializer.Deserialize<string>(token) ?? throw new InvalidOperationException("Received null or invalid token from authentication service.");
 
         //return token.Replace("\"", "");
     }
