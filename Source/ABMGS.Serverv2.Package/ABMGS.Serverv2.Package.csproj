@@ -31,13 +31,13 @@
   
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
         <PropertyGroup>
-            <FlatcTool Condition="$([MSBuild]::IsOSPlatform('Linux'))">./flatc</FlatcTool>
             <FlatcTool Condition="$([MSBuild]::IsOSPlatform('OSX'))">./flatc</FlatcTool>
-            <FlatcTool Condition="'$(FlatcTool)' == ''">flatc.exe</FlatcTool>
+            <FlatcTool Condition="$([MSBuild]::IsOSPlatform('Windows'))">flatc.exe</FlatcTool>
         </PropertyGroup>
-		<Exec Command="$(FlatcTool) -n -o ./generated ./fbs/System.fbs" />
-		<Exec Command="$(FlatcTool) -n -o ./generated ./fbs/Player.fbs" />
-		<Exec Command="$(FlatcTool) -n -o ./generated ./fbs/Custom.fbs" />
+        <Message Text="Skipping FlatBuffers generation: No flatc binary found for this OS (Linux/Other). Ensure generated files are up to date." Importance="high" Condition="'$(FlatcTool)' == ''" />
+		<Exec Command="$(FlatcTool) -n -o ./generated ./fbs/System.fbs" Condition="'$(FlatcTool)' != ''" />
+		<Exec Command="$(FlatcTool) -n -o ./generated ./fbs/Player.fbs" Condition="'$(FlatcTool)' != ''" />
+		<Exec Command="$(FlatcTool) -n -o ./generated ./fbs/Custom.fbs" Condition="'$(FlatcTool)' != ''" />
 	</Target>
 
 </Project>
