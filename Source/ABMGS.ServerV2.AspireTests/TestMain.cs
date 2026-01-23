@@ -1,9 +1,14 @@
+using Aspire.Hosting;
+using Aspire.Hosting.Testing;
 using Google.FlatBuffers;
+using Microsoft.VisualStudio.TestPlatform.CoreUtilities.Extensions;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Protocols.Generated;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Net.WebSockets;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -13,73 +18,46 @@ using YamlDotNet.Core.Tokens;
 
 namespace ABMGS.ServerV2.AspireTest;
 
-public class TestMain
+[Collection("AspireCollection")]
+public class ABMGS_TestMain
 {
+    private readonly AspireAppFixture _appFixture;
     private readonly ITestOutputHelper _output;
     private readonly Random _random = new Random();
+    private readonly HttpClient _frontendHttpClient;
 
-    public TestMain(ITestOutputHelper output)
+    public ABMGS_TestMain(AspireAppFixture fixture, ITestOutputHelper output)
     {
+        _appFixture = fixture;
         _output = output;
+        _frontendHttpClient = _appFixture.CreateHttpClientToFrontEnd("orleans-frontend").GetAwaiter().GetResult();
     }
+
     [Fact]
-    public async Task DummyTest()
+    public async Task HeathCheck()
     {
-        var builder = await DistributedApplicationTestingBuilder.CreateAsync<Projects.AppHost>();
-
-        builder.Services.ConfigureHttpClientDefaults(clientBuilder =>
-        {
-            clientBuilder.AddStandardResilienceHandler();
-        });
-
-        await using var app = await builder.BuildAsync();
-        await app.StartAsync();
-
-
-        var httpClient = app.CreateHttpClient("orleans-frontend");
-        //using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        await app.ResourceNotifications.WaitForResourceHealthyAsync("orleans-frontend", CancellationToken.None);
-        var response = await httpClient.GetAsync("/api/healthy");
+        var response = await _frontendHttpClient.GetAsync("/api/healthy");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
 
-        string randomString = new string(Enumerable.Repeat("0123456789", 6).Select(s => s[_random.Next(s.Length)]).ToArray());
-
-
-        response = await httpClient.PostAsync($"/api/auth/token/guest/{randomString}", null);
-        response.EnsureSuccessStatusCode();
-
-        string token = await response.Content.ReadAsStringAsync();
-
-        token = token.Replace("\"", "");
-       
-
-        var wsUri = new UriBuilder(httpClient.BaseAddress!)
+    [Fact]
+    public async Task PingPongTestWithGuestAuth()
+    {
+        var wsUri = new UriBuilder(_frontendHttpClient.BaseAddress!)
         {
-            Scheme = httpClient.BaseAddress!.Scheme == "https" ? "wss" : "ws",
+            Scheme = _frontendHttpClient.BaseAddress!.Scheme == "https" ? "wss" : "ws",
             Path = "/ws/gamesession"
         }.Uri;
 
+        var dataToSend = BuildPingPacket(1);
+        var token = await GetGuestAuthToken();
 
-        byte[] dataToSend = SyncnetPacketBuilder.Build<PingArgs>(new PingArgs(1));
-        PacketWrapper verifyPacket = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(dataToSend));
-        Assert.Equal(SystemPacket.Ping, verifyPacket.SystemPacketType);
-
-        var wsClient = new ClientWebSocket();
-        wsClient.Options.SetRequestHeader("Authorization", $"Bearer {token}");
-        await wsClient.ConnectAsync(wsUri, CancellationToken.None);
-
-
-        Assert.Equal(WebSocketState.Open, wsClient.State);
-
+        var wsClient = await OpenAuthoredWebSocket(wsUri, token);
 
         await wsClient.SendAsync(new ArraySegment<byte>(dataToSend), WebSocketMessageType.Binary, true, CancellationToken.None);
-
-        //ArraySegment<byte> receiveBuffer = new ArraySegment<byte>();
-        //WebSocketReceiveResult result = await wsClient.ReceiveAsync(receiveBuffer, CancellationToken.None);
-
+     
         byte[] receiveBuffer = new byte[4096];
         WebSocketReceiveResult result = await wsClient.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), CancellationToken.None);
-
 
         _output.WriteLine($"Count: {result.Count}");
         Assert.True(result.EndOfMessage);
@@ -90,6 +68,46 @@ public class TestMain
         Assert.Equal(SystemPacket.Pong, packetWrapper.SystemPacketType);
         Assert.Equal(2, packetWrapper.SystemPacketAsPong().Seq);
 
-        await wsClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "Good Bye", CancellationToken.None);
+        await CloseAuthoredWebSocket(wsClient);
+    }
+
+    protected async Task<ClientWebSocket> OpenAuthoredWebSocket(Uri wsUri, string token)
+    {
+        var wsClient = new ClientWebSocket();
+        wsClient.Options.SetRequestHeader("Authorization", $"Bearer {token}");
+        await wsClient.ConnectAsync(wsUri, CancellationToken.None);
+        Assert.Equal(WebSocketState.Open, wsClient.State);
+        return wsClient;
+    }
+    protected async Task CloseAuthoredWebSocket(ClientWebSocket socket)
+    {
+        await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Good Bye", CancellationToken.None);
+
+    }
+
+    protected async Task<string> GetGuestAuthToken()
+    {
+        string guestId = CreateRandomString(6);
+        var response = await _frontendHttpClient.PostAsync($"/api/auth/token/guest/{guestId}", null);
+        response.EnsureSuccessStatusCode();
+        string token = await response.Content.ReadAsStringAsync();
+        return token.Replace("\"", "");
+    }
+    protected string CreateRandomString(int length)
+    {
+        return new string(
+            Enumerable
+                .Repeat("0123456789", length)
+                .Select(s => s[_random.Next(s.Length)])
+                .ToArray());
+    }
+    protected byte[] BuildPingPacket(int seq = 1)
+    {
+        byte[] dataToSend = SyncnetPacketBuilder.Build<PingArgs>(new PingArgs(seq));
+        PacketWrapper verifyPacket = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(dataToSend));
+        Assert.Equal(SystemPacket.Ping, verifyPacket.SystemPacketType);
+        return dataToSend;
     }
 }
+
+
