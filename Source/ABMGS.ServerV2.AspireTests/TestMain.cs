@@ -15,22 +15,31 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit.Abstractions;
 using YamlDotNet.Core.Tokens;
+using System.Text.Json;
 
 namespace ABMGS.ServerV2.AspireTest;
 
 [Collection("AspireCollection")]
-public class ABMGS_TestMain
+public class ABMGS_TestMain : IAsyncLifetime
 {
     private readonly AspireAppFixture _appFixture;
     private readonly ITestOutputHelper _output;
     private readonly Random _random = new Random();
-    private readonly HttpClient _frontendHttpClient;
+    private HttpClient _frontendHttpClient;
 
     public ABMGS_TestMain(AspireAppFixture fixture, ITestOutputHelper output)
     {
         _appFixture = fixture;
         _output = output;
-        _frontendHttpClient = _appFixture.CreateHttpClientToFrontEnd("orleans-frontend").GetAwaiter().GetResult();
+    }
+    public async Task InitializeAsync()
+    {
+        _frontendHttpClient = await _appFixture.CreateHttpClientToFrontEnd("orleans-frontend");
+    }
+    public Task DisposeAsync()
+    {
+        _frontendHttpClient?.Dispose();
+        return Task.CompletedTask;
     }
 
     [Fact]
@@ -91,7 +100,10 @@ public class ABMGS_TestMain
         var response = await _frontendHttpClient.PostAsync($"/api/auth/token/guest/{guestId}", null);
         response.EnsureSuccessStatusCode();
         string token = await response.Content.ReadAsStringAsync();
-        return token.Replace("\"", "");
+
+        return JsonSerializer.Deserialize<string>(token) ?? "";
+
+        //return token.Replace("\"", "");
     }
     protected string CreateRandomString(int length)
     {
@@ -108,6 +120,8 @@ public class ABMGS_TestMain
         Assert.Equal(SystemPacket.Ping, verifyPacket.SystemPacketType);
         return dataToSend;
     }
+
+
 }
 
 
