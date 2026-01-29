@@ -59,12 +59,21 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
                     sendLoopExitToken);
             }
         }
+        catch(ObjectDisposedException ex)
+        {
+            _logger.LogError(ex, "Socket disposed.");
+        }
+        catch(InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Socket disabled.");
+        }
         catch(WebSocketException ex)
         {
             _logger.LogError(ex, "Socket operation error in SendAsync");
         }
         catch(OperationCanceledException ex)
         {
+            _logger.LogInformation(ex, "Received wrapping it up and exit.");
             //Triggered by on purpose.
         }
         catch(Exception ex)
@@ -111,6 +120,13 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
                 catch(OperationCanceledException)
                 {
                     // Exit with nothing wrong
+                    return;
+                }
+                catch(WebSocketException ex)
+                {
+                    // Abnormal socket exception and closure.
+                    _logger.LogInformation("Socket closed abnormally.");
+                    SocketObject.Abort();
                     return;
                 }
 
