@@ -23,13 +23,14 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Configuration;
 using Microsoft.VisualBasic;
+using Microsoft.Extensions.Options;
 
 namespace SyncnetPlatform.Extensions;
 
 public static class FrontendApplicationBuilderExtension
 {
     // For Clients
-    public static void AddSyncnetPlatformFrontend(this WebApplicationBuilder builder)
+    public static void AddSyncnetPlatformFrontend(this WebApplicationBuilder builder, Action<SyncnetLoggerOption>? LoggerAction = null)
     {
         ConfigureGameServices(builder);
         ConfigureDatabase(builder);
@@ -39,7 +40,8 @@ public static class FrontendApplicationBuilderExtension
         ConfigureAuthentication(builder);
         ConfigureOrleans(builder);
         
-        ConfigureLogger(builder);
+        
+        ConfigureLogger(builder, LoggerAction);
     }
 
     private static void ConfigureGameServices(WebApplicationBuilder builder)
@@ -117,16 +119,30 @@ public static class FrontendApplicationBuilderExtension
 
     }
 
-    private static void ConfigureLogger(WebApplicationBuilder builder)
+    private static void ConfigureLogger(WebApplicationBuilder builder, Action<SyncnetLoggerOption>? LoggerAction = null)
     {
-        Log.Logger = new LoggerConfiguration()
-            .MinimumLevel.Information()
-            .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
-            .Enrich.FromLogContext()
-            .Enrich.WithThreadId()
-            .WriteTo.Console()
-            .CreateLogger();
-        builder.Host.UseSerilog();
+        if (LoggerAction != null)
+        {
+            builder.Services.Configure(LoggerAction);
+        }
+
+        builder.Services.AddSingleton<Serilog.ILogger>(sp =>
+        {
+            SyncnetLoggerOption option = sp.GetRequiredService<IOptions<SyncnetLoggerOption>>().Value;
+            var config = new LoggerConfiguration()
+                .MinimumLevel.Is(option.MinimumLevel)
+                .MinimumLevel.Override("Microsoft", option.Override)
+                .Enrich.FromLogContext();
+            if(option.EnableConsole) config.WriteTo.Console();
+            if(option.IncludeThreadId) config.Enrich.WithThreadId();
+            return config.CreateLogger();
+
+        });
+
+        builder.Services.AddLogging(logginBuilder =>
+        {
+            logginBuilder.AddSerilog(dispose: true);
+        });
     }
 
     public class SyncnetLoggerOption
