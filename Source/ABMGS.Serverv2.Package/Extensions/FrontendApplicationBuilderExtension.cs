@@ -19,6 +19,8 @@ using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Repositories;
 using System.Text;
 using System.Threading.Tasks;
+using Serilog;
+using Serilog.Events;
 
 namespace SyncnetPlatform.Extensions;
 
@@ -27,21 +29,55 @@ public static class FrontendApplicationBuilderExtension
     // For Clients
     public static void AddSyncnetPlatformFrontend(this WebApplicationBuilder builder)
     {
+        ConfigureGameServices(builder);
+        ConfigureDatabase(builder);
+       
+        builder.Services.AddHttpClient();
+
+        ConfigureAuthentication(builder);
+        ConfigureOrleans(builder);
+        
+        ConfigureLogger(builder);
+    }
+
+    private static void ConfigureGameServices(WebApplicationBuilder builder)
+    {
         builder.Services.AddTransient<IGameSessionService, GameSessionService>();
         builder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
         builder.Services.AddSingleton<IPacketContextFactory, PacketContextFactory>();
         builder.Services.AddTransient<ISystemPacketHandler, SystemPacketHandler>();
+    }
 
+    private static void ConfigureDatabase(WebApplicationBuilder builder)
+    {
         builder.Services.AddDbContextPool<SyncnetDbContext>(opt => {
             opt.UseNpgsql(builder.Configuration.GetConnectionString("SyncnetPlatform"));
         });
         builder.Services.AddTransient<IPlayerModelRepository, RdbPlayerModelRepository>();
         builder.Services.AddTransient<IExternalIdentityRepository, RdbExternalIdentityRepository>();
 
+    }
+
+    private static void ConfigureOrleans(WebApplicationBuilder builder)
+    {
+        builder.UseOrleansClient(configure =>
+        {
+            configure.Configure<ClusterOptions>(options =>
+            {
+                options.ClusterId = "SyncnetPlatformCluster";
+                options.ServiceId = "SyncnetPlatformService";
+            });
+            configure.UseRedisClustering(options =>
+            {
+                options.ConfigurationOptions = ConfigurationOptions.Parse(
+                    builder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
+            });
+        });
+    }
+    private static void ConfigureAuthentication(WebApplicationBuilder builder)
+    {
         builder.Services.AddTransient<IGooglePlayAuthenticationService, GooglePlayAuthenticationService>();
         builder.Services.AddTransient<ISyncnetAuthenticationService, PlayerAuthenticationService>();
-        builder.Services.AddHttpClient();
-        var aaa = builder.Configuration.GetSection(nameof(SyncnetAuthenticationOptions));
 
         builder.Services.Configure<SyncnetAuthenticationOptions>(
             builder.Configuration.GetSection(nameof(SyncnetAuthenticationOptions))
@@ -77,20 +113,18 @@ public static class FrontendApplicationBuilderExtension
             });
         });
 
+    }
 
-        builder.UseOrleansClient(configure =>
-        {
-            configure.Configure<ClusterOptions>(options =>
-            {
-                options.ClusterId = "SyncnetPlatformCluster";
-                options.ServiceId = "SyncnetPlatformService";
-            });
-            configure.UseRedisClustering(options =>
-            {
-                options.ConfigurationOptions = ConfigurationOptions.Parse(
-                    builder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
-            });
-        });
+    private static void ConfigureLogger(WebApplicationBuilder builder)
+    {
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Information()
+            .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+            .Enrich.FromLogContext()
+            .Enrich.WithThreadId()
+            .WriteTo.Console()
+            .CreateLogger();
+        builder.Host.UseSerilog();
     }
 
     public static void UseFrontendSyncnetPlatform(this WebApplication app)
