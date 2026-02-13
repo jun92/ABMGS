@@ -21,6 +21,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Serilog;
 using Serilog.Events;
+using Serilog.Configuration;
+using Microsoft.VisualBasic;
 
 namespace SyncnetPlatform.Extensions;
 
@@ -125,6 +127,14 @@ public static class FrontendApplicationBuilderExtension
             .WriteTo.Console()
             .CreateLogger();
         builder.Host.UseSerilog();
+    }
+
+    public class SyncnetLoggerOption
+    {
+        public LogEventLevel MinimumLevel { get; set; } = LogEventLevel.Information;
+        public LogEventLevel Override { get; set; } = LogEventLevel.Warning;
+        public bool EnableConsole { get; set; } = true;
+        public bool IncludeThreadId { get; set; } = true;  
     }
 
     public static void UseFrontendSyncnetPlatform(this WebApplication app)
