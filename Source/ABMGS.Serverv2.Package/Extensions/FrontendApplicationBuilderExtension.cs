@@ -18,11 +18,9 @@ using SyncnetPlatform.Network.Sessions;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Repositories;
 using System.Text;
-using System.Threading.Tasks;
 using Serilog;
 using Serilog.Events;
 using Serilog.Configuration;
-using Microsoft.VisualBasic;
 using Microsoft.Extensions.Options;
 
 namespace SyncnetPlatform.Extensions;
@@ -126,22 +124,16 @@ public static class FrontendApplicationBuilderExtension
             builder.Services.Configure(LoggerAction);
         }
 
-        builder.Services.AddSingleton<Serilog.ILogger>(sp =>
-        {
-            SyncnetLoggerOption option = sp.GetRequiredService<IOptions<SyncnetLoggerOption>>().Value;
-            var config = new LoggerConfiguration()
+        builder.Host.UseSerilog((context, services, LoggerConfiguration) => 
+        { 
+            SyncnetLoggerOption option = services.GetRequiredService<IOptions<SyncnetLoggerOption>>().Value;
+            LoggerConfiguration
                 .MinimumLevel.Is(option.MinimumLevel)
                 .MinimumLevel.Override("Microsoft", option.Override)
                 .Enrich.FromLogContext();
-            if(option.EnableConsole) config.WriteTo.Console();
-            if(option.IncludeThreadId) config.Enrich.WithThreadId();
-            return config.CreateLogger();
+            if(option.EnableConsole) LoggerConfiguration.WriteTo.Console();
+            if(option.IncludeThreadId) LoggerConfiguration.Enrich.WithThreadId();
 
-        });
-
-        builder.Services.AddLogging(logginBuilder =>
-        {
-            logginBuilder.AddSerilog(dispose: true);
         });
     }
 
