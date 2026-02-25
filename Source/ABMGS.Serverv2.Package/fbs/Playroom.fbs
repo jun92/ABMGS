@@ -17,7 +17,7 @@ table ResCreateRoom {
 }
 
 table ReqJoinRoom {
-    room_id: string;
+    room_id: GuidType;
     password: string;
 }
 
@@ -27,7 +27,7 @@ table ResJoinRoom {
 }
 
 table ReqLeaveRoom {
-    room_id: string;
+    room_id: GuidType;
 }
 
 table ResLeaveRoom {
@@ -36,8 +36,8 @@ table ResLeaveRoom {
 }
 
 table ReqBroadcastRoom {
-    room_id: string;
-    from: string;
+    room_id: GuidType;
+    from: GuidType;
     message: string;
 }
 
@@ -47,7 +47,7 @@ table ResBroadcastRoom {
 }
 
 table BroadcastRoom {
-    from: string;
+    from: GuidType;
     message: string;
 }
 

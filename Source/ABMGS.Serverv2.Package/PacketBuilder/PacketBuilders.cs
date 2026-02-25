@@ -93,3 +93,114 @@ internal class ResCreateNewUserPacketBuilder : PacketBABuilder<ResCreateNewUserA
         return Wrap(builder, SystemPacket.ResCreateNewUser, offsetCreateNewUser.Value);
     }
 }
+
+internal class ReqCreateRoomPacketBuilder : PacketBABuilder<ReqCreateRoomArgs>
+{
+    public override byte[] Build(ReqCreateRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        ReqCreateRoom.StartReqCreateRoom(builder);
+        ReqCreateRoom.AddName(builder, builder.CreateString(args.name));
+        ReqCreateRoom.AddPrivate(builder, args.isPrivate);
+        ReqCreateRoom.AddMaxCount(builder, args.maxCount);
+        ReqCreateRoom.AddPassword(builder, builder.CreateString(args.password));
+
+        return Wrap(builder, SystemPacket.ReqCreateRoom, ReqCreateRoom.EndReqCreateRoom(builder).Value);
+    }
+}
+
+internal class ResCreateRoomPacketBuilder : PacketBABuilder<ResCreateRoomArgs>
+{
+    public override byte[] Build(ResCreateRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        ResCreateRoom.StartResCreateRoom(builder);
+        ResCreateRoom.AddResult(builder, args.result);
+        ResCreateRoom.AddMessage(builder, builder.CreateString(args.message));
+        return Wrap(builder, SystemPacket.ResCreateRoom, ResCreateRoom.EndResCreateRoom(builder).Value);
+    }
+}
+
+internal class ReqJoinRoomPacketBuilder : PacketBABuilder<ReqJoinRoomArgs>
+{
+    public override byte[] Build(ReqJoinRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        ReqJoinRoom.StartReqJoinRoom(builder);
+        ReqJoinRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
+        ReqJoinRoom.AddPassword(builder, builder.CreateString(args.password));
+        return Wrap(builder, SystemPacket.ReqJoinRoom, ReqJoinRoom.EndReqJoinRoom(builder).Value);
+    }
+}
+
+internal class ResJoinRoomPacketBuilder : PacketBABuilder<ResJoinRoomArgs>
+{
+    public override byte[] Build(ResJoinRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        return Wrap(
+            builder, 
+            SystemPacket.ResJoinRoom, 
+            ResJoinRoom.CreateResJoinRoom(builder, args.result, builder.CreateString(args.message)).Value);
+    }
+}
+
+internal class ReqLeaveRoomPacketBuilder : PacketBABuilder<ReqLeaveRoomArgs>
+{
+    public override byte[] Build(ReqLeaveRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        ReqLeaveRoom.StartReqLeaveRoom(builder);
+        ReqLeaveRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
+        return Wrap(builder, SystemPacket.ReqLeaveRoom, ReqLeaveRoom.EndReqLeaveRoom(builder).Value);
+    }
+}
+
+internal class ResLeaveRoomPacketBuilder : PacketBABuilder<ResLeaveRoomArgs>
+{
+    public override byte[] Build(ResLeaveRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        return Wrap(
+            builder, 
+            SystemPacket.ResLeaveRoom, 
+            ResLeaveRoom.CreateResLeaveRoom(builder, args.result, builder.CreateString(args.message)).Value);
+    }
+}
+
+internal class ReqBroadcastRoomPacketBuilder : PacketBABuilder<ReqBroadcastRoomArgs>
+{
+    public override byte[] Build(ReqBroadcastRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        ReqBroadcastRoom.StartReqBroadcastRoom(builder);
+        ReqBroadcastRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
+        ReqBroadcastRoom.AddFrom(builder, args.from.ToGuidType(builder));
+        ReqBroadcastRoom.AddMessage(builder, builder.CreateString(args.message));
+
+        return Wrap(builder, SystemPacket.ReqBroadcastRoom, ReqBroadcastRoom.EndReqBroadcastRoom(builder).Value);
+    }
+}
+
+internal class ResBroadcastRoomPacketBuilder : PacketBABuilder<ResBroadcastRoomArgs>
+{
+    public override byte[] Build(ResBroadcastRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        return Wrap(builder,
+            SystemPacket.ResBroadcastRoom,
+            ResBroadcastRoom.CreateResBroadcastRoom(builder, args.result, builder.CreateString(args.message)).Value);
+    }
+}
+
+internal class BroadcastRoomPacketBuilder : PacketBABuilder<BroadcastRoomArgs>
+{
+    public override byte[] Build(BroadcastRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        BroadcastRoom.StartBroadcastRoom(builder);
+        BroadcastRoom.AddFrom(builder, args.from.ToGuidType(builder));
+        BroadcastRoom.AddMessage(builder, builder.CreateString(args.message));
+        return Wrap(builder, SystemPacket.BroadcastRoom, BroadcastRoom.EndBroadcastRoom(builder).Value);
+    }
+}

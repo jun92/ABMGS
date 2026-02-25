@@ -28,6 +28,15 @@ public struct PacketWrapper : IFlatbufferObject
   public SyncnetPlatform.Protocols.Generated.ResCreateNewUser SystemPacketAsResCreateNewUser() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ResCreateNewUser>().Value; }
   public SyncnetPlatform.Protocols.Generated.ReqUserInfo SystemPacketAsReqUserInfo() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ReqUserInfo>().Value; }
   public SyncnetPlatform.Protocols.Generated.ResUserInfo SystemPacketAsResUserInfo() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ResUserInfo>().Value; }
+  public SyncnetPlatform.Protocols.Generated.ReqCreateRoom SystemPacketAsReqCreateRoom() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ReqCreateRoom>().Value; }
+  public SyncnetPlatform.Protocols.Generated.ResCreateRoom SystemPacketAsResCreateRoom() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ResCreateRoom>().Value; }
+  public SyncnetPlatform.Protocols.Generated.ReqJoinRoom SystemPacketAsReqJoinRoom() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ReqJoinRoom>().Value; }
+  public SyncnetPlatform.Protocols.Generated.ResJoinRoom SystemPacketAsResJoinRoom() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ResJoinRoom>().Value; }
+  public SyncnetPlatform.Protocols.Generated.ReqLeaveRoom SystemPacketAsReqLeaveRoom() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ReqLeaveRoom>().Value; }
+  public SyncnetPlatform.Protocols.Generated.ResLeaveRoom SystemPacketAsResLeaveRoom() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ResLeaveRoom>().Value; }
+  public SyncnetPlatform.Protocols.Generated.ReqBroadcastRoom SystemPacketAsReqBroadcastRoom() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ReqBroadcastRoom>().Value; }
+  public SyncnetPlatform.Protocols.Generated.ResBroadcastRoom SystemPacketAsResBroadcastRoom() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ResBroadcastRoom>().Value; }
+  public SyncnetPlatform.Protocols.Generated.BroadcastRoom SystemPacketAsBroadcastRoom() { return SystemPacket<SyncnetPlatform.Protocols.Generated.BroadcastRoom>().Value; }
   public SyncnetPlatform.Protocols.Generated.CustomPacket CustomPacketType { get { int o = __p.__offset(8); return o != 0 ? (SyncnetPlatform.Protocols.Generated.CustomPacket)__p.bb.Get(o + __p.bb_pos) : SyncnetPlatform.Protocols.Generated.CustomPacket.NONE; } }
   public TTable? CustomPacket<TTable>() where TTable : struct, IFlatbufferObject { int o = __p.__offset(10); return o != 0 ? (TTable?)__p.__union<TTable>(o + __p.bb_pos) : null; }
   public SyncnetPlatform.Protocols.Generated.MyCustomPacket CustomPacketAsMyCustomPacket() { return CustomPacket<SyncnetPlatform.Protocols.Generated.MyCustomPacket>().Value; }

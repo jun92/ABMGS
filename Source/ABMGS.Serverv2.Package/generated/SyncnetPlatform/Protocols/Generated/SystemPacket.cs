@@ -14,6 +14,15 @@ public enum SystemPacket : byte
   ResCreateNewUser = 4,
   ReqUserInfo = 5,
   ResUserInfo = 6,
+  ReqCreateRoom = 7,
+  ResCreateRoom = 8,
+  ReqJoinRoom = 9,
+  ResJoinRoom = 10,
+  ReqLeaveRoom = 11,
+  ResLeaveRoom = 12,
+  ReqBroadcastRoom = 13,
+  ResBroadcastRoom = 14,
+  BroadcastRoom = 15,
 };
 
 
@@ -42,6 +51,33 @@ static public class SystemPacketVerify
         break;
       case SystemPacket.ResUserInfo:
         result = SyncnetPlatform.Protocols.Generated.ResUserInfoVerify.Verify(verifier, tablePos);
+        break;
+      case SystemPacket.ReqCreateRoom:
+        result = SyncnetPlatform.Protocols.Generated.ReqCreateRoomVerify.Verify(verifier, tablePos);
+        break;
+      case SystemPacket.ResCreateRoom:
+        result = SyncnetPlatform.Protocols.Generated.ResCreateRoomVerify.Verify(verifier, tablePos);
+        break;
+      case SystemPacket.ReqJoinRoom:
+        result = SyncnetPlatform.Protocols.Generated.ReqJoinRoomVerify.Verify(verifier, tablePos);
+        break;
+      case SystemPacket.ResJoinRoom:
+        result = SyncnetPlatform.Protocols.Generated.ResJoinRoomVerify.Verify(verifier, tablePos);
+        break;
+      case SystemPacket.ReqLeaveRoom:
+        result = SyncnetPlatform.Protocols.Generated.ReqLeaveRoomVerify.Verify(verifier, tablePos);
+        break;
+      case SystemPacket.ResLeaveRoom:
+        result = SyncnetPlatform.Protocols.Generated.ResLeaveRoomVerify.Verify(verifier, tablePos);
+        break;
+      case SystemPacket.ReqBroadcastRoom:
+        result = SyncnetPlatform.Protocols.Generated.ReqBroadcastRoomVerify.Verify(verifier, tablePos);
+        break;
+      case SystemPacket.ResBroadcastRoom:
+        result = SyncnetPlatform.Protocols.Generated.ResBroadcastRoomVerify.Verify(verifier, tablePos);
+        break;
+      case SystemPacket.BroadcastRoom:
+        result = SyncnetPlatform.Protocols.Generated.BroadcastRoomVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

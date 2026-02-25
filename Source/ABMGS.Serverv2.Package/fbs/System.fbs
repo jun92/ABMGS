@@ -13,7 +13,16 @@ union SystemPacket {
     ReqCreateNewUser,
     ResCreateNewUser,
     ReqUserInfo,
-    ResUserInfo
+    ResUserInfo,
+    ReqCreateRoom,
+    ResCreateRoom,
+    ReqJoinRoom,
+    ResJoinRoom,
+    ReqLeaveRoom,
+    ResLeaveRoom,
+    ReqBroadcastRoom,
+    ResBroadcastRoom,
+    BroadcastRoom,
 }
 
 table PacketWrapper {
