@@ -1,0 +1,53 @@
+include "Types.fbs";
+
+namespace SyncnetPlatform.Protocols.Generated;
+
+
+table ReqCreateRoom {
+    name: string;
+    private: bool = true;
+    password: string;
+    max_count: int;
+}
+
+table ResCreateRoom {
+    result: int;
+    message: string;
+    room_id: GuidType;
+}
+
+table ReqJoinRoom {
+    room_id: string;
+    password: string;
+}
+
+table ResJoinRoom {
+    result: int;
+    message: string;
+}
+
+table ReqLeaveRoom {
+    room_id: string;
+}
+
+table ResLeaveRoom {
+    result: int;
+    message: string;
+}
+
+table ReqBroadcastRoom {
+    room_id: string;
+    from: string;
+    message: string;
+}
+
+table ResBroadcastRoom {
+    result: int;
+    message: string;
+}
+
+table BroadcastRoom {
+    from: string;
+    message: string;
+}
+

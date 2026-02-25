@@ -1,11 +1,8 @@
+include "Types.fbs";
 
 namespace SyncnetPlatform.Protocols.Generated;
 
-struct GuidType {
-    low: uint64;
-    high: uint64;
 
-}
 
 table ReqCreateNewUser {
     player_name: string;

@@ -1,0 +1,8 @@
+namespace SyncnetPlatform.Protocols.Generated;
+
+struct GuidType {
+    low: uint64;
+    high: uint64;
+
+}
+

@@ -1,9 +1,10 @@
+
+
 include "Custom.fbs";
 include "Player.fbs";
+include "Playroom.fbs";
 
 namespace SyncnetPlatform.Protocols.Generated;
-
-
 
 
 union SystemPacket {
