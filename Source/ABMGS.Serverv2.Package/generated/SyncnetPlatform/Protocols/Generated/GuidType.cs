@@ -16,13 +16,13 @@ public struct GuidType : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Struct(_i, _bb); }
   public GuidType __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public byte Bytes(int j) { return __p.bb.Get(__p.bb_pos + 0 + j * 1); }
+  public ulong Low { get { return __p.bb.GetUlong(__p.bb_pos + 0); } }
+  public ulong High { get { return __p.bb.GetUlong(__p.bb_pos + 8); } }
 
-  public static Offset<SyncnetPlatform.Protocols.Generated.GuidType> CreateGuidType(FlatBufferBuilder builder, byte[] Bytes) {
-    builder.Prep(1, 16);
-    for (int _idx0 = 16; _idx0 > 0; _idx0--) {
-      builder.PutByte(Bytes[_idx0-1]);
-    }
+  public static Offset<SyncnetPlatform.Protocols.Generated.GuidType> CreateGuidType(FlatBufferBuilder builder, ulong Low, ulong High) {
+    builder.Prep(8, 16);
+    builder.PutUlong(High);
+    builder.PutUlong(Low);
     return new Offset<SyncnetPlatform.Protocols.Generated.GuidType>(builder.Offset);
   }
 }

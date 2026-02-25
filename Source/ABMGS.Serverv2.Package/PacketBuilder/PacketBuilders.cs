@@ -1,4 +1,5 @@
 using Google.FlatBuffers;
+using SyncnetPlatform.Extensions;
 using SyncnetPlatform.Protocols.Generated;
 
 namespace SyncnetPlatform.Network.Utils;
@@ -62,7 +63,7 @@ internal class ResUserInfoPacketBuilder: PacketBABuilder<ResUserInfoArgs>
     {
         var builder = CreateBuilder();
         ResUserInfo.StartResUserInfo(builder);
-        Offset<GuidType> playerId = GuidType.CreateGuidType(builder, args.playerId.ToByteArray());
+        Offset<GuidType> playerId = args.playerId.ToGuidType(builder);
         ResUserInfo.AddPlayerId(builder, playerId);
         StringOffset playerName = builder.CreateString(args.playerName);
         ResUserInfo.AddPlayerName(builder, playerName);

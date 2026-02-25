@@ -47,7 +47,7 @@ static public class ResUserInfoVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*PlayerId*/, 16 /*SyncnetPlatform.Protocols.Generated.GuidType*/, 1, false)
+      && verifier.VerifyField(tablePos, 4 /*PlayerId*/, 16 /*SyncnetPlatform.Protocols.Generated.GuidType*/, 8, false)
       && verifier.VerifyString(tablePos, 6 /*PlayerName*/, false)
       && verifier.VerifyField(tablePos, 8 /*Level*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 10 /*Exp*/, 8 /*ulong*/, 8, false)

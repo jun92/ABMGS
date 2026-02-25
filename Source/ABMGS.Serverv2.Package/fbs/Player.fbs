@@ -2,7 +2,9 @@
 namespace SyncnetPlatform.Protocols.Generated;
 
 struct GuidType {
-    bytes: [ubyte:16];
+    low: uint64;
+    high: uint64;
+
 }
 
 table ReqCreateNewUser {
