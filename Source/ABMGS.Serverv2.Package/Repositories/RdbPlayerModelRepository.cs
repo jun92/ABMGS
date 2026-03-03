@@ -28,14 +28,20 @@ public class RdbPlayerModelRepository : IPlayerModelRepository
         await dbContext.Players.AddAsync(newPlayerModel);
     }
 
-    public async Task GetOrCreate(Guid playerId)
+    public async Task<PlayerData> GetOrCreate(Guid playerId)
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
         PlayerData? playerData = await dbContext.Players.Where(w => w.PlayerId == playerId).FirstOrDefaultAsync();
         if (playerData == null) 
         {
+            playerData = new PlayerData
+            {
+                PlayerId = playerId,
+            };
             await dbContext.AddAsync( new PlayerData { PlayerId = playerId, });
         }
+        await dbContext.SaveChangesAsync();
+        return playerData;
     }
 
     public async Task<PlayerData?> Get(Guid playerId)
@@ -59,7 +65,7 @@ public interface IPlayerModelRepository
     Task Create(PlayerData newPlayerDataModel);
     Task<PlayerData?> Get(Guid playerId);
     Task<PlayerData?> Get(int id);
-    Task GetOrCreate(Guid playerId);
+    Task<PlayerData> GetOrCreate(Guid playerId);
 }
 
 public interface IExternalIdentityRepository
