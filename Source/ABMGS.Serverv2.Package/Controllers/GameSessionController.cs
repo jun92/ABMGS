@@ -77,9 +77,9 @@ public class GameSessionController : ControllerBase
             return;
         }
 
-        string? Sub = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        ArgumentNullException.ThrowIfNull(Sub);
-        Guid playerId = new Guid(Sub);
+        string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        ArgumentNullException.ThrowIfNull(userIdClaim);
+        Guid playerId = new Guid(userIdClaim);
 
         WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
         await _gameSessionService.StartGameSession(playerId, webSocket);
