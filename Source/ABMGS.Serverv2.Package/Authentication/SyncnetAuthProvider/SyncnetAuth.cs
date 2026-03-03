@@ -1,15 +1,21 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using SyncnetPlatform.Databases;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
 namespace SyncnetPlatform.Authentication.SyncnetAuthProvider;
 
+public static class JwtRegisteredClaimNamesExt
+{
+    public const string Idp = "Idp";
+}
+
 public interface ISyncnetJwtAuthenticationService
 {
-    string IssueNewToken(string playerId);
+    string IssueNewToken(string playerId, string idProvider);
 }
 public class SyncnetAuthenticationService : ISyncnetJwtAuthenticationService
 {
@@ -26,7 +32,7 @@ public class SyncnetAuthenticationService : ISyncnetJwtAuthenticationService
     }
 
 
-    public string IssueNewToken(string syncnetPlayerId)
+    public string IssueNewToken(string syncnetPlayerId, string idProvider)
     {
         SymmetricSecurityKey key = new(Encoding.UTF8.GetBytes(_options.SecretKey));
         SigningCredentials credentials = new(key, SecurityAlgorithms.HmacSha256);
@@ -36,6 +42,7 @@ public class SyncnetAuthenticationService : ISyncnetJwtAuthenticationService
             new Claim(JwtRegisteredClaimNames.Sub, syncnetPlayerId),
             new Claim(JwtRegisteredClaimNames.Iss, _options.Issuer),
             new Claim(JwtRegisteredClaimNames.Aud, _options.Audience),
+            new Claim(JwtRegisteredClaimNamesExt.Idp, idProvider)
         };
 
         JwtSecurityToken newToken = new JwtSecurityToken(

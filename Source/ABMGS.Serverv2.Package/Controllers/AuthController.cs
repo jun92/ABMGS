@@ -38,7 +38,7 @@ public class AuthController : ControllerBase
 
     public async Task<IActionResult> TestIssueToken([FromRoute] string playerId)
     {
-        return Ok(_syncnetJwtAuthenticationService.IssueNewToken(playerId));
+        return Ok(_syncnetJwtAuthenticationService.IssueNewToken(playerId, SupportedPlatformType.guest.ToString()));
     }
 
     /// <summary>
@@ -67,7 +67,7 @@ public class AuthController : ControllerBase
                     syncnetPlatformId = await _authenticationService.GetPlayerIdByGuest(identifier);
                     break;
             }
-            return Ok(_syncnetJwtAuthenticationService.IssueNewToken(syncnetPlatformId.ToString()));
+            return Ok(_syncnetJwtAuthenticationService.IssueNewToken(syncnetPlatformId.ToString(), supportedPlatformType.ToString()));
         }
         else
         {

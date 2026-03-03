@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using SyncnetPlatform.Authentication.GooglePlay;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using System.Net.WebSockets;
+using SyncnetPlatform.Authentication.SyncnetAuthProvider;
 
 namespace SyncnetPlatform.Controllers;
 
@@ -78,6 +79,7 @@ public class GameSessionController : ControllerBase
         }
 
         string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        string? userIdpClaim = User.FindFirstValue(JwtRegisteredClaimNamesExt.Idp);
         ArgumentNullException.ThrowIfNull(userIdClaim);
         if(!Guid.TryParse(userIdClaim, out Guid playerId))
         {
