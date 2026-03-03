@@ -79,7 +79,11 @@ public class GameSessionController : ControllerBase
 
         string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
         ArgumentNullException.ThrowIfNull(userIdClaim);
-        Guid playerId = new Guid(userIdClaim);
+        if(!Guid.TryParse(userIdClaim, out Guid playerId))
+        {
+            HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return;
+        }
 
         WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
         await _gameSessionService.StartGameSession(playerId, webSocket);
