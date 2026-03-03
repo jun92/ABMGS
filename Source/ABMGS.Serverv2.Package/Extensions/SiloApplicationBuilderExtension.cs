@@ -38,13 +38,20 @@ public static class SiloApplicationBuilderExtension
     }
     private static void SyncnetPlatformSiloDbContext(HostApplicationBuilder builder)
     {
-        builder.Services.AddDbContextPool<SyncnetDbContext>(opt =>
+        builder.Services.AddDbContextFactory<SyncnetDbContext>(opt =>
         {
             opt.UseNpgsql(builder.Configuration.GetConnectionString("SyncnetPlatform"), optionBuilder =>
             {
                 optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
             });
         });
+        //builder.Services.AddDbContextPool<SyncnetDbContext>(opt =>
+        //{
+        //    opt.UseNpgsql(builder.Configuration.GetConnectionString("SyncnetPlatform"), optionBuilder =>
+        //    {
+        //        optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
+        //    });
+        //});
     }
     public static void AddSyncnetPlatformSilo(this HostApplicationBuilder builder)
     {

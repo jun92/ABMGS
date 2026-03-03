@@ -10,31 +10,46 @@ namespace SyncnetPlatform.Repositories;
 public class RdbPlayerModelRepository : IPlayerModelRepository
 {
     private readonly ILogger<RdbPlayerModelRepository> _logger;
-    private readonly SyncnetDbContext _syncnetDbContext;
+    private readonly IDbContextFactory<SyncnetDbContext> _dbContextFactory;
 
     public RdbPlayerModelRepository(
-        SyncnetDbContext syncnetDbContext,
+        IDbContextFactory<SyncnetDbContext> dbContextFactory,
         ILogger<RdbPlayerModelRepository> logger)
     {
-        _syncnetDbContext = syncnetDbContext;
+        _dbContextFactory = dbContextFactory;
         _logger = logger;
     }
 
 
     public async Task Create(PlayerData newPlayerModel)
     {
-        await _syncnetDbContext.Players.AddAsync(newPlayerModel);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+
+        await dbContext.Players.AddAsync(newPlayerModel);
+    }
+
+    public async Task GetOrCreate(Guid playerId)
+    {
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        PlayerData? playerData = await dbContext.Players.Where(w => w.PlayerId == playerId).FirstOrDefaultAsync();
+        if (playerData == null) 
+        {
+            await dbContext.AddAsync( new PlayerData { PlayerId = playerId, });
+        }
     }
 
     public async Task<PlayerData?> Get(Guid playerId)
     {
-        var playerModel = await _syncnetDbContext.Players.Where(w => w.PlayerId == playerId).FirstOrDefaultAsync();
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+
+        var playerModel = await dbContext.Players.Where(w => w.PlayerId == playerId).FirstOrDefaultAsync();
         return playerModel;
     }
 
     public async Task<PlayerData?> Get(int id)
     {
-        var playerModel = await _syncnetDbContext.Players.Where(w => w.Id == id).FirstOrDefaultAsync();
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        var playerModel = await dbContext.Players.Where(w => w.Id == id).FirstOrDefaultAsync();
         return playerModel;
     }
 }
@@ -44,6 +59,7 @@ public interface IPlayerModelRepository
     Task Create(PlayerData newPlayerDataModel);
     Task<PlayerData?> Get(Guid playerId);
     Task<PlayerData?> Get(int id);
+    Task GetOrCreate(Guid playerId);
 }
 
 public interface IExternalIdentityRepository
