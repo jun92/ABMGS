@@ -42,5 +42,10 @@ public class SystemPacketHandler : ISystemPacketHandler
         await PlayerData.CreateNewPlayerData(request.PlayerName);
 
     }
+    [PacketHandler(typeof(ReqCreateRoom))]
+    public async Task HandleReqCreateroom(ReqCreateRoom request, PacketContext ctx)
+    {
+    }
+
 }
 

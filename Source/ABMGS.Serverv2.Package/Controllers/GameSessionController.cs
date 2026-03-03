@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using SyncnetPlatform.Authentication.GooglePlay;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using System.Net.WebSockets;
+using System.Security.Claims;
 
 namespace SyncnetPlatform.Controllers;
 
@@ -75,6 +76,18 @@ public class GameSessionController : ControllerBase
             HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             return;
         }
+
+        // TODO: Extract SyncnetPlayerId from context and pass it to StartGameSession function.
+        string? sub = User.FindFirstValue("sub");
+        if (String.IsNullOrEmpty(sub))
+        {
+            _logger.LogError("Sub not found");
+        }
+        else
+        {
+            _logger.LogError("Sub is " + sub);
+        }
+
         
         WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
         await _gameSessionService.StartGameSession(Guid.NewGuid(), webSocket);
@@ -89,4 +102,4 @@ public enum SupportedPlatformType
     apple,
     steam,
     guest
-}
+} 

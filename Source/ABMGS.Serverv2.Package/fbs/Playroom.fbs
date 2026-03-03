@@ -3,51 +3,56 @@ include "Types.fbs";
 namespace SyncnetPlatform.Protocols.Generated;
 
 
-table ReqCreateRoom {
+table ReqCreateRoom{
     name: string;
     private: bool = true;
     password: string;
     max_count: int;
 }
 
-table ResCreateRoom {
+table ResCreateRoom{
     result: int;
     message: string;
     room_id: GuidType;
 }
 
-table ReqJoinRoom {
+table ReqJoinRoom{
     room_id: GuidType;
     password: string;
 }
 
-table ResJoinRoom {
+table ResJoinRoom{
     result: int;
     message: string;
 }
 
-table ReqLeaveRoom {
+table ReqLeaveRoom{
     room_id: GuidType;
 }
 
-table ResLeaveRoom {
+table ResLeaveRoom{
     result: int;
     message: string;
 }
 
-table ReqBroadcastRoom {
+table ReqBroadcastRoom{
     room_id: GuidType;
     from: GuidType;
     message: string;
 }
 
-table ResBroadcastRoom {
+table ResBroadcastRoom{
     result: int;
     message: string;
 }
 
-table BroadcastRoom {
+table BroadcastRoom{
     from: GuidType;
     message: string;
+}
+
+table ReqDestroyRoom {
+    room_id: GuidType;
+    reason: string;
 }
 

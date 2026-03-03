@@ -67,8 +67,6 @@ internal class ResUserInfoPacketBuilder: PacketBABuilder<ResUserInfoArgs>
         ResUserInfo.AddPlayerId(builder, playerId);
         StringOffset playerName = builder.CreateString(args.playerName);
         ResUserInfo.AddPlayerName(builder, playerName);
-        ResUserInfo.AddLevel(builder, args.level);
-        ResUserInfo.AddExp(builder, args.exp);
         Offset<ResUserInfo> offsetUserInfo = ResUserInfo.EndResUserInfo(builder);
 
         return Wrap(builder, SystemPacket.ResUserInfo, offsetUserInfo.Value);
@@ -89,8 +87,12 @@ internal class ResCreateNewUserPacketBuilder : PacketBABuilder<ResCreateNewUserA
     public override byte[] Build(ResCreateNewUserArgs args)
     {
         var builder = CreateBuilder();
-        Offset<ResCreateNewUser> offsetCreateNewUser = ResCreateNewUser.CreateResCreateNewUser(builder, args.ErrorCode);
-        return Wrap(builder, SystemPacket.ResCreateNewUser, offsetCreateNewUser.Value);
+        ResCreateNewUser.StartResCreateNewUser(builder);
+        ResCreateNewUser.AddErrorCode(builder, args.ErrorCode);
+        ResCreateNewUser.AddCreatedPlayerId(builder, args.createdPlayerId.ToGuidType(builder));
+        ResCreateNewUser.AddPlayerName(builder, builder.CreateString(args.playerName));
+
+        return Wrap(builder, SystemPacket.ResCreateNewUser, ResCreateNewUser.EndResCreateNewUser(builder).Value);
     }
 }
 

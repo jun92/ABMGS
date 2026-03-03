@@ -20,16 +20,19 @@ public struct ResCreateNewUser : IFlatbufferObject
   public ResCreateNewUser __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public int ErrorCode { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public SyncnetPlatform.Protocols.Generated.GuidType? CreatedPlayerId { get { int o = __p.__offset(6); return o != 0 ? (SyncnetPlatform.Protocols.Generated.GuidType?)(new SyncnetPlatform.Protocols.Generated.GuidType()).__assign(o + __p.bb_pos, __p.bb) : null; } }
+  public string PlayerName { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
+#if ENABLE_SPAN_T
+  public Span<byte> GetPlayerNameBytes() { return __p.__vector_as_span<byte>(8, 1); }
+#else
+  public ArraySegment<byte>? GetPlayerNameBytes() { return __p.__vector_as_arraysegment(8); }
+#endif
+  public byte[] GetPlayerNameArray() { return __p.__vector_as_array<byte>(8); }
 
-  public static Offset<SyncnetPlatform.Protocols.Generated.ResCreateNewUser> CreateResCreateNewUser(FlatBufferBuilder builder,
-      int error_code = 0) {
-    builder.StartTable(1);
-    ResCreateNewUser.AddErrorCode(builder, error_code);
-    return ResCreateNewUser.EndResCreateNewUser(builder);
-  }
-
-  public static void StartResCreateNewUser(FlatBufferBuilder builder) { builder.StartTable(1); }
+  public static void StartResCreateNewUser(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddErrorCode(FlatBufferBuilder builder, int errorCode) { builder.AddInt(0, errorCode, 0); }
+  public static void AddCreatedPlayerId(FlatBufferBuilder builder, Offset<SyncnetPlatform.Protocols.Generated.GuidType> createdPlayerIdOffset) { builder.AddStruct(1, createdPlayerIdOffset.Value, 0); }
+  public static void AddPlayerName(FlatBufferBuilder builder, StringOffset playerNameOffset) { builder.AddOffset(2, playerNameOffset.Value, 0); }
   public static Offset<SyncnetPlatform.Protocols.Generated.ResCreateNewUser> EndResCreateNewUser(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<SyncnetPlatform.Protocols.Generated.ResCreateNewUser>(o);
@@ -43,6 +46,8 @@ static public class ResCreateNewUserVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*ErrorCode*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*CreatedPlayerId*/, 16 /*SyncnetPlatform.Protocols.Generated.GuidType*/, 8, false)
+      && verifier.VerifyString(tablePos, 8 /*PlayerName*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

@@ -10,15 +10,18 @@ table ReqCreateNewUser {
 
 table ResCreateNewUser {
     error_code: int;
+    created_player_id: GuidType;
+    player_name: string;
 }
 
+table ReqLogin 
+
 table ReqUserInfo {
+    player_id: GuidType;
     
 }
 
 table ResUserInfo {
     player_id: GuidType;
     player_name: string;
-    level :int;
-    exp: ulong;
 }

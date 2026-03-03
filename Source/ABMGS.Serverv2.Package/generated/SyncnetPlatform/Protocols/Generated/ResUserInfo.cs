@@ -27,14 +27,10 @@ public struct ResUserInfo : IFlatbufferObject
   public ArraySegment<byte>? GetPlayerNameBytes() { return __p.__vector_as_arraysegment(6); }
 #endif
   public byte[] GetPlayerNameArray() { return __p.__vector_as_array<byte>(6); }
-  public int Level { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public ulong Exp { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUlong(o + __p.bb_pos) : (ulong)0; } }
 
-  public static void StartResUserInfo(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void StartResUserInfo(FlatBufferBuilder builder) { builder.StartTable(2); }
   public static void AddPlayerId(FlatBufferBuilder builder, Offset<SyncnetPlatform.Protocols.Generated.GuidType> playerIdOffset) { builder.AddStruct(0, playerIdOffset.Value, 0); }
   public static void AddPlayerName(FlatBufferBuilder builder, StringOffset playerNameOffset) { builder.AddOffset(1, playerNameOffset.Value, 0); }
-  public static void AddLevel(FlatBufferBuilder builder, int level) { builder.AddInt(2, level, 0); }
-  public static void AddExp(FlatBufferBuilder builder, ulong exp) { builder.AddUlong(3, exp, 0); }
   public static Offset<SyncnetPlatform.Protocols.Generated.ResUserInfo> EndResUserInfo(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<SyncnetPlatform.Protocols.Generated.ResUserInfo>(o);
@@ -49,8 +45,6 @@ static public class ResUserInfoVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*PlayerId*/, 16 /*SyncnetPlatform.Protocols.Generated.GuidType*/, 8, false)
       && verifier.VerifyString(tablePos, 6 /*PlayerName*/, false)
-      && verifier.VerifyField(tablePos, 8 /*Level*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 10 /*Exp*/, 8 /*ulong*/, 8, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
