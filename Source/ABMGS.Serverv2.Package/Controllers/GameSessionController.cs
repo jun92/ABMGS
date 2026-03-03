@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -75,9 +76,13 @@ public class GameSessionController : ControllerBase
             HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             return;
         }
-        
+
+        string? Sub = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        ArgumentNullException.ThrowIfNull(Sub);
+        Guid playerId = new Guid(Sub);
+
         WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-        await _gameSessionService.StartGameSession(Guid.NewGuid(), webSocket);
+        await _gameSessionService.StartGameSession(playerId, webSocket);
         
     }
 }
