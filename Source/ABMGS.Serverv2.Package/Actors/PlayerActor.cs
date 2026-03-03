@@ -14,32 +14,25 @@ public interface IPlayerBehavior
 
 public class PlayerActor : Grain, IPlayerActor
 {
+    private int _dbid;
     private readonly ILogger<PlayerActor> _logger;
-    private readonly IDbContextFactory<SyncnetDbContext> _dbFactory;
-
+    private readonly IPlayerModelRepository _playerModelRepository;
 
     public PlayerActor(
         ILogger<PlayerActor> logger,
-        IDbContextFactory<SyncnetDbContext> dbContextFactory)
+        IPlayerModelRepository playerModelRepository
+        )
     {
         _logger = logger;
-        _dbFactory = dbContextFactory;
+        _playerModelRepository = playerModelRepository;
+        
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         Guid PlayerId = GrainContext.GrainId.GetGuidKey();
-
-        await using var dbContext = await _dbFactory.CreateDbContextAsync();
-
-
-        //PlayerData? playerData = await _repository.Get(PlayerId);
-        //if (playerData == null)
-        //{
-        //}
-
-
-        //Load basic information from database, if nothing, create new player.
+        PlayerData playerData = await _playerModelRepository.GetOrCreate(PlayerId);
+        _dbid = playerData.Id;
     }
 
     public Task Echo(int seq)
