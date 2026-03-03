@@ -66,6 +66,7 @@ public class PlayerData
     public int Id { get; set; }
     public Guid PlayerId { get; set; }
     public string PlayerName { get; set; } = string.Empty;
+    //public DateTime Created { get; set; } = DateTime.UtcNow;
 }
 
 

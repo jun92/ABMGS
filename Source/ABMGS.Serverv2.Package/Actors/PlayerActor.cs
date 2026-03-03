@@ -1,4 +1,7 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
+using SyncnetPlatform.Databases;
 using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Repositories;
 
@@ -12,19 +15,31 @@ public interface IPlayerBehavior
 public class PlayerActor : Grain, IPlayerActor
 {
     private readonly ILogger<PlayerActor> _logger;
-    private readonly IPlayerModelRepository _repository;
+    private readonly IDbContextFactory<SyncnetDbContext> _dbFactory;
+
 
     public PlayerActor(
         ILogger<PlayerActor> logger,
-        IPlayerModelRepository repository)
+        IDbContextFactory<SyncnetDbContext> dbContextFactory)
     {
         _logger = logger;
-        _repository = repository;
+        _dbFactory = dbContextFactory;
     }
 
-    public override Task OnActivateAsync(CancellationToken cancellationToken)
+    public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        return Task.CompletedTask;
+        Guid PlayerId = GrainContext.GrainId.GetGuidKey();
+
+        await using var dbContext = await _dbFactory.CreateDbContextAsync();
+
+
+        //PlayerData? playerData = await _repository.Get(PlayerId);
+        //if (playerData == null)
+        //{
+        //}
+
+
+        //Load basic information from database, if nothing, create new player.
     }
 
     public Task Echo(int seq)
