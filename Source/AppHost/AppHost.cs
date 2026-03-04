@@ -13,7 +13,12 @@ var builder = DistributedApplication.CreateBuilder(args);
 #pragma warning disable ASPIRECERTIFICATES001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 var redis = builder.AddRedis("redis").WithoutHttpsCertificate();
 #pragma warning restore ASPIRECERTIFICATES001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-var rdbms = builder.AddPostgres("npgsql").AddDatabase("SyncnetPlatform");
+var postgresPassword = builder.AddParameter("postgres-password", secret: true);
+var rdbms = builder
+    .AddPostgres("npgsql", password: postgresPassword)
+    .WithDataVolume("syncnet-pg-data")
+    //.WithLifetime(ContainerLifetime.Persistent)
+    .AddDatabase("SyncnetPlatform");
 
 var silo = builder.AddProject<Projects.ABMGS_ServerV2_Silo>("silo")
     .WaitFor(redis)
