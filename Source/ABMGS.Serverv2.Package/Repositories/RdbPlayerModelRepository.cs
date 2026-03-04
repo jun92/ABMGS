@@ -38,9 +38,9 @@ public class RdbPlayerModelRepository : IPlayerModelRepository
             {
                 PlayerId = playerId,
             };
-            await dbContext.AddAsync( new PlayerData { PlayerId = playerId, });
+            await dbContext.Players.AddAsync(playerData);
+            await dbContext.SaveChangesAsync();
         }
-        await dbContext.SaveChangesAsync();
         return playerData;
     }
 
