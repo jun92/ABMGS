@@ -12,15 +12,15 @@ using SyncnetPlatform.Databases;
 namespace SyncnetPlatform.Migrations
 {
     [DbContext(typeof(SyncnetDbContext))]
-    [Migration("20251217051244_InitCreated")]
-    partial class InitCreated
+    [Migration("20260305034242_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.0")
+                .HasAnnotation("ProductVersion", "10.0.3")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -32,6 +32,9 @@ namespace SyncnetPlatform.Migrations
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("PlayerId")
                         .HasColumnType("uuid");

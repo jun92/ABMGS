@@ -17,7 +17,6 @@ var postgresPassword = builder.AddParameter("postgres-password", secret: true);
 var rdbms = builder
     .AddPostgres("npgsql", password: postgresPassword)
     .WithDataVolume("syncnet-pg-data")
-    //.WithLifetime(ContainerLifetime.Persistent)
     .AddDatabase("SyncnetPlatform");
 
 var silo = builder.AddProject<Projects.ABMGS_ServerV2_Silo>("silo")
