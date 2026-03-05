@@ -3,16 +3,13 @@ include "Player.fbs";
 
 namespace SyncnetPlatform.Protocols.Generated;
 
-
-
-
 union SystemPacket {
     Ping,
     Pong,
-    ReqCreateNewUser,
-    ResCreateNewUser,
     ReqUserInfo,
-    ResUserInfo
+    ResUserInfo,
+    ReqUpdatePlayerName,
+    ResUpdatePlayerName
 }
 
 table PacketWrapper {

@@ -33,14 +33,26 @@ public class SystemPacketHandler : ISystemPacketHandler
     public async Task HandleReqUserInfo(ReqUserInfo request, PacketContext ctx)
     {
         IPlayerActor player = ctx.GetPlayer();
+
+        await ctx.SendData(
+            ctx.GetPlayerId(),
+            SyncnetPacketBuilder.Build(await player.GetPlayerInfo())
+            );
     }
 
-    [PacketHandler(typeof(ReqCreateNewUser))]
-    public async Task HandleReqCreateNewUser(ReqCreateNewUser request, PacketContext ctx)
+
+    [PacketHandler(typeof(ReqUpdatePlayerName))]
+    public async Task HandleReqUpdatePlayerName(ReqUpdatePlayerName request, PacketContext ctx)
     {
-        var PlayerData = ctx.GetPlayerData();
-        await PlayerData.CreateNewPlayerData(request.PlayerName);
+        IPlayerActor player = ctx.GetPlayer();
+        await player.UpdatePlayerName(request.PlayerName);
 
+        await ctx.SendData(
+            ctx.GetPlayerId(), 
+            SyncnetPacketBuilder.Build(new ResUpdatePlayerNameArgs(0, "Success"))
+        );
     }
+
+    
 }
 
