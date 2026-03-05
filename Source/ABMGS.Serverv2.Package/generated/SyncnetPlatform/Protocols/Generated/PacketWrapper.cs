@@ -24,10 +24,10 @@ public struct PacketWrapper : IFlatbufferObject
   public TTable? SystemPacket<TTable>() where TTable : struct, IFlatbufferObject { int o = __p.__offset(6); return o != 0 ? (TTable?)__p.__union<TTable>(o + __p.bb_pos) : null; }
   public SyncnetPlatform.Protocols.Generated.Ping SystemPacketAsPing() { return SystemPacket<SyncnetPlatform.Protocols.Generated.Ping>().Value; }
   public SyncnetPlatform.Protocols.Generated.Pong SystemPacketAsPong() { return SystemPacket<SyncnetPlatform.Protocols.Generated.Pong>().Value; }
-  public SyncnetPlatform.Protocols.Generated.ReqCreateNewUser SystemPacketAsReqCreateNewUser() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ReqCreateNewUser>().Value; }
-  public SyncnetPlatform.Protocols.Generated.ResCreateNewUser SystemPacketAsResCreateNewUser() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ResCreateNewUser>().Value; }
   public SyncnetPlatform.Protocols.Generated.ReqUserInfo SystemPacketAsReqUserInfo() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ReqUserInfo>().Value; }
   public SyncnetPlatform.Protocols.Generated.ResUserInfo SystemPacketAsResUserInfo() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ResUserInfo>().Value; }
+  public SyncnetPlatform.Protocols.Generated.ReqUpdatePlayerName SystemPacketAsReqUpdatePlayerName() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ReqUpdatePlayerName>().Value; }
+  public SyncnetPlatform.Protocols.Generated.ResUpdatePlayerName SystemPacketAsResUpdatePlayerName() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ResUpdatePlayerName>().Value; }
   public SyncnetPlatform.Protocols.Generated.CustomPacket CustomPacketType { get { int o = __p.__offset(8); return o != 0 ? (SyncnetPlatform.Protocols.Generated.CustomPacket)__p.bb.Get(o + __p.bb_pos) : SyncnetPlatform.Protocols.Generated.CustomPacket.NONE; } }
   public TTable? CustomPacket<TTable>() where TTable : struct, IFlatbufferObject { int o = __p.__offset(10); return o != 0 ? (TTable?)__p.__union<TTable>(o + __p.bb_pos) : null; }
   public SyncnetPlatform.Protocols.Generated.MyCustomPacket CustomPacketAsMyCustomPacket() { return CustomPacket<SyncnetPlatform.Protocols.Generated.MyCustomPacket>().Value; }

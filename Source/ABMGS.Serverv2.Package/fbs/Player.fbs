@@ -5,21 +5,23 @@ struct GuidType {
     bytes: [ubyte:16];
 }
 
-table ReqCreateNewUser {
-    player_name: string;
+
+table ReqUserInfo{
+
 }
 
-table ResCreateNewUser {
-    error_code: int;
-}
-
-table ReqUserInfo {
-    
-}
-
-table ResUserInfo {
+table ResUserInfo{
+    id: int;
     player_id: GuidType;
     player_name: string;
-    level :int;
+    level:int;
     exp: ulong;
+}
+
+table ReqUpdatePlayerName{
+    player_name: string;
+}
+table ResUpdatePlayerName{
+    result: int;
+    message: string;
 }

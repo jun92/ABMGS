@@ -66,29 +66,51 @@ internal class ResUserInfoPacketBuilder: PacketBABuilder<ResUserInfoArgs>
         ResUserInfo.AddPlayerId(builder, playerId);
         StringOffset playerName = builder.CreateString(args.playerName);
         ResUserInfo.AddPlayerName(builder, playerName);
-        ResUserInfo.AddLevel(builder, args.level);
-        ResUserInfo.AddExp(builder, args.exp);
         Offset<ResUserInfo> offsetUserInfo = ResUserInfo.EndResUserInfo(builder);
 
         return Wrap(builder, SystemPacket.ResUserInfo, offsetUserInfo.Value);
     }
 }
-internal class ReqCreateNewUserPacketBuilder: PacketBABuilder<ReqCreateNewUserArgs>
+
+internal class ReqUpdatePlayerNamePacketBuilder: PacketBABuilder<ReqUpdatePlayerNameArgs>
 {
-    public override byte[] Build(ReqCreateNewUserArgs args)
+    public override byte[] Build(ReqUpdatePlayerNameArgs args)
     {
         var builder = CreateBuilder();
-        StringOffset playerName = builder.CreateString(args.PlayerName);
-        Offset<ReqCreateNewUser> offsetCreateNewUser = ReqCreateNewUser.CreateReqCreateNewUser(builder, playerName);
-        return Wrap(builder, SystemPacket.ReqCreateNewUser, offsetCreateNewUser.Value);
+        return Wrap(builder,
+            SystemPacket.ReqUpdatePlayerName,
+            ReqUpdatePlayerName.CreateReqUpdatePlayerName(builder, builder.CreateString(args.playerName)).Value
+            );
     }
 }
-internal class ResCreateNewUserPacketBuilder : PacketBABuilder<ResCreateNewUserArgs>
+
+internal class ResUpdatePlayerNamePacketBuilder : PacketBABuilder<ResUpdatePlayerNameArgs>
 {
-    public override byte[] Build(ResCreateNewUserArgs args)
+    public override byte[] Build(ResUpdatePlayerNameArgs args)
     {
         var builder = CreateBuilder();
-        Offset<ResCreateNewUser> offsetCreateNewUser = ResCreateNewUser.CreateResCreateNewUser(builder, args.ErrorCode);
-        return Wrap(builder, SystemPacket.ResCreateNewUser, offsetCreateNewUser.Value);
+        return Wrap(builder,
+            SystemPacket.ResUpdatePlayerName,
+            ResUpdatePlayerName.CreateResUpdatePlayerName(builder, args.result, builder.CreateString(args.message)).Value
+            );
     }
 }
+//internal class ReqCreateNewUserPacketBuilder: PacketBABuilder<ReqCreateNewUserArgs>
+//{
+//    public override byte[] Build(ReqCreateNewUserArgs args)
+//    {
+//        var builder = CreateBuilder();
+//        StringOffset playerName = builder.CreateString(args.PlayerName);
+//        Offset<ReqCreateNewUser> offsetCreateNewUser = ReqCreateNewUser.CreateReqCreateNewUser(builder, playerName);
+//        return Wrap(builder, SystemPacket.ReqCreateNewUser, offsetCreateNewUser.Value);
+//    }
+//}
+//internal class ResCreateNewUserPacketBuilder : PacketBABuilder<ResCreateNewUserArgs>
+//{
+//    public override byte[] Build(ResCreateNewUserArgs args)
+//    {
+//        var builder = CreateBuilder();
+//        Offset<ResCreateNewUser> offsetCreateNewUser = ResCreateNewUser.CreateResCreateNewUser(builder, args.ErrorCode);
+//        return Wrap(builder, SystemPacket.ResCreateNewUser, offsetCreateNewUser.Value);
+//    }
+//}
