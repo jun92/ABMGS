@@ -17,10 +17,10 @@ public class PlayerActor : Grain, IPlayerActor
 {
     private readonly ILogger<PlayerActor> _logger;
     private readonly IPlayerModelRepository _playerModelRepository;
-    
+
     // player data
-    private int _dbid;
-    private string _name = String.Empty;
+    protected int _dbid;
+    protected string _name = String.Empty;
     protected SupportedPlatformType _idpFrom;
 
     public PlayerActor(
