@@ -94,22 +94,3 @@ internal class ResUpdatePlayerNamePacketBuilder : PacketBABuilder<ResUpdatePlaye
             );
     }
 }
-//internal class ReqCreateNewUserPacketBuilder: PacketBABuilder<ReqCreateNewUserArgs>
-//{
-//    public override byte[] Build(ReqCreateNewUserArgs args)
-//    {
-//        var builder = CreateBuilder();
-//        StringOffset playerName = builder.CreateString(args.PlayerName);
-//        Offset<ReqCreateNewUser> offsetCreateNewUser = ReqCreateNewUser.CreateReqCreateNewUser(builder, playerName);
-//        return Wrap(builder, SystemPacket.ReqCreateNewUser, offsetCreateNewUser.Value);
-//    }
-//}
-//internal class ResCreateNewUserPacketBuilder : PacketBABuilder<ResCreateNewUserArgs>
-//{
-//    public override byte[] Build(ResCreateNewUserArgs args)
-//    {
-//        var builder = CreateBuilder();
-//        Offset<ResCreateNewUser> offsetCreateNewUser = ResCreateNewUser.CreateResCreateNewUser(builder, args.ErrorCode);
-//        return Wrap(builder, SystemPacket.ResCreateNewUser, offsetCreateNewUser.Value);
-//    }
-//}
