@@ -51,7 +51,6 @@ internal class ReqUserInfoPacketBuilder: PacketBABuilder<ReqUserInfoArgs>
         var builder = CreateBuilder();
         ReqUserInfo.StartReqUserInfo(builder);
         Offset<ReqUserInfo> offsetUserInfo = ReqUserInfo.EndReqUserInfo(builder); 
-
         return Wrap(builder, SystemPacket.ReqUserInfo, offsetUserInfo.Value);
     }
 }
@@ -61,10 +60,10 @@ internal class ResUserInfoPacketBuilder: PacketBABuilder<ResUserInfoArgs>
     public override byte[] Build(ResUserInfoArgs args)
     {
         var builder = CreateBuilder();
+        StringOffset playerName = builder.CreateString(args.playerName); /*IMPORTANT TO BE CALLED BEFORE START?? FUNCTION*/
+
         ResUserInfo.StartResUserInfo(builder);
-        Offset<GuidType> playerId = GuidType.CreateGuidType(builder, args.playerId.ToByteArray());
-        ResUserInfo.AddPlayerId(builder, playerId);
-        StringOffset playerName = builder.CreateString(args.playerName);
+        ResUserInfo.AddPlayerId(builder, GuidType.CreateGuidType(builder, args.playerId.ToByteArray()));
         ResUserInfo.AddPlayerName(builder, playerName);
         Offset<ResUserInfo> offsetUserInfo = ResUserInfo.EndResUserInfo(builder);
 

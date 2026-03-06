@@ -7,7 +7,7 @@ namespace SyncnetPlatform.Interfaces.Actors;
 public interface IPlayerActor : IGrainWithGuidKey
 {
     public Task Echo(int seq);
-    Task<ResUserInfoArgs> GetPlayerInfo();
+    Task<string> GetPlayerName();
     Task SetIdProvider(SupportedPlatformType idpFrom);
     Task UpdatePlayerName(string newName);
 }

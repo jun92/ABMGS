@@ -11,11 +11,8 @@ table ReqUserInfo{
 }
 
 table ResUserInfo{
-    id: int;
     player_id: GuidType;
     player_name: string;
-    level:int;
-    exp: ulong;
 }
 
 table ReqUpdatePlayerName{

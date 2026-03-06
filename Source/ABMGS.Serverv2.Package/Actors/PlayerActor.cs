@@ -68,9 +68,9 @@ public class PlayerActor : Grain, IPlayerActor
         _playerData.PlayerName = newName;
     }
 
-    public async Task<ResUserInfoArgs> GetPlayerInfo()
+    public async Task<string> GetPlayerName()
     {
-        return new ResUserInfoArgs(GrainContext.GrainId.GetGuidKey(), _playerData.PlayerName);
+        return _playerData.PlayerName; 
     }
 
 }
