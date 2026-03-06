@@ -80,6 +80,49 @@ public class ABMGS_TestMain : IAsyncLifetime
         await CloseAuthoredWebSocket(wsClient);
     }
 
+    [Fact]
+    public async Task PlayerNameUpdateText()
+    {
+        var wsUri = new UriBuilder(_frontendHttpClient.BaseAddress!)
+        {
+            Scheme = _frontendHttpClient.BaseAddress!.Scheme == "https" ? "wss" : "ws",
+            Path = "/ws/gamesession"
+        }.Uri;
+
+
+        var token = await GetGuestAuthToken();
+        
+        var wsClient = await OpenAuthoredWebSocket(wsUri, token);
+
+        string RandomPlayerName = "Guest" + CreateRandomString(6);
+        var dataToSend = BuildUpdatePlayerNamePacket(RandomPlayerName);
+
+        await wsClient.SendAsync(new ArraySegment<byte>(dataToSend), WebSocketMessageType.Binary, true, CancellationToken.None);
+
+        byte[] receiveBuffer = new byte[4096];
+        WebSocketReceiveResult result = await wsClient.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), CancellationToken.None);
+
+        _output.WriteLine($"Count: {result.Count}");
+        Assert.True(result.EndOfMessage);
+        Assert.NotEqual(0, result.Count);
+
+        PacketWrapper packetWrapper = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(receiveBuffer.Take(result.Count).ToArray()));
+
+        Assert.Equal(SystemPacket.ResUpdatePlayerName, packetWrapper.SystemPacketType);
+        Assert.Equal(0, packetWrapper.SystemPacketAsResUpdatePlayerName().Result);
+
+        dataToSend = BuildReqUserInfoPacket();
+        await wsClient.SendAsync(new ArraySegment<byte>(dataToSend), WebSocketMessageType.Binary, true, CancellationToken.None);
+        result = await wsClient.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), CancellationToken.None);
+
+        Assert.True(result.EndOfMessage);
+        packetWrapper = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(receiveBuffer.Take(result.Count).ToArray()));
+
+        Assert.Equal(RandomPlayerName, packetWrapper.SystemPacketAsResUserInfo().PlayerName);
+
+        await CloseAuthoredWebSocket(wsClient);
+    }
+
     protected async Task<ClientWebSocket> OpenAuthoredWebSocket(Uri wsUri, string token)
     {
         var wsClient = new ClientWebSocket();
@@ -118,6 +161,21 @@ public class ABMGS_TestMain : IAsyncLifetime
         byte[] dataToSend = SyncnetPacketBuilder.Build<PingArgs>(new PingArgs(seq));
         PacketWrapper verifyPacket = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(dataToSend));
         Assert.Equal(SystemPacket.Ping, verifyPacket.SystemPacketType);
+        return dataToSend;
+    }
+
+    protected byte[] BuildUpdatePlayerNamePacket(string newName)
+    {
+        byte[] dataToSend = SyncnetPacketBuilder.Build<ReqUpdatePlayerNameArgs>(new ReqUpdatePlayerNameArgs(newName));
+        PacketWrapper verifyPacket = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(dataToSend));
+        Assert.Equal(SystemPacket.ReqUpdatePlayerName, verifyPacket.SystemPacketType);
+        return dataToSend;
+    }
+    protected byte[] BuildReqUserInfoPacket()
+    {
+        byte[] dataToSend = SyncnetPacketBuilder.Build<ReqUserInfoArgs>(new ReqUserInfoArgs());
+        PacketWrapper verifyPacket = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(dataToSend));
+        Assert.Equal(SystemPacket.ReqUserInfo, verifyPacket.SystemPacketType);
         return dataToSend;
     }
 
