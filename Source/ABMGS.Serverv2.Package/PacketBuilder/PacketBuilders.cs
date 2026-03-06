@@ -62,9 +62,10 @@ internal class ResUserInfoPacketBuilder: PacketBABuilder<ResUserInfoArgs>
     {
         var builder = CreateBuilder();
         StringOffset playerName = builder.CreateString(args.playerName); /*IMPORTANT TO BE CALLED BEFORE START?? FUNCTION*/
+        Offset<GuidType> playerId = args.playerId.ToGuidType(builder);
 
         ResUserInfo.StartResUserInfo(builder);
-        ResUserInfo.AddPlayerId(builder, args.playerId.ToGuidType(builder));
+        ResUserInfo.AddPlayerId(builder, playerId);
         ResUserInfo.AddPlayerName(builder, playerName);
         Offset<ResUserInfo> offsetUserInfo = ResUserInfo.EndResUserInfo(builder);
 
@@ -175,8 +176,11 @@ internal class ReqBroadcastRoomPacketBuilder : PacketBABuilder<ReqBroadcastRoomA
     public override byte[] Build(ReqBroadcastRoomArgs args)
     {
         var builder = CreateBuilder();
+
+        Offset<GuidType> roomId = args.roomId.ToGuidType(builder);
+
         ReqBroadcastRoom.StartReqBroadcastRoom(builder);
-        ReqBroadcastRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
+        ReqBroadcastRoom.AddRoomId(builder, roomId);
         ReqBroadcastRoom.AddFrom(builder, args.from.ToGuidType(builder));
         ReqBroadcastRoom.AddMessage(builder, builder.CreateString(args.message));
 

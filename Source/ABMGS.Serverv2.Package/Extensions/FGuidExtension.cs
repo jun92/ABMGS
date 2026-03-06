@@ -15,7 +15,7 @@ public static class FGuidExtension
         MemoryMarshal.TryWrite(guidBytes, guid);
 
         ulong low = BitConverter.ToUInt64(guidBytes.Slice(0, 8));
-        ulong high = BitConverter.ToUInt64(guidBytes.Slice(8, 16));
+        ulong high = BitConverter.ToUInt64(guidBytes.Slice(8, 8));
 
         return GuidType.CreateGuidType(builder, low, high);
 
