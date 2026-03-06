@@ -63,14 +63,15 @@ public class PlayerActor : Grain, IPlayerActor
         return Task.CompletedTask;
     }
 
-    public async Task UpdatePlayerName(string newName)
+    public Task UpdatePlayerName(string newName)
     {
         _playerData.PlayerName = newName;
+        return Task.CompletedTask;
     }
 
-    public async Task<string> GetPlayerName()
+    public Task<string> GetPlayerName()
     {
-        return _playerData.PlayerName; 
+        return Task.FromResult(_playerData.PlayerName); 
     }
 
 }
