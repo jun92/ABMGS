@@ -51,10 +51,7 @@ public class PlayerActor : Grain, IPlayerActor
 
     public override async Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
     {
-        if(_playerData != null)
-        {
-            await _playerModelRepository.Update(_playerData);
-        }
+        await _playerModelRepository.Update(_playerData);
         await base.OnDeactivateAsync(reason, cancellationToken);
     }
 
