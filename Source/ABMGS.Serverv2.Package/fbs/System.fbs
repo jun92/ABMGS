@@ -10,8 +10,6 @@ namespace SyncnetPlatform.Protocols.Generated;
 union SystemPacket {
     Ping,
     Pong,
-    ReqCreateNewUser,
-    ResCreateNewUser,
     ReqUserInfo,
     ResUserInfo,
     ReqCreateRoom,
@@ -23,6 +21,8 @@ union SystemPacket {
     ReqBroadcastRoom,
     ResBroadcastRoom,
     BroadcastRoom,
+    ReqUpdatePlayerName,
+    ResUpdatePlayerName
 }
 
 table PacketWrapper {

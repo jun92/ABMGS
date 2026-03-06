@@ -9,6 +9,7 @@ using SyncnetPlatform.Authentication.GooglePlay;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using System.Net.WebSockets;
 using System.Security.Claims;
+using SyncnetPlatform.Authentication.SyncnetAuthProvider;
 
 namespace SyncnetPlatform.Controllers;
 
@@ -79,8 +80,14 @@ public class GameSessionController : ControllerBase
         }
 
         string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        ArgumentNullException.ThrowIfNull(userIdClaim);
-        if(!Guid.TryParse(userIdClaim, out Guid playerId))
+        string? userIdpClaim = User.FindFirstValue(JwtRegisteredClaimNamesExt.Idp);
+        
+        ArgumentNullException.ThrowIfNullOrEmpty(userIdClaim);
+        ArgumentNullException.ThrowIfNullOrEmpty(userIdpClaim);
+        
+        if(
+            !Guid.TryParse(userIdClaim, out Guid playerId) || 
+            !Enum.TryParse(typeof(SupportedPlatformType), userIdpClaim, out var providerFrom))
         {
             HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
             return;

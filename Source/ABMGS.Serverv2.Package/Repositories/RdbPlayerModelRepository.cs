@@ -10,40 +10,57 @@ namespace SyncnetPlatform.Repositories;
 public class RdbPlayerModelRepository : IPlayerModelRepository
 {
     private readonly ILogger<RdbPlayerModelRepository> _logger;
-    private readonly SyncnetDbContext _syncnetDbContext;
+    private readonly IDbContextFactory<SyncnetDbContext> _dbContextFactory;
 
     public RdbPlayerModelRepository(
-        SyncnetDbContext syncnetDbContext,
+        IDbContextFactory<SyncnetDbContext> dbContextFactory,
         ILogger<RdbPlayerModelRepository> logger)
     {
-        _syncnetDbContext = syncnetDbContext;
+        _dbContextFactory = dbContextFactory;
         _logger = logger;
     }
+    
 
-
-    public async Task Create(PlayerData newPlayerModel)
+    public async Task<PlayerData> GetOrCreate(Guid playerId)
     {
-        await _syncnetDbContext.Players.AddAsync(newPlayerModel);
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        PlayerData? playerData = await dbContext.Players.Where(w => w.PlayerId == playerId).FirstOrDefaultAsync();
+        if (playerData == null) 
+        {
+            playerData = new PlayerData
+            {
+                PlayerId = playerId,
+            };
+            await dbContext.Players.AddAsync(playerData);
+            await dbContext.SaveChangesAsync();
+        }
+        return playerData;
     }
 
-    public async Task<PlayerData?> Get(Guid playerId)
+    public async Task<PlayerData> Update(PlayerData playerData)
     {
-        var playerModel = await _syncnetDbContext.Players.Where(w => w.PlayerId == playerId).FirstOrDefaultAsync();
-        return playerModel;
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+
+        dbContext.Players.Update(playerData);
+        await dbContext.SaveChangesAsync();
+        return playerData;
     }
+
+ 
 
     public async Task<PlayerData?> Get(int id)
     {
-        var playerModel = await _syncnetDbContext.Players.Where(w => w.Id == id).FirstOrDefaultAsync();
-        return playerModel;
+        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
+        PlayerData? playerData = await dbContext.Players.FindAsync(id);
+        return playerData;
     }
 }
 
 public interface IPlayerModelRepository
 {
-    Task Create(PlayerData newPlayerDataModel);
-    Task<PlayerData?> Get(Guid playerId);
     Task<PlayerData?> Get(int id);
+    Task<PlayerData> GetOrCreate(Guid playerId);
+    Task<PlayerData> Update(PlayerData playerData);
 }
 
 public interface IExternalIdentityRepository

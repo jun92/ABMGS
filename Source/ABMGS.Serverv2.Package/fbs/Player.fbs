@@ -4,24 +4,20 @@ namespace SyncnetPlatform.Protocols.Generated;
 
 
 
-table ReqCreateNewUser {
-    player_name: string;
+
+table ReqUserInfo{
+
 }
 
-table ResCreateNewUser {
-    error_code: int;
-    created_player_id: GuidType;
-    player_name: string;
-}
-
-table ReqLogin 
-
-table ReqUserInfo {
-    player_id: GuidType;
-    
-}
-
-table ResUserInfo {
+table ResUserInfo{
     player_id: GuidType;
     player_name: string;
+}
+
+table ReqUpdatePlayerName{
+    player_name: string;
+}
+table ResUpdatePlayerName{
+    result: int;
+    message: string;
 }

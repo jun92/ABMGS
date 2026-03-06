@@ -103,6 +103,8 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
     protected async Task RunGameLoop(Guid playerId, WebSocket SocketObject, CancellationToken mainLoopExitToken)
     {
         IPacketHandlerActor packetHandlingActor = _clusterClient.GetGrain<IPacketHandlerActor>(playerId);
+        IPlayerActor playerActor = _clusterClient.GetGrain<IPlayerActor>(playerId);
+        await playerActor.SetIdProvider(Controllers.SupportedPlatformType.guest);
 
         byte[] receiveBuffer = new byte[4096];
         using var ms = new MemoryStream();

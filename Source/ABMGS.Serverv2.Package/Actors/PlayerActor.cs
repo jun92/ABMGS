@@ -1,5 +1,10 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
+using SyncnetPlatform.Controllers;
+using SyncnetPlatform.Databases;
 using SyncnetPlatform.Interfaces.Actors;
+using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Repositories;
 
 namespace SyncnetPlatform.Actors;
@@ -12,24 +17,58 @@ public interface IPlayerBehavior
 public class PlayerActor : Grain, IPlayerActor
 {
     private readonly ILogger<PlayerActor> _logger;
-    private readonly IPlayerModelRepository _repository;
+    private readonly IPlayerModelRepository _playerModelRepository;
+
+    // player data
+    protected int _dbid;
+    protected string _name = String.Empty;
+    protected SupportedPlatformType _idpFrom;
+
+    protected PlayerData _playerData = new();
 
     public PlayerActor(
         ILogger<PlayerActor> logger,
-        IPlayerModelRepository repository)
+        IPlayerModelRepository playerModelRepository
+        )
     {
         _logger = logger;
-        _repository = repository;
+        _playerModelRepository = playerModelRepository;
+        
     }
 
-    public override Task OnActivateAsync(CancellationToken cancellationToken)
+    public async Task SetIdProvider(SupportedPlatformType idpFrom)
     {
-        return Task.CompletedTask;
+        _idpFrom = idpFrom;
+    }
+
+    public override async Task OnActivateAsync(CancellationToken cancellationToken)
+    {
+        Guid PlayerId = GrainContext.GrainId.GetGuidKey();
+        _playerData = await _playerModelRepository.GetOrCreate(PlayerId);
+        _dbid = _playerData.Id;
+        await base.OnActivateAsync(cancellationToken);
+    }
+
+    public override async Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
+    {
+        await _playerModelRepository.Update(_playerData);
+        await base.OnDeactivateAsync(reason, cancellationToken);
     }
 
     public Task Echo(int seq)
     {
         return Task.CompletedTask;
+    }
+
+    public Task UpdatePlayerName(string newName)
+    {
+        _playerData.PlayerName = newName;
+        return Task.CompletedTask;
+    }
+
+    public Task<string> GetPlayerName()
+    {
+        return Task.FromResult(_playerData.PlayerName); 
     }
 
 }

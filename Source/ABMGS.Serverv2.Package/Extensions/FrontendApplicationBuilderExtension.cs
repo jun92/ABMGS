@@ -52,9 +52,14 @@ public static class FrontendApplicationBuilderExtension
 
     private static void ConfigureDatabase(WebApplicationBuilder builder)
     {
-        builder.Services.AddDbContextPool<SyncnetDbContext>(opt => {
+        builder.Services.AddDbContextFactory<SyncnetDbContext>(opt =>
+        {
             opt.UseNpgsql(builder.Configuration.GetConnectionString("SyncnetPlatform"));
+
         });
+        //builder.Services.AddDbContextPool<SyncnetDbContext>(opt => {
+        //    opt.UseNpgsql(builder.Configuration.GetConnectionString("SyncnetPlatform"));
+        //});
         builder.Services.AddTransient<IPlayerModelRepository, RdbPlayerModelRepository>();
         builder.Services.AddTransient<IExternalIdentityRepository, RdbExternalIdentityRepository>();
 
