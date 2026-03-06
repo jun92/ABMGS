@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -77,20 +78,16 @@ public class GameSessionController : ControllerBase
             return;
         }
 
-        // TODO: Extract SyncnetPlayerId from context and pass it to StartGameSession function.
-        string? sub = User.FindFirstValue("sub");
-        if (String.IsNullOrEmpty(sub))
+        string? userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        ArgumentNullException.ThrowIfNull(userIdClaim);
+        if(!Guid.TryParse(userIdClaim, out Guid playerId))
         {
-            _logger.LogError("Sub not found");
-        }
-        else
-        {
-            _logger.LogError("Sub is " + sub);
+            HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return;
         }
 
-        
         WebSocket webSocket = await HttpContext.WebSockets.AcceptWebSocketAsync();
-        await _gameSessionService.StartGameSession(Guid.NewGuid(), webSocket);
+        await _gameSessionService.StartGameSession(playerId, webSocket);
         
     }
 }
