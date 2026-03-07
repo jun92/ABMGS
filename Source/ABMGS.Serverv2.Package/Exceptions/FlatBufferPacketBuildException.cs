@@ -1,4 +1,4 @@
-namespace SyncnetPlatform.Network.Utils;
+namespace SyncnetPlatform.Exceptions;
 
 public class FlatBufferPacketBuildException : Exception
 {
