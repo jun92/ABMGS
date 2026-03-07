@@ -4,6 +4,7 @@ using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using SyncnetPlatform.Network.Handlers;
+using SyncnetPlatform.Exceptions;
 using System.IO;
 using System.Net.WebSockets;
 using System.Threading.Channels;

@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Reflection;
+using SyncnetPlatform.Exceptions;
 namespace SyncnetPlatform.Network.Utils;
 public class SyncnetPacketBuilder
 {
