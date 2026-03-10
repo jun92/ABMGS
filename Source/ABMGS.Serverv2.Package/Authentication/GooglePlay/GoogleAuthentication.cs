@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using SyncnetPlatform.Repositories;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.Contracts;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Json;
@@ -140,26 +141,25 @@ public class GooglePlayAuthenticationService : IGooglePlayAuthenticationService
 
 public class GoogleAuthenticationConfiguration
 {
-    public string ClientId { get; set; }
-    public string ClientSecret { get; set; }
+    [Required] public string ClientId { get; set; } = String.Empty;
+    [Required] public string ClientSecret { get; set; } = String.Empty;
 
 }
 
 
 public class GoogleTokenRequest
 {
-    public string code { get; set; }
-    public string client_id { get; set; }
-    public string client_secret { get; set; }
-    public string redirect_uri { get; set; }
-    public string grant_type { get; set; }
-
+    [Required] public string code { get; set; } = String.Empty;
+    [Required] public string client_id { get; set; } = String.Empty;
+    [Required] public string client_secret { get; set; } = String.Empty;
+    [Required] public string redirect_uri { get; set; } = String.Empty;
+    [Required] public string grant_type { get; set; } = String.Empty;
 }
 
 public class GoogleTokenResponse
 {
-    public string access_token { get; set; }
-    public string id_token { get; set; }  
-    public string refresh_token { get; set; }
-    public int expires_in { get; set; }
+    [Required] public string access_token { get; set; } = String.Empty;
+    [Required] public string id_token { get; set; } = String.Empty;
+    [Required] public string refresh_token { get; set; } = String.Empty;
+    [Required] public int expires_in { get; set; } 
 }
