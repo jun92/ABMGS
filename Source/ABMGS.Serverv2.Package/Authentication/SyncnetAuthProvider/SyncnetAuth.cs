@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SyncnetPlatform.Databases;
+using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -59,9 +60,9 @@ public class SyncnetAuthenticationService : ISyncnetJwtAuthenticationService
 
 public class SyncnetAuthenticationOptions
 {
-    public string Issuer { get; set; }
-    public string Audience { get; set; }
-    public string SecretKey { get; set; }
-    public int AccessTokenExpiresInMins { get; set; }
+    [Required] public string Issuer { get; set; } = string.Empty;
+    [Required] public string Audience { get; set; } = string.Empty;
+    [Required] public string SecretKey { get; set; } = string.Empty;
+    [Required] public int AccessTokenExpiresInMins { get; set; }
 }
 
