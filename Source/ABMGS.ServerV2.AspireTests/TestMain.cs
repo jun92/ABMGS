@@ -7,6 +7,7 @@ using SyncnetPlatform.Protocols.Generated;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -27,7 +28,7 @@ public class ABMGS_TestMain : IAsyncLifetime
     private readonly AspireAppFixture _appFixture;
     private readonly ITestOutputHelper _output;
     private readonly Random _random = new Random();
-    private HttpClient _frontendHttpClient;
+    private HttpClient _frontendHttpClient = null!;
 
     public ABMGS_TestMain(AspireAppFixture fixture, ITestOutputHelper output)
     {
