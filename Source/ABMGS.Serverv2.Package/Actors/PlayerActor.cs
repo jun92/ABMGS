@@ -20,11 +20,25 @@ public class PlayerActor : Grain, IPlayerActor
     private readonly IPlayerModelRepository _playerModelRepository;
 
     // player data
+
+    /// <summary>
+    /// Primary key for the player data table
+    /// </summary>
     protected int _dbid;
     protected string _name = String.Empty;
+
+    /// <summary>
+    /// the platform authenticated from.
+    /// </summary>
     protected SupportedPlatformType _idpFrom;
+    
 
     protected PlayerData _playerData = new();
+
+    /// <summary>
+    /// This indicates the actor has been activated from real player with corrent websocket connection.
+    /// </summary>
+    protected bool _IsOnline = false;
 
     public PlayerActor(
         ILogger<PlayerActor> logger,
@@ -36,6 +50,11 @@ public class PlayerActor : Grain, IPlayerActor
         
     }
 
+    public Task SetOnline(bool isOnline)
+    {
+        _IsOnline = isOnline;
+        return Task.CompletedTask;
+    }
     public async Task SetIdProvider(SupportedPlatformType idpFrom)
     {
         _idpFrom = idpFrom;
