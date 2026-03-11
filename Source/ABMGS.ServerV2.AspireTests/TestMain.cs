@@ -6,6 +6,7 @@ using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Protocols.Generated;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -53,17 +54,9 @@ public class ABMGS_TestMain : IAsyncLifetime
     [Fact]
     public async Task PingPongTestWithGuestAuth()
     {
-        var wsUri = new UriBuilder(_frontendHttpClient.BaseAddress!)
-        {
-            Scheme = _frontendHttpClient.BaseAddress!.Scheme == "https" ? "wss" : "ws",
-            Path = "/ws/gamesession"
-        }.Uri;
+        var wsClient = await CreateAuthoredWebSocket();
 
         var dataToSend = BuildPingPacket(1);
-        var token = await GetGuestAuthToken();
-
-        var wsClient = await OpenAuthoredWebSocket(wsUri, token);
-
         await wsClient.SendAsync(new ArraySegment<byte>(dataToSend), WebSocketMessageType.Binary, true, CancellationToken.None);
      
         byte[] receiveBuffer = new byte[4096];
@@ -85,16 +78,7 @@ public class ABMGS_TestMain : IAsyncLifetime
     [Fact]
     public async Task PlayerNameUpdateText()
     {
-        var wsUri = new UriBuilder(_frontendHttpClient.BaseAddress!)
-        {
-            Scheme = _frontendHttpClient.BaseAddress!.Scheme == "https" ? "wss" : "ws",
-            Path = "/ws/gamesession"
-        }.Uri;
-
-
-        var token = await GetGuestAuthToken();
-        
-        var wsClient = await OpenAuthoredWebSocket(wsUri, token);
+        var wsClient = await CreateAuthoredWebSocket();
 
         string RandomPlayerName = "Guest" + CreateRandomString(6);
         var dataToSend = BuildUpdatePlayerNamePacket(RandomPlayerName);
@@ -139,6 +123,17 @@ public class ABMGS_TestMain : IAsyncLifetime
 
     }
 
+    protected async Task<ClientWebSocket> CreateAuthoredWebSocket()
+    {
+        var wsUri = new UriBuilder(_frontendHttpClient.BaseAddress!)
+        {
+            Scheme = _frontendHttpClient.BaseAddress!.Scheme == "https" ? "wss" : "ws",
+            Path = "/ws/gamesession"
+        }.Uri;
+        var token = await GetGuestAuthToken();
+        return await OpenAuthoredWebSocket(wsUri, token);
+    }
+
     protected async Task<string> GetGuestAuthToken()
     {
         string guestId = CreateRandomString(6);
@@ -147,8 +142,6 @@ public class ABMGS_TestMain : IAsyncLifetime
         string token = await response.Content.ReadAsStringAsync();
 
         return JsonSerializer.Deserialize<string>(token) ?? throw new InvalidOperationException("Received null or invalid token from authentication service.");
-
-        //return token.Replace("\"", "");
     }
     protected string CreateRandomString(int length)
     {
