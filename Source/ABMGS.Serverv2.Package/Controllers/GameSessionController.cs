@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using SyncnetPlatform.Authentication.GooglePlay;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using System.Net.WebSockets;
-using System.Security.Claims;
 using SyncnetPlatform.Authentication.SyncnetAuthProvider;
 
 namespace SyncnetPlatform.Controllers;
