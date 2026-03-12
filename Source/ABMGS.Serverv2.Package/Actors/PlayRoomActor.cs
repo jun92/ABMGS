@@ -8,7 +8,10 @@ namespace SyncnetPlatform.Actors;
 
 interface IPlayRoomActor : IGrainWithGuidKey
 {
-
+    Task OnPlayerJoin(Guid playerId);
+    Task OnPlayerLeave(Guid playerId);
+    Task OnReqDestoryRoom(Guid roomId);
+    Task SetRoomInformation(string displayName, string password);
 }
 
 public class PlayRoomActor : Grain, IPlayRoomActor
@@ -36,6 +39,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
 
     public async Task OnPlayerJoin(Guid playerId)
     {
+        players.Add(playerId);
 
     }
 
