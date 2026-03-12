@@ -8,6 +8,7 @@ using SyncnetPlatform.Exceptions;
 using System.IO;
 using System.Net.WebSockets;
 using System.Threading.Channels;
+using SyncnetPlatform.Extensions;
 
 namespace SyncnetPlatform.Network.Sessions;
 
@@ -167,9 +168,8 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
     public async Task StartGameSession(Guid uniquePlayerId, WebSocket SocketObject)
     {
         ArgumentNullException.ThrowIfNull(SocketObject);
-        if (uniquePlayerId == Guid.Empty) 
-            throw new ArgumentException("PlayerId is empty", nameof(uniquePlayerId));
-
+        uniquePlayerId.ThrowIfInvalidGuid();
+        
         using var mainLoopExitTokenCts = new CancellationTokenSource();
         var mainLoopExitToken = mainLoopExitTokenCts.Token;
         

@@ -20,4 +20,11 @@ public static class FGuidExtension
         return GuidType.CreateGuidType(builder, low, high);
 
     }
+    public static void ThrowIfInvalidGuid(this Guid guid)
+    {
+        if(guid == Guid.Empty)
+        {
+            throw new ArgumentException("Invalid(empty) Guid", nameof(guid));
+        }
+    }
 }
