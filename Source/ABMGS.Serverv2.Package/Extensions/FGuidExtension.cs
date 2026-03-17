@@ -18,7 +18,13 @@ public static class FGuidExtension
         ulong high = BitConverter.ToUInt64(guidBytes.Slice(8, 8));
 
         return GuidType.CreateGuidType(builder, low, high);
-
+    }
+    public static void FromGuidType(ref this Guid guid, GuidType? guidType)
+    {
+        if (!guidType.HasValue ) return;
+        Span<byte> guidBytes = MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref guid, 1));
+        BitConverter.TryWriteBytes(guidBytes.Slice(0, 8), guidType.Value.Low);
+        BitConverter.TryWriteBytes(guidBytes.Slice(8, 8), guidType.Value.High);
     }
     public static void ThrowIfInvalidGuid(this Guid guid)
     {

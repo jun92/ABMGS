@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using SyncnetPlatform.Extensions;
 using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Network.Attributes;
@@ -56,7 +57,24 @@ public class SystemPacketHandler : ISystemPacketHandler
     {
     }
 
+    [PacketHandler(typeof(ReqDirectDeliveryData))]
+    public async Task HandleReqDirectDeliveryData(ReqDirectDeliveryData request, PacketContext ctx)
+    {
+        IPlayerActor player = ctx.GetPlayer();
+        Guid toPlayerId = Guid.NewGuid();
 
-    
+        toPlayerId.FromGuidType(request.ToPlayerId);
+
+        bool result = await player.SendDirectDeliverData(
+            toPlayerId,
+            request.Data, 
+            request.DataType);
+
+        await ctx.SendData(
+            ctx.GetPlayerId(), 
+            SyncnetPacketBuilder.Build<ResDirectDeliveryDataArgs>(
+                new ResDirectDeliveryDataArgs(PacketErrorCodes.Success, "Success")
+                ));
+    }
 }
 

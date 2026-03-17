@@ -4,8 +4,11 @@ using Microsoft.IdentityModel.Tokens;
 using SyncnetPlatform.Controllers;
 using SyncnetPlatform.Databases;
 using SyncnetPlatform.Interfaces.Actors;
+using SyncnetPlatform.Interfaces.Network.Sessions;
 using SyncnetPlatform.Network.Utils;
+using SyncnetPlatform.Protocols.Generated;
 using SyncnetPlatform.Repositories;
+using PacketBuilder = SyncnetPlatform.Network.Utils.SyncnetPacketBuilder;
 
 namespace SyncnetPlatform.Actors;
 
@@ -34,6 +37,12 @@ public class PlayerActor : Grain, IPlayerActor
     
 
     protected PlayerData _playerData = new();
+    /// <summary>
+    /// Represents the packet sender used to transmit data packets.
+    /// </summary>
+    /// <remarks>This field is protected and intended for use by derived classes. Assign a valid
+    /// implementation of ISendDataGrain before attempting to send packets.</remarks>
+    protected ISendDataGrain? _packetSender = null;
 
     /// <summary>
     /// This indicates the actor has been activated from real player with corrent websocket connection.
@@ -53,6 +62,15 @@ public class PlayerActor : Grain, IPlayerActor
     public Task SetOnline(bool isOnline)
     {
         _IsOnline = isOnline;
+        if(isOnline == true )
+        {
+            // Get activated ISendDataGrain.
+            _packetSender = GrainFactory.GetGrain<ISendDataGrain>(GrainContext.GrainId.GetGuidKey());
+        }
+        else
+        {
+            _packetSender = null;
+        }
         return Task.CompletedTask;
     }
     public async Task SetIdProvider(SupportedPlatformType idpFrom)
@@ -88,6 +106,25 @@ public class PlayerActor : Grain, IPlayerActor
     public Task<string> GetPlayerName()
     {
         return Task.FromResult(_playerData.PlayerName); 
+    }
+
+    public async Task<bool> SendDirectDeliverData(Guid toPlayerId, string message, DirectDeliveryDataType dataType)
+    {
+        IPlayerActor targetPlayer = GrainFactory.GetGrain<IPlayerActor>(toPlayerId);
+        bool result = await targetPlayer.OnDirectDeliveryData(GrainContext.GrainId.GetGuidKey(), message, dataType);
+        return result;
+    }
+    public async Task<bool> OnDirectDeliveryData(Guid fromPlayerId, string message, DirectDeliveryDataType dataType)
+    {
+        if(!_IsOnline)
+        {
+            return false;
+        }
+        
+        await _packetSender!.Send(
+            PacketBuilder.Build<OnDirectDeliveryDataArgs>(
+                new OnDirectDeliveryDataArgs(fromPlayerId, message, dataType)));
+        return true;
     }
 
     public async Task<Guid> CreateAndJoinPlayRoom()
