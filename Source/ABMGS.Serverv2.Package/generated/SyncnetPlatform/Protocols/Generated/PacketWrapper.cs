@@ -26,6 +26,9 @@ public struct PacketWrapper : IFlatbufferObject
   public SyncnetPlatform.Protocols.Generated.Pong SystemPacketAsPong() { return SystemPacket<SyncnetPlatform.Protocols.Generated.Pong>().Value; }
   public SyncnetPlatform.Protocols.Generated.ReqUserInfo SystemPacketAsReqUserInfo() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ReqUserInfo>().Value; }
   public SyncnetPlatform.Protocols.Generated.ResUserInfo SystemPacketAsResUserInfo() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ResUserInfo>().Value; }
+  public SyncnetPlatform.Protocols.Generated.ReqDirectDeliveryData SystemPacketAsReqDirectDeliveryData() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ReqDirectDeliveryData>().Value; }
+  public SyncnetPlatform.Protocols.Generated.ResDirectDeliveryData SystemPacketAsResDirectDeliveryData() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ResDirectDeliveryData>().Value; }
+  public SyncnetPlatform.Protocols.Generated.OnDirectDeliveryData SystemPacketAsOnDirectDeliveryData() { return SystemPacket<SyncnetPlatform.Protocols.Generated.OnDirectDeliveryData>().Value; }
   public SyncnetPlatform.Protocols.Generated.ReqCreateRoom SystemPacketAsReqCreateRoom() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ReqCreateRoom>().Value; }
   public SyncnetPlatform.Protocols.Generated.ResCreateRoom SystemPacketAsResCreateRoom() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ResCreateRoom>().Value; }
   public SyncnetPlatform.Protocols.Generated.ReqJoinRoom SystemPacketAsReqJoinRoom() { return SystemPacket<SyncnetPlatform.Protocols.Generated.ReqJoinRoom>().Value; }

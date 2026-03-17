@@ -61,8 +61,8 @@ internal class ResUserInfoPacketBuilder: PacketBABuilder<ResUserInfoArgs>
     public override byte[] Build(ResUserInfoArgs args)
     {
         var builder = CreateBuilder();
-        StringOffset playerName = builder.CreateString(args.playerName); /*IMPORTANT TO BE CALLED BEFORE START?? FUNCTION*/
-        Offset<GuidType> playerId = args.playerId.ToGuidType(builder);
+        StringOffset playerName = builder.CreateString(args.PlayerName); /*IMPORTANT TO BE CALLED BEFORE START?? FUNCTION*/
+        Offset<GuidType> playerId = args.PlayerId.ToGuidType(builder);
 
         ResUserInfo.StartResUserInfo(builder);
         ResUserInfo.AddPlayerId(builder, playerId);
@@ -80,7 +80,7 @@ internal class ReqUpdatePlayerNamePacketBuilder: PacketBABuilder<ReqUpdatePlayer
         var builder = CreateBuilder();
         return Wrap(builder,
             SystemPacket.ReqUpdatePlayerName,
-            ReqUpdatePlayerName.CreateReqUpdatePlayerName(builder, builder.CreateString(args.playerName)).Value
+            ReqUpdatePlayerName.CreateReqUpdatePlayerName(builder, builder.CreateString(args.PlayerName)).Value
             );
     }
 }
@@ -92,7 +92,7 @@ internal class ResUpdatePlayerNamePacketBuilder : PacketBABuilder<ResUpdatePlaye
         var builder = CreateBuilder();
         return Wrap(builder,
             SystemPacket.ResUpdatePlayerName,
-            ResUpdatePlayerName.CreateResUpdatePlayerName(builder, args.result, builder.CreateString(args.message)).Value
+            ResUpdatePlayerName.CreateResUpdatePlayerName(builder, args.Result, builder.CreateString(args.Message)).Value
             );
     }
 }

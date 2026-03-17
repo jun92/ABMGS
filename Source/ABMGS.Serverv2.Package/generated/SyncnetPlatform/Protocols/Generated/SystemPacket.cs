@@ -12,17 +12,20 @@ public enum SystemPacket : byte
   Pong = 2,
   ReqUserInfo = 3,
   ResUserInfo = 4,
-  ReqCreateRoom = 5,
-  ResCreateRoom = 6,
-  ReqJoinRoom = 7,
-  ResJoinRoom = 8,
-  ReqLeaveRoom = 9,
-  ResLeaveRoom = 10,
-  ReqBroadcastRoom = 11,
-  ResBroadcastRoom = 12,
-  BroadcastRoom = 13,
-  ReqUpdatePlayerName = 14,
-  ResUpdatePlayerName = 15,
+  ReqDirectDeliveryData = 5,
+  ResDirectDeliveryData = 6,
+  OnDirectDeliveryData = 7,
+  ReqCreateRoom = 8,
+  ResCreateRoom = 9,
+  ReqJoinRoom = 10,
+  ResJoinRoom = 11,
+  ReqLeaveRoom = 12,
+  ResLeaveRoom = 13,
+  ReqBroadcastRoom = 14,
+  ResBroadcastRoom = 15,
+  BroadcastRoom = 16,
+  ReqUpdatePlayerName = 17,
+  ResUpdatePlayerName = 18,
 };
 
 
@@ -45,6 +48,15 @@ static public class SystemPacketVerify
         break;
       case SystemPacket.ResUserInfo:
         result = SyncnetPlatform.Protocols.Generated.ResUserInfoVerify.Verify(verifier, tablePos);
+        break;
+      case SystemPacket.ReqDirectDeliveryData:
+        result = SyncnetPlatform.Protocols.Generated.ReqDirectDeliveryDataVerify.Verify(verifier, tablePos);
+        break;
+      case SystemPacket.ResDirectDeliveryData:
+        result = SyncnetPlatform.Protocols.Generated.ResDirectDeliveryDataVerify.Verify(verifier, tablePos);
+        break;
+      case SystemPacket.OnDirectDeliveryData:
+        result = SyncnetPlatform.Protocols.Generated.OnDirectDeliveryDataVerify.Verify(verifier, tablePos);
         break;
       case SystemPacket.ReqCreateRoom:
         result = SyncnetPlatform.Protocols.Generated.ReqCreateRoomVerify.Verify(verifier, tablePos);

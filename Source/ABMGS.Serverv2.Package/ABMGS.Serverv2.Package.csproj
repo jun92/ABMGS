@@ -33,7 +33,13 @@
     <Folder Include="Exceptions\" />
   </ItemGroup>
   
+	<Target Name="CleanTargetFolder" BeforeTargets="PreBuildEvent">
+		<RemoveDir Directories="$(ProjectDir)/generated" />
+		
+	</Target>	
 	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+		<Exec Command="flatc -n -o ./generated ./fbs/Types.fbs" />
+		<Exec Command="flatc -n -o ./generated ./fbs/ErrorCodes.fbs" />
 		<Exec Command="flatc -n -o ./generated ./fbs/System.fbs" />
 		<Exec Command="flatc -n -o ./generated ./fbs/Player.fbs" />
 		<Exec Command="flatc -n -o ./generated ./fbs/Custom.fbs" />

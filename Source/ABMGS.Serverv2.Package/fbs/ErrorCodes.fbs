@@ -1,0 +1,6 @@
+namespace SyncnetPlatform.Protocols.Generated;
+
+enum PacketErrorCodes: int {
+    Success = 0,
+    UnknownError = 65535,
+}
