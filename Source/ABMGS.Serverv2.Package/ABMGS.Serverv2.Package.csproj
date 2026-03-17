@@ -33,17 +33,16 @@
     <Folder Include="Exceptions\" />
   </ItemGroup>
   
-	<Target Name="CleanTargetFolder" BeforeTargets="PreBuildEvent">
-		<RemoveDir Directories="$(ProjectDir)/generated" />
-		
-	</Target>	
-	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+	<Target Name="FlatcGenerate" BeforeTargets="CoreCompile">
+		<Message Text="Running flatc code generator" Importance="high" />
+		<RemoveDir Directories="./generated" />
 		<Exec Command="flatc -n -o ./generated ./fbs/Types.fbs" />
 		<Exec Command="flatc -n -o ./generated ./fbs/ErrorCodes.fbs" />
 		<Exec Command="flatc -n -o ./generated ./fbs/System.fbs" />
 		<Exec Command="flatc -n -o ./generated ./fbs/Player.fbs" />
 		<Exec Command="flatc -n -o ./generated ./fbs/Custom.fbs" />
 		<Exec Command="flatc -n -o ./generated ./fbs/Playroom.fbs" />
+
 	</Target>
 
 </Project>
