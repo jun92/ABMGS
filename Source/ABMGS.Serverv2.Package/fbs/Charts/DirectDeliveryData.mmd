@@ -1,0 +1,11 @@
+sequenceDiagram
+participant Player1Client
+participant Player1Actor
+participant Player2Actor
+participant Player2Client
+
+Note over Player1Client, Player2Client: Case: Deliverying data to activated player.
+Player1Client->>+Player1Actor: ReqDirectDeliveryData
+Player1Actor->>Player2Actor: OnDirectDeliveryData
+Player2Actor->>Player2Client: OnDirectDeliveryData 
+Player1Actor->>-Player1Client: ResDirectDeliveryData

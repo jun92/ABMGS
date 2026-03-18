@@ -1,0 +1,31 @@
+sequenceDiagram
+participant PlayerActor1
+participant PlayRoomActor1
+participant PlayerActor2
+
+Note over PlayerActor1,PlayRoomActor1: Case: Creating new play room
+PlayerActor1->>PlayRoomActor1: ReqCreatePlayRoom
+PlayRoomActor1->>PlayerActor1: ResCreatePlayRoom
+
+Note over PlayerActor1,PlayerActor2: Case: PlayerActor1 invites PlayerActor2
+PlayerActor1->>PlayerActor2: ReqDirectDeliveryData
+PlayerActor2->>PlayerActor1: ResInvitePlayRoom
+
+Note over PlayerActor1,PlayerActor2: Case: PlayerActor2 Joins to a play room and notifying to inner players
+PlayerActor2->>PlayRoomActor1: ReqJoinPlayRoom
+PlayRoomActor1->>PlayerActor2: ResJoinPlayRoom
+PlayRoomActor1->>PlayerActor1: ResJoinPlayRoom
+
+Note over PlayerActor2,PlayRoomActor1: Case: Getting player's info already in
+PlayerActor2->>PlayRoomActor1: ReqPlayersInfo
+PlayRoomActor1->>PlayerActor2: ResPlayersInfo
+
+Note over PlayerActor1,PlayerActor2: Case: Leaving PlayerActor2
+PlayerActor2->>PlayRoomActor1: ReqLeavePlayRoom
+PlayRoomActor1->>PlayerActor2: ResLeavePlayRoom
+PlayRoomActor1->>PlayerActor1: ResLeavePlayRoom
+
+
+
+
+
