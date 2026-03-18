@@ -44,8 +44,13 @@
 		<Exec Command="flatc -n -o ./generated ./fbs/Playroom.fbs" />
 
 		<ItemGroup>
+			<Compile Remove="./generated/**/*.cs" />
 			<Compile Include="./generated/**/*.cs" />
 		</ItemGroup>
 	</Target>
+
+	<ItemGroup>
+		<Compile Remove="./generated/**/*.cs" />
+	</ItemGroup>
 
 </Project>
