@@ -33,7 +33,7 @@
     <Folder Include="Exceptions\" />
   </ItemGroup>
   
-	<Target Name="FlatcGenerate" BeforeTargets="CoreCompile">
+	<Target Name="FlatcGenerate" BeforeTargets="BeforeCompile">
 		<Message Text="Running flatc code generator" Importance="high" />
 		<RemoveDir Directories="./generated" />
 		<Exec Command="flatc -n -o ./generated ./fbs/Types.fbs" />
@@ -43,6 +43,9 @@
 		<Exec Command="flatc -n -o ./generated ./fbs/Custom.fbs" />
 		<Exec Command="flatc -n -o ./generated ./fbs/Playroom.fbs" />
 
+		<ItemGroup>
+			<Compile Include="./generated/**/*.cs" />
+		</ItemGroup>
 	</Target>
 
 </Project>

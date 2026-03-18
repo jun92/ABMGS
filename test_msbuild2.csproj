@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+
+  <Target Name="FlatcGenerate" BeforeTargets="BeforeCompile;CoreCompile">
+    <Message Text="Generating code..." Importance="high" />
+    <MakeDir Directories="./generated" />
+    <Exec Command="echo 'namespace SyncnetPlatform.Protocols { public class Test { } }' > ./generated/Test.cs" />
+    <ItemGroup>
+      <Compile Include="./generated/**/*.cs" />
+    </ItemGroup>
+  </Target>
+</Project>

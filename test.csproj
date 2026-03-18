@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+  </PropertyGroup>
+  <Target Name="GenerateCode" BeforeTargets="CoreCompile">
+    <MakeDir Directories="generated" />
+    <Exec Command="echo public class GeneratedClass {} > generated/GeneratedClass.cs" />
+    <ItemGroup>
+      <Compile Include="generated/**/*.cs" />
+    </ItemGroup>
+  </Target>
+</Project>
