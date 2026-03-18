@@ -2,6 +2,7 @@ using Aspire.Hosting;
 using Aspire.Hosting.Testing;
 using Google.FlatBuffers;
 using Microsoft.VisualStudio.TestPlatform.CoreUtilities.Extensions;
+using SyncnetPlatform.Extensions;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Protocols.Generated;
 using System;
@@ -109,6 +110,36 @@ public class ABMGS_TestMain : IAsyncLifetime
 
         await CloseAuthoredWebSocket(wsClient);
     }
+    [Fact]
+    public async Task DirectDeliveryDataTest()
+    {
+        byte[] receiveBuffer = new byte[4096];
+
+        var wsClient1 = await CreateAuthoredWebSocket();
+        var wsClient2 = await CreateAuthoredWebSocket();
+
+        var getUserInfoPacket = BuildReqUserInfoPacket();
+        
+        //Get Client1 User info
+        await SendDataAsync(wsClient1, getUserInfoPacket);
+        WebSocketReceiveResult result = await wsClient1.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), CancellationToken.None);
+        ResUserInfo UserInfoClient1 = AsPacketWrapper(receiveBuffer, result.Count).SystemPacketAsResUserInfo();
+        Guid player1Id = new ();
+        player1Id.FromGuidType(UserInfoClient1.PlayerId);
+            
+        Assert.NotEqual(Guid.Empty, player1Id);
+
+
+        //Get Client2 User info
+        await SendDataAsync(wsClient2, getUserInfoPacket);
+        result = await wsClient2.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), CancellationToken.None);
+        ResUserInfo UserInfoClient2 = AsPacketWrapper(receiveBuffer, result.Count).SystemPacketAsResUserInfo();
+        Guid player2Id = new();
+        player2Id.FromGuidType(UserInfoClient2.PlayerId);
+        Assert.NotEqual(Guid.Empty, player2Id);
+
+        Assert.NotEqual(player1Id, player2Id);
+    }
 
     protected async Task<ClientWebSocket> OpenAuthoredWebSocket(Uri wsUri, string token)
     {
@@ -174,6 +205,21 @@ public class ABMGS_TestMain : IAsyncLifetime
         PacketWrapper verifyPacket = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(dataToSend));
         Assert.Equal(SystemPacket.ReqUserInfo, verifyPacket.SystemPacketType);
         return dataToSend;
+    }
+
+    protected async Task SendDataAsync(ClientWebSocket client, byte[] dataToSend)
+    {
+        await client.SendAsync(new ArraySegment<byte>(dataToSend), WebSocketMessageType.Binary, true, CancellationToken.None);
+    }
+    //protected byte[] BuildReqDirectDeliveryDataPacket()
+    //{
+    //    byte[] dataToSend = SyncnetPacketBuilder.Build<ReqDirectDeliveryDataArgs>(
+    //        new ReqDirectDeliveryDataArgs( ));
+    //}
+
+    protected PacketWrapper AsPacketWrapper(byte[] receiveBuffer, int count)
+    {
+        return PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(receiveBuffer.Take(count).ToArray()));
     }
 
 
