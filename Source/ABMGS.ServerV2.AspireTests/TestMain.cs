@@ -30,6 +30,7 @@ public class ABMGS_TestMain : IAsyncLifetime
     private readonly ITestOutputHelper _output;
     private readonly Random _random = new Random();
     private HttpClient _frontendHttpClient = null!;
+    protected CancellationTokenSource defaultTimeoutToken = new CancellationTokenSource(TimeSpan.FromSeconds(100000));
 
     public ABMGS_TestMain(AspireAppFixture fixture, ITestOutputHelper output)
     {
@@ -113,8 +114,6 @@ public class ABMGS_TestMain : IAsyncLifetime
     [Fact]
     public async Task DirectDeliveryDataTest()
     {
-        byte[] receiveBuffer = new byte[4096];
-
         var wsClient1 = await CreateAuthoredWebSocket();
         var wsClient2 = await CreateAuthoredWebSocket();
 
@@ -122,23 +121,48 @@ public class ABMGS_TestMain : IAsyncLifetime
         
         //Get Client1 User info
         await SendDataAsync(wsClient1, getUserInfoPacket);
-        WebSocketReceiveResult result = await wsClient1.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), CancellationToken.None);
+        var (receiveBuffer, result) = await ReceiveAsync(wsClient1);
         ResUserInfo UserInfoClient1 = AsPacketWrapper(receiveBuffer, result.Count).SystemPacketAsResUserInfo();
         Guid player1Id = new ();
         player1Id.FromGuidType(UserInfoClient1.PlayerId);
-            
         Assert.NotEqual(Guid.Empty, player1Id);
-
 
         //Get Client2 User info
         await SendDataAsync(wsClient2, getUserInfoPacket);
-        result = await wsClient2.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), CancellationToken.None);
+        (receiveBuffer, result) = await ReceiveAsync(wsClient2);
         ResUserInfo UserInfoClient2 = AsPacketWrapper(receiveBuffer, result.Count).SystemPacketAsResUserInfo();
         Guid player2Id = new();
         player2Id.FromGuidType(UserInfoClient2.PlayerId);
         Assert.NotEqual(Guid.Empty, player2Id);
 
+        // Two different accounts.
         Assert.NotEqual(player1Id, player2Id);
+
+
+        string messageToSend = "Hello Friend";
+        var ReqDirectMessage = BuildReqDirectDeliveryData(player2Id, messageToSend, DirectDeliveryDataType.Whipher);
+        await SendDataAsync(wsClient1, ReqDirectMessage);
+
+        (receiveBuffer, result) = await ReceiveAsync(wsClient2);
+        OnDirectDeliveryData onDirectDeliveryData = AsPacketWrapper(receiveBuffer, result.Count).SystemPacketAsOnDirectDeliveryData();
+        Assert.Equal(DirectDeliveryDataType.Whipher, onDirectDeliveryData.DataType);
+        Assert.Equal(messageToSend, onDirectDeliveryData.Data);
+
+        (receiveBuffer, result) = await ReceiveAsync(wsClient1);
+        ResDirectDeliveryData resDirectDeliveryData = AsPacketWrapper(receiveBuffer, result.Count).SystemPacketAsResDirectDeliveryData();
+        Assert.Equal(PacketErrorCodes.Success, resDirectDeliveryData.Result);
+
+
+    }
+
+    protected async Task<(byte[], WebSocketReceiveResult)> ReceiveAsync(ClientWebSocket client)
+    {
+        byte[] receiveBuffer = new byte[4096];
+        WebSocketReceiveResult result = await client.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), defaultTimeoutToken.Token);
+        Assert.False(defaultTimeoutToken.IsCancellationRequested);
+        Assert.True(result.EndOfMessage);
+        Assert.NotEqual(0, result.Count);
+        return (receiveBuffer, result);
     }
 
     protected async Task<ClientWebSocket> OpenAuthoredWebSocket(Uri wsUri, string token)
@@ -207,15 +231,20 @@ public class ABMGS_TestMain : IAsyncLifetime
         return dataToSend;
     }
 
+    protected byte[] BuildReqDirectDeliveryData(Guid toPlayerId, string message, DirectDeliveryDataType dateType)
+    {
+        byte[] dataToSend = SyncnetPacketBuilder.Build<ReqDirectDeliveryDataArgs>(
+            new ReqDirectDeliveryDataArgs(toPlayerId, message, dateType)
+            );
+        PacketWrapper verifyPacket = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(dataToSend));
+        Assert.Equal(SystemPacket.ReqDirectDeliveryData, verifyPacket.SystemPacketType);
+        return dataToSend;
+    }
+
     protected async Task SendDataAsync(ClientWebSocket client, byte[] dataToSend)
     {
         await client.SendAsync(new ArraySegment<byte>(dataToSend), WebSocketMessageType.Binary, true, CancellationToken.None);
     }
-    //protected byte[] BuildReqDirectDeliveryDataPacket()
-    //{
-    //    byte[] dataToSend = SyncnetPacketBuilder.Build<ReqDirectDeliveryDataArgs>(
-    //        new ReqDirectDeliveryDataArgs( ));
-    //}
 
     protected PacketWrapper AsPacketWrapper(byte[] receiveBuffer, int count)
     {

@@ -1,4 +1,5 @@
 using Google.FlatBuffers;
+using Microsoft.AspNetCore.Builder;
 using SyncnetPlatform.Extensions;
 using SyncnetPlatform.Protocols.Generated;
 
@@ -43,9 +44,10 @@ internal class OnDirectDeliveryDataPacketBuilder : PacketBABuilder<OnDirectDeliv
     public override byte[] Build(OnDirectDeliveryDataArgs args)
     {
         var builder = CreateBuilder();
+        StringOffset messageOffset = builder.CreateString(args.Message);
         OnDirectDeliveryData.StartOnDirectDeliveryData(builder);
         OnDirectDeliveryData.AddFromPlayerId(builder, args.FromPlayerId.ToGuidType(builder));
-        OnDirectDeliveryData.AddData(builder, builder.CreateString(args.Message));
+        OnDirectDeliveryData.AddData(builder, messageOffset);
         OnDirectDeliveryData.AddDataType(builder, args.DataType);
 
         return Wrap(
