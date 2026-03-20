@@ -73,7 +73,9 @@ public class SystemPacketHandler : ISystemPacketHandler
         await ctx.SendData(
             ctx.GetPlayerId(), 
             SyncnetPacketBuilder.Build<ResDirectDeliveryDataArgs>(
-                new ResDirectDeliveryDataArgs(PacketErrorCodes.Success, "Success")
+                new ResDirectDeliveryDataArgs(
+                    result == true ? PacketErrorCodes.Success : PacketErrorCodes.PlayerOffline
+                    , "")
                 ));
     }
 }

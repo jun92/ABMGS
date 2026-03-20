@@ -31,7 +31,6 @@ public partial class ABMGS_TestMain : IAsyncLifetime
     protected async Task CloseAuthoredWebSocket(ClientWebSocket socket)
     {
         await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Good Bye", CancellationToken.None);
-
     }
 
     protected async Task<ClientWebSocket> CreateAuthoredWebSocket()
