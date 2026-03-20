@@ -2,16 +2,9 @@ using SyncnetPlatform.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddControllers();
 builder.AddSyncnetPlatformFrontend();
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-// builder.Services.AddOpenApi();
-builder.Services.AddControllers();
-// builder.Services.AddHealthChecks();
-// builder.AddServiceDefaults();
-
-// SyncnetPlatform Actors
 
 var app = builder.Build();
 
