@@ -49,6 +49,8 @@ public class PlayerActor : Grain, IPlayerActor
     /// </summary>
     protected bool _IsOnline = false;
 
+    protected bool _IsDirtyPlayerData = false;
+
     public PlayerActor(
         ILogger<PlayerActor> logger,
         IPlayerModelRepository playerModelRepository
@@ -59,19 +61,21 @@ public class PlayerActor : Grain, IPlayerActor
         
     }
 
-    public Task SetOnline(bool isOnline)
+    public async Task SetOnline(bool isOnline)
     {
         _IsOnline = isOnline;
         if(isOnline == true )
         {
-            // Get activated ISendDataGrain.
-            _packetSender = GrainFactory.GetGrain<ISendDataGrain>(GrainContext.GrainId.GetGuidKey());
+            Guid ThisPlayerId = GrainContext.GrainId.GetGuidKey();
+            _playerData = await _playerModelRepository.GetOrCreate(ThisPlayerId);
+            _dbid = _playerData.Id;
+            _packetSender = GrainFactory.GetGrain<ISendDataGrain>(ThisPlayerId);
         }
         else
         {
             _packetSender = null;
+            this.DelayDeactivation(TimeSpan.FromMinutes(1));
         }
-        return Task.CompletedTask;
     }
     public async Task SetIdProvider(SupportedPlatformType idpFrom)
     {
@@ -80,15 +84,15 @@ public class PlayerActor : Grain, IPlayerActor
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        Guid PlayerId = GrainContext.GrainId.GetGuidKey();
-        _playerData = await _playerModelRepository.GetOrCreate(PlayerId);
-        _dbid = _playerData.Id;
         await base.OnActivateAsync(cancellationToken);
     }
 
     public override async Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
     {
-        await _playerModelRepository.Update(_playerData);
+        if(_IsDirtyPlayerData)
+        {
+            await _playerModelRepository.Update(_playerData);
+        }
         await base.OnDeactivateAsync(reason, cancellationToken);
     }
 
