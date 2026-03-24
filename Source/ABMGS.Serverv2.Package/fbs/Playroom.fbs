@@ -1,18 +1,17 @@
 include "Types.fbs";
+include "ErrorCodes.fbs";
 
 namespace SyncnetPlatform.Protocols.Generated;
 
-
 table ReqCreateRoom{
     name: string;
-    private: bool = true;
+    private: bool = false;
     password: string;
     max_count: int;
 }
 
 table ResCreateRoom{
-    result: int;
-    message: string;
+    result: PacketErrorCodes;
     room_id: GuidType;
 }
 
@@ -22,8 +21,12 @@ table ReqJoinRoom{
 }
 
 table ResJoinRoom{
-    result: int;
-    message: string;
+    result: PacketErrorCodes;
+}
+table OnPlayerJoinRoom {
+    room_id: GuidType;
+    player_id: GuidType;
+    name: string;
 }
 
 table ReqLeaveRoom{
@@ -31,8 +34,7 @@ table ReqLeaveRoom{
 }
 
 table ResLeaveRoom{
-    result: int;
-    message: string;
+    result: PacketErrorCodes;
 }
 
 table ReqBroadcastRoom{
@@ -42,8 +44,7 @@ table ReqBroadcastRoom{
 }
 
 table ResBroadcastRoom{
-    result: int;
-    message: string;
+    result: PacketErrorCodes;
 }
 
 table BroadcastRoom{

@@ -7,9 +7,12 @@ namespace SyncnetPlatform.Interfaces.Actors;
 
 public interface IPlayerActor : IGrainWithGuidKey
 {
+    Task<Guid> CreateAndJoinPlayRoom(string roomName, bool isPrivate, int maxCapacity, string roomPassword);
     public Task Echo(int seq);
     Task<string> GetPlayerName();
+    Task<PacketErrorCodes> JoinPlayRoom(Guid playRoomId);
     Task<bool> OnDirectDeliveryData(Guid fromPlayerId, string message, DirectDeliveryDataType dataType);
+    Task<bool> OnPlayerJoinRoom(Guid roomId, Guid playerId, string playerName);
     Task<bool> SendDirectDeliverData(Guid toPlayerId, string message, DirectDeliveryDataType dataType);
     Task SetIdProvider(SupportedPlatformType idpFrom);
     Task SetOnline(bool isOnline);

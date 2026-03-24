@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using SyncnetPlatform.Actors;
 using SyncnetPlatform.Extensions;
 using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Interfaces.Network.Handlers;
@@ -52,10 +53,6 @@ public class SystemPacketHandler : ISystemPacketHandler
             SyncnetPacketBuilder.Build(new ResUpdatePlayerNameArgs(0, "Success"))
         );
     }
-    [PacketHandler(typeof(ReqCreateRoom))]
-    public async Task HandleReqCreateroom(ReqCreateRoom request, PacketContext ctx)
-    {
-    }
 
     [PacketHandler(typeof(ReqDirectDeliveryData))]
     public async Task HandleReqDirectDeliveryData(ReqDirectDeliveryData request, PacketContext ctx)
@@ -77,6 +74,31 @@ public class SystemPacketHandler : ISystemPacketHandler
                     result == true ? PacketErrorCodes.Success : PacketErrorCodes.PlayerOffline
                     , "")
                 ));
+    }
+    [PacketHandler(typeof(ReqCreateRoom))]
+    public async Task HandleReqCreateroom(ReqCreateRoom request, PacketContext ctx)
+    {
+        IPlayerActor player = ctx.GetPlayer();
+
+        Guid RoomId = await player.CreateAndJoinPlayRoom(request.Name, request.Private, request.MaxCount, request.Password);
+        await ctx.SendData(ctx.GetPlayerId(),
+            SyncnetPacketBuilder.Build<ResCreateRoomArgs>(
+                new ResCreateRoomArgs(PacketErrorCodes.Success, RoomId)
+                ));
+    }
+    [PacketHandler(typeof(ReqJoinRoom))]
+    public async Task HandleReqJoinRoom(ReqJoinRoom request, PacketContext ctx)
+    {
+        IPlayerActor player = ctx.GetPlayer();
+        Guid RoomId = new Guid();
+        RoomId.FromGuidType(request.RoomId);
+        PacketErrorCodes resultCode = await player.JoinPlayRoom(RoomId);
+
+        await ctx.SendData(ctx.GetPlayerId(),
+            SyncnetPacketBuilder.Build<ResJoinRoomArgs>(
+                new ResJoinRoomArgs(resultCode)
+                )
+            );
     }
 }
 

@@ -16,16 +16,17 @@ public record ResDirectDeliveryDataArgs(PacketErrorCodes ErrorCode, string Messa
 public record OnDirectDeliveryDataArgs(Guid FromPlayerId, string Message, DirectDeliveryDataType DataType) : IPacketBuildArgs;
 
 public record ReqCreateRoomArgs(string name, bool isPrivate = true, string password = "", int maxCount = 1) : IPacketBuildArgs;
-public record ResCreateRoomArgs(int result, string message, Guid roomId) : IPacketBuildArgs;
+public record ResCreateRoomArgs(PacketErrorCodes result, Guid roomId) : IPacketBuildArgs;
 
 public record ReqJoinRoomArgs(Guid roomId, string password) : IPacketBuildArgs;
-public record ResJoinRoomArgs(int result, string message): IPacketBuildArgs;
+public record ResJoinRoomArgs(PacketErrorCodes result): IPacketBuildArgs;
+public record OnPlayerJoinRoomArgs(Guid roomId, Guid playerId, string playerName): IPacketBuildArgs;
 
 public record ReqLeaveRoomArgs(Guid roomId) : IPacketBuildArgs;
-public record ResLeaveRoomArgs(int result, string message) : IPacketBuildArgs;
+public record ResLeaveRoomArgs(PacketErrorCodes result) : IPacketBuildArgs;
 
 public record ReqBroadcastRoomArgs(Guid roomId, Guid from, string message) : IPacketBuildArgs;
-public record ResBroadcastRoomArgs(int result, string message) : IPacketBuildArgs;
+public record ResBroadcastRoomArgs(PacketErrorCodes result) : IPacketBuildArgs;
 public record BroadcastRoomArgs(Guid from, string message) : IPacketBuildArgs;
 
 

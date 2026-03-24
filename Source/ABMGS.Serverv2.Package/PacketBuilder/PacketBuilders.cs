@@ -119,7 +119,6 @@ internal class ResCreateRoomPacketBuilder : PacketBABuilder<ResCreateRoomArgs>
         var builder = CreateBuilder();
         ResCreateRoom.StartResCreateRoom(builder);
         ResCreateRoom.AddResult(builder, args.result);
-        ResCreateRoom.AddMessage(builder, builder.CreateString(args.message));
         return Wrap(builder, SystemPacket.ResCreateRoom, ResCreateRoom.EndResCreateRoom(builder).Value);
     }
 }
@@ -144,7 +143,26 @@ internal class ResJoinRoomPacketBuilder : PacketBABuilder<ResJoinRoomArgs>
         return Wrap(
             builder, 
             SystemPacket.ResJoinRoom, 
-            ResJoinRoom.CreateResJoinRoom(builder, args.result, builder.CreateString(args.message)).Value);
+            ResJoinRoom.CreateResJoinRoom(builder, args.result).Value);
+    }
+}
+
+internal class OnPlayerJoinRoomPacketBuilder : PacketBABuilder<OnPlayerJoinRoomArgs>
+{
+    public override byte[] Build(OnPlayerJoinRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        StringOffset playerName = builder.CreateString(args.playerName);
+        
+        OnPlayerJoinRoom.StartOnPlayerJoinRoom(builder);
+        OnPlayerJoinRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
+        OnPlayerJoinRoom.AddPlayerId(builder, args.playerId.ToGuidType(builder));
+        OnPlayerJoinRoom.AddName(builder, playerName);
+
+        return Wrap(
+            builder,
+            SystemPacket.OnPlayerJoinRoom, 
+            OnPlayerJoinRoom.EndOnPlayerJoinRoom(builder).Value);
     }
 }
 
@@ -167,7 +185,7 @@ internal class ResLeaveRoomPacketBuilder : PacketBABuilder<ResLeaveRoomArgs>
         return Wrap(
             builder, 
             SystemPacket.ResLeaveRoom, 
-            ResLeaveRoom.CreateResLeaveRoom(builder, args.result, builder.CreateString(args.message)).Value);
+            ResLeaveRoom.CreateResLeaveRoom(builder, args.result).Value);
     }
 }
 
@@ -193,9 +211,10 @@ internal class ResBroadcastRoomPacketBuilder : PacketBABuilder<ResBroadcastRoomA
     public override byte[] Build(ResBroadcastRoomArgs args)
     {
         var builder = CreateBuilder();
+
         return Wrap(builder,
             SystemPacket.ResBroadcastRoom,
-            ResBroadcastRoom.CreateResBroadcastRoom(builder, args.result, builder.CreateString(args.message)).Value);
+            ResBroadcastRoom.CreateResBroadcastRoom(builder, args.result).Value);
     }
 }
 

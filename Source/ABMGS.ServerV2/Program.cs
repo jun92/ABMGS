@@ -2,8 +2,8 @@ using SyncnetPlatform.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
 builder.AddSyncnetPlatformFrontend();
+builder.Services.AddControllers();
 
 
 var app = builder.Build();

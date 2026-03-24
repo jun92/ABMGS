@@ -8,6 +8,7 @@ using SyncnetPlatform.Interfaces.Network.Sessions;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Protocols.Generated;
 using SyncnetPlatform.Repositories;
+using System.ComponentModel.DataAnnotations;
 using PacketBuilder = SyncnetPlatform.Network.Utils.SyncnetPacketBuilder;
 
 namespace SyncnetPlatform.Actors;
@@ -50,6 +51,11 @@ public class PlayerActor : Grain, IPlayerActor
     protected bool _IsOnline = false;
 
     protected bool _IsDirtyPlayerData = false;
+
+    /// <summary>
+    /// Player can join multiple rooms at the same time.
+    /// </summary>
+    protected List<Guid> _joinedRoomList = new();
 
     public PlayerActor(
         ILogger<PlayerActor> logger,
@@ -131,23 +137,45 @@ public class PlayerActor : Grain, IPlayerActor
         return true;
     }
 
-    public async Task<Guid> CreateAndJoinPlayRoom()
+    public async Task<Guid> CreateAndJoinPlayRoom(string roomName, bool isPrivate, int maxCapacity, string roomPassword)
     {
         Guid newPlayRoomId = Guid.NewGuid();
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(newPlayRoomId);
-        await playRoomActor.OnPlayerJoin(this.GetGrainId().GetGuidKey());
+
+        await playRoomActor.SetRoomInformation(roomName, isPrivate, maxCapacity, roomPassword, GrainContext.GrainId.GetGuidKey());
+        _joinedRoomList.Add(newPlayRoomId);
         return newPlayRoomId;
     }
 
-    public async Task JoinPlayRoom(Guid playRoomId)
+    public async Task<PacketErrorCodes> JoinPlayRoom(Guid playRoomId)
     {
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(playRoomId);
+        if(!await playRoomActor.IsValidRoomToJoin())
+        {
+            return PacketErrorCodes.RoomNotFound;
+        }
         await playRoomActor.OnPlayerJoin(GrainContext.GrainId.GetGuidKey());
+        _joinedRoomList.Add(playRoomId);
+        return PacketErrorCodes.Success;
+    }
+
+    public async Task<bool> OnPlayerJoinRoom(Guid roomId, Guid playerId, string playerName)
+    {
+        if (!_IsOnline)
+        {
+            return false;
+        }
+
+        await _packetSender!.Send(
+            PacketBuilder.Build<OnPlayerJoinRoomArgs>(
+                new OnPlayerJoinRoomArgs(roomId, playerId, playerName)));
+        return true;
     }
 
     public async Task LeavePlayRoom(Guid playRoomId)
     {
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(playRoomId);
+        _joinedRoomList.Remove(playRoomId);
 
     }
 
