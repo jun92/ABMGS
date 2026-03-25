@@ -3,6 +3,7 @@ using Orleans;
 using Orleans.Services;
 using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Interfaces.Network.Sessions;
+using SyncnetPlatform.Network.Utils;
 
 namespace SyncnetPlatform.Network.Handlers;
 
@@ -24,5 +25,10 @@ public class PacketContext
     {
         ISendDataGrain sendDataGrain = _grainFactory.GetGrain<ISendDataGrain>(_playerId);
         await sendDataGrain.Send(data);
+    }
+    public async Task SendData<SyncnetPacketType>(SyncnetPacketType data) where SyncnetPacketType : IPacketBuildArgs
+    {
+        ISendDataGrain sendDataGrain = _grainFactory.GetGrain<ISendDataGrain>(_playerId);
+        await sendDataGrain.Send(SyncnetPacketBuilder.Build<SyncnetPacketType>(data));
     }
 }

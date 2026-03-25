@@ -48,10 +48,12 @@ public class SystemPacketHandler : ISystemPacketHandler
         IPlayerActor player = ctx.GetPlayer();
         await player.UpdatePlayerName(request.PlayerName);
 
-        await ctx.SendData(
-            ctx.GetPlayerId(), 
-            SyncnetPacketBuilder.Build(new ResUpdatePlayerNameArgs(0, "Success"))
-        );
+        await ctx.SendData(new ResUpdatePlayerNameArgs(0, "Success"));
+
+        //await ctx.SendData(
+        //    ctx.GetPlayerId(), 
+        //    SyncnetPacketBuilder.Build(new ResUpdatePlayerNameArgs(0, "Success"))
+        //);
     }
 
     [PacketHandler(typeof(ReqDirectDeliveryData))]
