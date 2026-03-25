@@ -88,10 +88,10 @@ public class PlayerActor : Grain, IPlayerActor
         _idpFrom = idpFrom;
     }
 
-    public override async Task OnActivateAsync(CancellationToken cancellationToken)
-    {
-        await base.OnActivateAsync(cancellationToken);
-    }
+    //public override async Task OnActivateAsync(CancellationToken cancellationToken)
+    //{
+    //    await base.OnActivateAsync(cancellationToken);
+    //}
 
     public override async Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
     {
@@ -132,7 +132,7 @@ public class PlayerActor : Grain, IPlayerActor
         }
         
         await _packetSender!.Send(
-            PacketBuilder.Build<OnDirectDeliveryDataArgs>(
+            PacketBuilder.Build(
                 new OnDirectDeliveryDataArgs(fromPlayerId, message, dataType)));
         return true;
     }
@@ -149,6 +149,10 @@ public class PlayerActor : Grain, IPlayerActor
 
     public async Task<PacketErrorCodes> JoinPlayRoom(Guid playRoomId)
     {
+        if(!_IsOnline)
+        {
+            return PacketErrorCodes.PlayerOffline;
+        }
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(playRoomId);
         if(!await playRoomActor.IsValidRoomToJoin())
         {
