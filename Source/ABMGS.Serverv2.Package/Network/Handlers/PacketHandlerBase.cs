@@ -21,11 +21,11 @@ public class PacketContext
     public IPlayerActor GetPlayer() => _grainFactory.GetGrain<IPlayerActor>(_playerId);
     public IPlayerDataActor GetPlayerData() => _grainFactory.GetGrain<IPlayerDataActor>(_playerId);
     public IPlayerInventoryActor GetPlayerInventory() => _grainFactory.GetGrain<IPlayerInventoryActor>(_playerId);
-    public async Task SendData(Guid toPlayerId, byte[] data)
-    {
-        ISendDataGrain sendDataGrain = _grainFactory.GetGrain<ISendDataGrain>(_playerId);
-        await sendDataGrain.Send(data);
-    }
+    //public async Task SendData(Guid toPlayerId, byte[] data)
+    //{
+    //    ISendDataGrain sendDataGrain = _grainFactory.GetGrain<ISendDataGrain>(_playerId);
+    //    await sendDataGrain.Send(data);
+    //}
     public async Task SendData<SyncnetPacketType>(SyncnetPacketType data) where SyncnetPacketType : IPacketBuildArgs
     {
         ISendDataGrain sendDataGrain = _grainFactory.GetGrain<ISendDataGrain>(_playerId);
