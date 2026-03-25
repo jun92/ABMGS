@@ -20,11 +20,7 @@ public class SystemPacketHandler : ISystemPacketHandler
     [PacketHandler(typeof(Ping))]
     public async Task HandlePing(Ping request, PacketContext ctx)
     {
-        _logger.LogInformation($"HandlePing, Seq is {request.Seq}");
-        
-        await ctx.SendData(
-            ctx.GetPlayerId(),
-            SyncnetPacketBuilder.Build(new PongArgs(request.Seq + 1)));
+        await ctx.SendData(new PongArgs(request.Seq+1));
     }
     [PacketHandler(typeof(Pong))]
     public async Task HandlePong(Pong request, PacketContext ctx)
@@ -36,10 +32,7 @@ public class SystemPacketHandler : ISystemPacketHandler
     {
         IPlayerActor player = ctx.GetPlayer();
         string playerName = await player.GetPlayerName();
-        await ctx.SendData(
-            ctx.GetPlayerId(),
-            SyncnetPacketBuilder.Build(new ResUserInfoArgs(ctx.GetPlayerId(), playerName))
-            );
+        await ctx.SendData(new ResUserInfoArgs(ctx.GetPlayerId(), playerName));
     }
 
     [PacketHandler(typeof(ReqUpdatePlayerName))]
@@ -47,13 +40,7 @@ public class SystemPacketHandler : ISystemPacketHandler
     {
         IPlayerActor player = ctx.GetPlayer();
         await player.UpdatePlayerName(request.PlayerName);
-
         await ctx.SendData(new ResUpdatePlayerNameArgs(0, "Success"));
-
-        //await ctx.SendData(
-        //    ctx.GetPlayerId(), 
-        //    SyncnetPacketBuilder.Build(new ResUpdatePlayerNameArgs(0, "Success"))
-        //);
     }
 
     [PacketHandler(typeof(ReqDirectDeliveryData))]
@@ -69,13 +56,10 @@ public class SystemPacketHandler : ISystemPacketHandler
             request.Data, 
             request.DataType);
 
-        await ctx.SendData(
-            ctx.GetPlayerId(), 
-            SyncnetPacketBuilder.Build<ResDirectDeliveryDataArgs>(
-                new ResDirectDeliveryDataArgs(
+        await ctx.SendData(new ResDirectDeliveryDataArgs(
                     result == true ? PacketErrorCodes.Success : PacketErrorCodes.PlayerOffline
                     , "")
-                ));
+                );
     }
     [PacketHandler(typeof(ReqCreateRoom))]
     public async Task HandleReqCreateroom(ReqCreateRoom request, PacketContext ctx)
@@ -83,10 +67,7 @@ public class SystemPacketHandler : ISystemPacketHandler
         IPlayerActor player = ctx.GetPlayer();
 
         Guid RoomId = await player.CreateAndJoinPlayRoom(request.Name, request.Private, request.MaxCount, request.Password);
-        await ctx.SendData(ctx.GetPlayerId(),
-            SyncnetPacketBuilder.Build<ResCreateRoomArgs>(
-                new ResCreateRoomArgs(PacketErrorCodes.Success, RoomId)
-                ));
+        await ctx.SendData(new ResCreateRoomArgs(PacketErrorCodes.Success, RoomId));
     }
     [PacketHandler(typeof(ReqJoinRoom))]
     public async Task HandleReqJoinRoom(ReqJoinRoom request, PacketContext ctx)
@@ -96,11 +77,7 @@ public class SystemPacketHandler : ISystemPacketHandler
         RoomId.FromGuidType(request.RoomId);
         PacketErrorCodes resultCode = await player.JoinPlayRoom(RoomId);
 
-        await ctx.SendData(ctx.GetPlayerId(),
-            SyncnetPacketBuilder.Build<ResJoinRoomArgs>(
-                new ResJoinRoomArgs(resultCode)
-                )
-            );
+        await ctx.SendData(new ResJoinRoomArgs(resultCode));
     }
 }
 
