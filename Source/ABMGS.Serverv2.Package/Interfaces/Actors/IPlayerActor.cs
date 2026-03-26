@@ -13,6 +13,7 @@ public interface IPlayerActor : IGrainWithGuidKey
     Task<PacketErrorCodes> JoinPlayRoom(Guid playRoomId);
     Task<PacketErrorCodes> OnDirectDeliveryData(Guid fromPlayerId, string message, DirectDeliveryDataType dataType);
     Task<bool> OnPlayerJoinRoom(Guid roomId, Guid playerId, string playerName);
+    Task PingPong(int seq);
     Task<PacketErrorCodes> SendDirectDeliverData(Guid toPlayerId, string message, DirectDeliveryDataType dataType);
     Task SetIdProvider(SupportedPlatformType idpFrom);
     Task SetOnline(bool isOnline);

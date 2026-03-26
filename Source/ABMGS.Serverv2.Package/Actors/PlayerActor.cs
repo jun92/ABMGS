@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using SyncnetPlatform.Controllers;
 using SyncnetPlatform.Databases;
 using SyncnetPlatform.Interfaces.Actors;
+using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Protocols.Generated;
@@ -44,6 +45,7 @@ public class PlayerActor : Grain, IPlayerActor
     /// <remarks>This field is protected and intended for use by derived classes. Assign a valid
     /// implementation of ISendDataGrain before attempting to send packets.</remarks>
     protected ISendDataGrain? _packetSender = null;
+    protected IPacketHandlerActor? _packetHandler = null;
 
     /// <summary>
     /// This indicates the actor has been activated from real player with corrent websocket connection.
@@ -76,10 +78,12 @@ public class PlayerActor : Grain, IPlayerActor
             _playerData = await _playerModelRepository.GetOrCreate(ThisPlayerId);
             _dbid = _playerData.Id;
             _packetSender = GrainFactory.GetGrain<ISendDataGrain>(ThisPlayerId);
+            _packetHandler = GrainFactory.GetGrain<IPacketHandlerActor>(ThisPlayerId);
         }
         else
         {
             _packetSender = null;
+            _packetHandler = null;
             this.DelayDeactivation(TimeSpan.FromMinutes(1));
         }
     }
@@ -104,6 +108,16 @@ public class PlayerActor : Grain, IPlayerActor
 
     public Task Echo(int seq)
     {
+        return Task.CompletedTask;
+    }
+
+    public Task PingPong(int seq)
+    {
+        if(!_IsOnline)
+        {
+            return Task.CompletedTask;
+        }
+        _packetHandler!.PushSendData<PongArgs>(new PongArgs(seq + 1));
         return Task.CompletedTask;
     }
 
@@ -178,8 +192,19 @@ public class PlayerActor : Grain, IPlayerActor
     public async Task LeavePlayRoom(Guid playRoomId)
     {
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(playRoomId);
+        await playRoomActor.OnPlayerLeave(GrainContext.GrainId.GetGuidKey());
         _joinedRoomList.Remove(playRoomId);
+    }
 
+    public async Task<PacketErrorCodes> OnPlayerLeaveRoom(Guid roomId, Guid playerId)
+    {
+        if (!_IsOnline)
+        {
+            return PacketErrorCodes.PlayerOffline;
+        }
+        //_packetSender.Send(new OnPl)
+
+        return PacketErrorCodes.Success;
     }
 
     public async Task DestoroyPlayRoom(Guid playRoomId)

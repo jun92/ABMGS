@@ -31,4 +31,10 @@ public class PacketContext
         ISendDataGrain sendDataGrain = _grainFactory.GetGrain<ISendDataGrain>(_playerId);
         await sendDataGrain.Send(SyncnetPacketBuilder.Build<SyncnetPacketType>(data));
     }
+
+    public async Task SendDataRaw(byte[] data)
+    {
+        ISendDataGrain sendDataGrain = _grainFactory.GetGrain<ISendDataGrain>(_playerId);
+        await sendDataGrain.Send(data);
+    }
 }

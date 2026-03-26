@@ -20,12 +20,13 @@ public class SystemPacketHandler : ISystemPacketHandler
     [PacketHandler(typeof(Ping))]
     public async Task HandlePing(Ping request, PacketContext ctx)
     {
-        await ctx.SendData(new PongArgs(request.Seq+1));
+        IPlayerActor player = ctx.GetPlayer();
+        await player.PingPong(request.Seq);
     }
     [PacketHandler(typeof(Pong))]
     public async Task HandlePong(Pong request, PacketContext ctx)
     {
-        _logger.LogError("This should not be called.");
+        await ctx.SendDataRaw(request.ByteBuffer.ToFullArray());
     }
     [PacketHandler(typeof(ReqUserInfo))]
     public async Task HandleReqUserInfo(ReqUserInfo request, PacketContext ctx)
@@ -56,8 +57,7 @@ public class SystemPacketHandler : ISystemPacketHandler
             request.Data, 
             request.DataType);
 
-        await ctx.SendData(new ResDirectDeliveryDataArgs(result)
-                );
+        await ctx.SendData(new ResDirectDeliveryDataArgs(result));
     }
     [PacketHandler(typeof(ReqCreateRoom))]
     public async Task HandleReqCreateroom(ReqCreateRoom request, PacketContext ctx)
@@ -76,6 +76,13 @@ public class SystemPacketHandler : ISystemPacketHandler
         PacketErrorCodes resultCode = await player.JoinPlayRoom(RoomId);
 
         await ctx.SendData(new ResJoinRoomArgs(resultCode));
+    }
+    [PacketHandler(typeof(ReqLeaveRoom))]
+    public async Task HandleReqLeavePlayRoom(ReqLeaveRoom request, PacketContext ctx)
+    {
+        IPlayerActor player = ctx.GetPlayer();
+        //player
+
     }
 }
 

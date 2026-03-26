@@ -5,6 +5,8 @@ using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using SyncnetPlatform.Interfaces.Network.Utils;
+using SyncnetPlatform.Network.Handlers;
+using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Protocols.Generated;
 using SyncnetPlatform.Utils;
 
@@ -19,6 +21,7 @@ public class PacketHandlingActor : Grain, IPacketHandlerActor
     private CancellationTokenSource? _ctsForRunRoutingPackets;
     private readonly ISystemPacketHandler _systemPacketHandler;
     private Task? _runRoutingPackets;
+    private PacketContext? _packetContext = null;
     public PacketHandlingActor(
         ILogger<PacketHandlingActor> logger, 
         IPacketRouter routeTable,
@@ -35,6 +38,7 @@ public class PacketHandlingActor : Grain, IPacketHandlerActor
     public override Task OnActivateAsync(CancellationToken cancellationToken)
     {
         _ctsForRunRoutingPackets = new CancellationTokenSource();
+        _packetContext = _packetContextFactory.Create(this.GetGrainId().GetGuidKey());
 
         _runRoutingPackets =  RunRoutingPackets(_ctsForRunRoutingPackets.Token);
 
@@ -47,19 +51,29 @@ public class PacketHandlingActor : Grain, IPacketHandlerActor
         _ctsForRunRoutingPackets?.Cancel();
         _receiveQueue.Enqueue(Array.Empty<byte>());
         if( _runRoutingPackets != null) await _runRoutingPackets;
+        _packetContext = null;
     }
 
     public Task InvokeHandler(byte[] data)
     {
+        if(_packetContext == null )
+        {
+            _packetContext = _packetContextFactory.Create(this.GetGrainId().GetGuidKey());
+        }
         _routeTable.Execute(
-            PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data)), 
-            _packetContextFactory.Create(this.GetGrainId().GetGuidKey()));
+            PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data)), _packetContext);
         return Task.CompletedTask;
     }
 
     public Task PushRecievedData(byte[] Data)
     {
         _receiveQueue.Enqueue(Data);
+        return Task.CompletedTask;
+    }
+
+    public Task PushSendData<SyncnetPacketType>(SyncnetPacketType packet) where SyncnetPacketType : IPacketBuildArgs
+    {
+        _receiveQueue.Enqueue(SyncnetPacketBuilder.Build<SyncnetPacketType>(packet));
         return Task.CompletedTask;
     }
     public async Task RunRoutingPackets(CancellationToken shutdownToken)
