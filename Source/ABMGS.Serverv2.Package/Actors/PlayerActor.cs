@@ -118,23 +118,22 @@ public class PlayerActor : Grain, IPlayerActor
         return Task.FromResult(_playerData.PlayerName); 
     }
 
-    public async Task<bool> SendDirectDeliverData(Guid toPlayerId, string message, DirectDeliveryDataType dataType)
+    public async Task<PacketErrorCodes> SendDirectDeliverData(Guid toPlayerId, string message, DirectDeliveryDataType dataType)
     {
         IPlayerActor targetPlayer = GrainFactory.GetGrain<IPlayerActor>(toPlayerId);
-        bool result = await targetPlayer.OnDirectDeliveryData(GrainContext.GrainId.GetGuidKey(), message, dataType);
-        return result;
+        return await targetPlayer.OnDirectDeliveryData(GrainContext.GrainId.GetGuidKey(), message, dataType);
     }
-    public async Task<bool> OnDirectDeliveryData(Guid fromPlayerId, string message, DirectDeliveryDataType dataType)
+    public async Task<PacketErrorCodes> OnDirectDeliveryData(Guid fromPlayerId, string message, DirectDeliveryDataType dataType)
     {
         if(!_IsOnline)
         {
-            return false;
+            return PacketErrorCodes.PlayerOffline;
         }
         
         await _packetSender!.Send(
             PacketBuilder.Build(
                 new OnDirectDeliveryDataArgs(fromPlayerId, message, dataType)));
-        return true;
+        return PacketErrorCodes.Success;
     }
 
     public async Task<Guid> CreateAndJoinPlayRoom(string roomName, bool isPrivate, int maxCapacity, string roomPassword)

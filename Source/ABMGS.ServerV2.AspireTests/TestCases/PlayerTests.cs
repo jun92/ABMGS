@@ -26,7 +26,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
 
         PacketWrapper packetWrapper = AsPacketWrapper(receiveBuffer, result.Count);
         Assert.Equal(SystemPacket.ResUpdatePlayerName, packetWrapper.SystemPacketType);
-        Assert.Equal(0, packetWrapper.SystemPacketAsResUpdatePlayerName().Result);
+        Assert.Equal(PacketErrorCodes.Success, packetWrapper.SystemPacketAsResUpdatePlayerName().Result);
 
         dataToSend = BuildReqUserInfoPacket();
         await SendDataAsync(wsClient, dataToSend);

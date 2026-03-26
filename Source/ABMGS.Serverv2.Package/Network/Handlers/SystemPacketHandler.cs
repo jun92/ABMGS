@@ -40,7 +40,7 @@ public class SystemPacketHandler : ISystemPacketHandler
     {
         IPlayerActor player = ctx.GetPlayer();
         await player.UpdatePlayerName(request.PlayerName);
-        await ctx.SendData(new ResUpdatePlayerNameArgs(0, "Success"));
+        await ctx.SendData(new ResUpdatePlayerNameArgs(PacketErrorCodes.Success));
     }
 
     [PacketHandler(typeof(ReqDirectDeliveryData))]
@@ -51,14 +51,12 @@ public class SystemPacketHandler : ISystemPacketHandler
 
         toPlayerId.FromGuidType(request.ToPlayerId);
 
-        bool result = await player.SendDirectDeliverData(
+        PacketErrorCodes result = await player.SendDirectDeliverData(
             toPlayerId,
             request.Data, 
             request.DataType);
 
-        await ctx.SendData(new ResDirectDeliveryDataArgs(
-                    result == true ? PacketErrorCodes.Success : PacketErrorCodes.PlayerOffline
-                    , "")
+        await ctx.SendData(new ResDirectDeliveryDataArgs(result)
                 );
     }
     [PacketHandler(typeof(ReqCreateRoom))]

@@ -17,8 +17,7 @@ table ReqUpdatePlayerName{
     player_name: string;
 }
 table ResUpdatePlayerName{
-    result: int;
-    message: string;
+    result: PacketErrorCodes;
 }
 
 table ReqDirectDeliveryData {

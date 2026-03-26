@@ -92,7 +92,7 @@ internal class ResUpdatePlayerNamePacketBuilder : PacketBABuilder<ResUpdatePlaye
         var builder = CreateBuilder();
         return Wrap(builder,
             SystemPacket.ResUpdatePlayerName,
-            ResUpdatePlayerName.CreateResUpdatePlayerName(builder, args.Result, builder.CreateString(args.Message)).Value
+            ResUpdatePlayerName.CreateResUpdatePlayerName(builder, args.Result).Value
             );
     }
 }

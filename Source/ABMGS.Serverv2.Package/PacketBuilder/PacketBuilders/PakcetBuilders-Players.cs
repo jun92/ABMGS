@@ -33,8 +33,7 @@ internal class ResDirectDeliveryDataPacketBuilder : PacketBABuilder<ResDirectDel
         var builder = CreateBuilder();
         var data = ResDirectDeliveryData.CreateResDirectDeliveryData(
             builder, 
-            args.ErrorCode, 
-            builder.CreateString(args.Message));
+            args.ErrorCode);
         return Wrap(builder, SystemPacket.ResDirectDeliveryData, data.Value);
 
     }
