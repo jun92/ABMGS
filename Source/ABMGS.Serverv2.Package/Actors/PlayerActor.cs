@@ -39,12 +39,6 @@ public class PlayerActor : Grain, IPlayerActor
     
 
     protected PlayerData _playerData = new();
-    /// <summary>
-    /// Represents the packet sender used to transmit data packets.
-    /// </summary>
-    /// <remarks>This field is protected and intended for use by derived classes. Assign a valid
-    /// implementation of ISendDataGrain before attempting to send packets.</remarks>
-    protected ISendDataGrain? _packetSender = null;
     protected IPacketHandlerActor? _packetHandler = null;
 
     /// <summary>
@@ -77,12 +71,10 @@ public class PlayerActor : Grain, IPlayerActor
             Guid ThisPlayerId = GrainContext.GrainId.GetGuidKey();
             _playerData = await _playerModelRepository.GetOrCreate(ThisPlayerId);
             _dbid = _playerData.Id;
-            _packetSender = GrainFactory.GetGrain<ISendDataGrain>(ThisPlayerId);
             _packetHandler = GrainFactory.GetGrain<IPacketHandlerActor>(ThisPlayerId);
         }
         else
         {
-            _packetSender = null;
             _packetHandler = null;
             this.DelayDeactivation(TimeSpan.FromMinutes(1));
         }
@@ -143,10 +135,8 @@ public class PlayerActor : Grain, IPlayerActor
         {
             return PacketErrorCodes.PlayerOffline;
         }
-        
-        await _packetSender!.Send(
-            PacketBuilder.Build(
-                new OnDirectDeliveryDataArgs(fromPlayerId, message, dataType)));
+        OnDirectDeliveryDataArgs data = new OnDirectDeliveryDataArgs(fromPlayerId, message, dataType);
+        await _packetHandler!.PushSendData<OnDirectDeliveryDataArgs>(data);
         return PacketErrorCodes.Success;
     }
 
@@ -176,17 +166,14 @@ public class PlayerActor : Grain, IPlayerActor
         return PacketErrorCodes.Success;
     }
 
-    public async Task<bool> OnPlayerJoinRoom(Guid roomId, Guid playerId, string playerName)
+    public async Task<PacketErrorCodes> OnPlayerJoinRoom(Guid roomId, Guid playerId, string playerName)
     {
         if (!_IsOnline)
         {
-            return false;
+            return PacketErrorCodes.PlayerOffline;
         }
-
-        await _packetSender!.Send(
-            PacketBuilder.Build<OnPlayerJoinRoomArgs>(
-                new OnPlayerJoinRoomArgs(roomId, playerId, playerName)));
-        return true;
+        await _packetHandler!.PushSendData<OnPlayerJoinRoomArgs>(new OnPlayerJoinRoomArgs(roomId, playerId, playerName));
+        return PacketErrorCodes.Success;
     }
 
     public async Task LeavePlayRoom(Guid playRoomId)
@@ -202,8 +189,7 @@ public class PlayerActor : Grain, IPlayerActor
         {
             return PacketErrorCodes.PlayerOffline;
         }
-        //_packetSender.Send(new OnPl)
-
+        await _packetHandler!.PushSendData<OnPlayerLeaveRoomArgs>(new OnPlayerLeaveRoomArgs(roomId, playerId));
         return PacketErrorCodes.Success;
     }
 

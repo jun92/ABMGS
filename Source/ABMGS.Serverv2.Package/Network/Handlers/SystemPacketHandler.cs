@@ -59,6 +59,13 @@ public class SystemPacketHandler : ISystemPacketHandler
 
         await ctx.SendData(new ResDirectDeliveryDataArgs(result));
     }
+
+    [PacketHandler(typeof(OnDirectDeliveryData))]
+    public async Task HandleOnDirectDeliveryData(OnDirectDeliveryData request, PacketContext ctx)
+    {
+        await ctx.SendDataRaw(request.ByteBuffer.ToFullArray());
+    }
+
     [PacketHandler(typeof(ReqCreateRoom))]
     public async Task HandleReqCreateroom(ReqCreateRoom request, PacketContext ctx)
     {
@@ -77,6 +84,13 @@ public class SystemPacketHandler : ISystemPacketHandler
 
         await ctx.SendData(new ResJoinRoomArgs(resultCode));
     }
+
+    [PacketHandler(typeof(OnPlayerJoinRoom))]
+    public async Task HandleOnPlayerJoinRoom(OnPlayerJoinRoom request, PacketContext ctx)
+    {
+        await ctx.SendDataRaw(request.ByteBuffer.ToFullArray());
+    }
+
     [PacketHandler(typeof(ReqLeaveRoom))]
     public async Task HandleReqLeavePlayRoom(ReqLeaveRoom request, PacketContext ctx)
     {
