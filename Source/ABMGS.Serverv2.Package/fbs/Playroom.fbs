@@ -37,6 +37,12 @@ table ResLeaveRoom{
     result: PacketErrorCodes;
 }
 
+// Notify other player leaves.
+table OnPlayerLeaveRoom {
+    room_id: GuidType;
+    player_id: GuidType;
+}
+
 table ReqBroadcastRoom{
     room_id: GuidType;
     from: GuidType;

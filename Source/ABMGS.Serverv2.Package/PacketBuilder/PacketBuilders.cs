@@ -189,6 +189,19 @@ internal class ResLeaveRoomPacketBuilder : PacketBABuilder<ResLeaveRoomArgs>
     }
 }
 
+internal class OnPlayerLeaveRoomPacketBuilder : PacketBABuilder<OnPlayerLeaveRoomArgs>
+{
+    public override byte[] Build(OnPlayerLeaveRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        OnPlayerLeaveRoom.StartOnPlayerLeaveRoom(builder);
+        OnPlayerLeaveRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
+        OnPlayerLeaveRoom.AddPlayerId(builder, args.playerId.ToGuidType(builder));
+
+        return Wrap(builder, SystemPacket.OnPlayerLeaveRoom, OnPlayerLeaveRoom.EndOnPlayerLeaveRoom(builder).Value);
+    }
+}
+
 internal class ReqBroadcastRoomPacketBuilder : PacketBABuilder<ReqBroadcastRoomArgs>
 {
     public override byte[] Build(ReqBroadcastRoomArgs args)
