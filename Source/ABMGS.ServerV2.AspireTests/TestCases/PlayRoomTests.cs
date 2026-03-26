@@ -6,5 +6,10 @@ namespace ABMGS.ServerV2.AspireTest;
 
 public partial class ABMGS_TestMain : IAsyncLifetime
 {
+    [Fact]
+    public async Task PlayroomCreationAndDestructionTest()
+    {
+
+    }
 
 }
