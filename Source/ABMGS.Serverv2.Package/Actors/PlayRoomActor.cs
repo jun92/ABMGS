@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using SyncnetPlatform.Interfaces.Actors;
+using SyncnetPlatform.Protocols.Generated;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,19 +8,20 @@ using System.Text;
 namespace SyncnetPlatform.Actors;
 
 
-interface IPlayRoomActor : IGrainWithGuidKey
+
+public interface IPlayRoomActor : IGrainWithGuidKey
 {
     Task<bool> IsValidRoomToJoin();
-    Task<bool> OnPlayerJoin(Guid playerId);
-    Task OnPlayerLeave(Guid playerId);
+    Task<PacketErrorCodes> JoinPlayer(PlayRoomMember joiner);
+    Task<PacketErrorCodes> LeavePlayer(PlayRoomMember leaver);
     Task OnReqDestoryRoom(Guid roomId);
-    Task SetRoomInformation(string displayName, bool isPrivate, int maxCapacity, string roomPassword, Guid roomOwnerPlayerId);
+    Task SetRoomInformation(string displayName, bool isPrivate, int maxCapacity, string roomPassword, PlayRoomMember owner);
 }
 
 public class PlayRoomActor : Grain, IPlayRoomActor
 {
     private readonly ILogger<PlayRoomActor> _logger;
-    private List<Guid> players = new List<Guid>();
+    private List<PlayRoomMember> players = new List<PlayRoomMember>();
 
     private string _displayName = String.Empty;
     private string _passwordForEntrance = String.Empty;
@@ -44,7 +46,11 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     /// <param name="roomPassword"></param>
     /// <param name="roomOwnerPlayerId"></param>
     /// <returns></returns>
-    public async Task SetRoomInformation(string displayName, bool isPrivate, int maxCapacity, string roomPassword, Guid roomOwnerPlayerId)
+    public async Task SetRoomInformation(
+        string displayName, 
+        bool isPrivate, 
+        int maxCapacity, 
+        string roomPassword, PlayRoomMember owner)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(displayName, nameof(displayName));
 
@@ -52,38 +58,56 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         _passwordForEntrance = roomPassword;
         _maxPlayerCapacity = maxCapacity;
         _isPrivate = isPrivate;
-        _ownerPlayerId = roomOwnerPlayerId;
-        players.Add(roomOwnerPlayerId);
+        _ownerPlayerId = owner.PlayerId;
+        players.Add(owner);
     }
 
     public Task<bool> IsValidRoomToJoin() => Task.FromResult(_ownerPlayerId !=  Guid.Empty);
         
 
-    public async Task<bool> OnPlayerJoin(Guid playerId)
+    public async Task<PacketErrorCodes> JoinPlayer(PlayRoomMember joiner)
     {
         if (_ownerPlayerId == Guid.Empty)
         {
-            return false;
+            return PacketErrorCodes.RoomNotFound;
         }
 
         foreach (var player in players)
         {
-            IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(player);
-            await p.OnPlayerJoinRoom(RoomId, playerId, "Guest");
+            IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(player.PlayerId);
+            await p.OnUpdateForPlayRoomMembers(joiner, PlayRoomMemberUpdate.Join);
         }
 
-        players.Add(playerId);
+        players.Add(joiner);
 
-        return true;
+        return PacketErrorCodes.Success;
     }
 
-    public async Task OnPlayerLeave(Guid playerId)
+    public async Task<PacketErrorCodes> LeavePlayer(PlayRoomMember leaver)
     {
-        players.Remove(playerId);
+        if(_ownerPlayerId == Guid.Empty)
+        {
+            return PacketErrorCodes.RoomNotFound;
+        }
+        if(leaver.PlayerId == _ownerPlayerId) // in case of the owner of the room leaving.
+        {
+            //Should destory this room.
+
+        }
+        else
+        {
+            foreach(var player in players)
+            {
+                IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(player.PlayerId);
+                await p.OnUpdateForPlayRoomMembers(leaver, PlayRoomMemberUpdate.Leave);
+            }
+        }
+        players.Remove(leaver);
         if(players.Count == 0)
         {
             base.DeactivateOnIdle();
         }
+        return PacketErrorCodes.Success;
     }
 
     public async Task OnReqDestoryRoom(Guid roomId)

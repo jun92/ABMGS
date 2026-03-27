@@ -41,6 +41,7 @@ table ResLeaveRoom{
 table OnPlayerLeaveRoom {
     room_id: GuidType;
     player_id: GuidType;
+    name: string;
 }
 
 table ReqBroadcastRoom{

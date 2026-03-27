@@ -95,8 +95,13 @@ public class SystemPacketHandler : ISystemPacketHandler
     public async Task HandleReqLeavePlayRoom(ReqLeaveRoom request, PacketContext ctx)
     {
         IPlayerActor player = ctx.GetPlayer();
-        //player
+        Guid RoomId = new Guid();
+        RoomId.FromGuidType(request.RoomId);
+        PacketErrorCodes result = await player.LeavePlayRoom(RoomId);
 
+        await ctx.SendData<ResLeaveRoomArgs>(
+            new ResLeaveRoomArgs(result)
+            );
     }
 }
 

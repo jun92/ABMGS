@@ -24,7 +24,7 @@ namespace SyncnetPlatform.Network.Utils;
 
 [GenerateSerializer] public record ReqLeaveRoomArgs(Guid roomId) : IPacketBuildArgs;
 [GenerateSerializer] public record ResLeaveRoomArgs(PacketErrorCodes result) : IPacketBuildArgs;
-[GenerateSerializer] public record OnPlayerLeaveRoomArgs(Guid roomId, Guid playerId): IPacketBuildArgs;
+[GenerateSerializer] public record OnPlayerLeaveRoomArgs(Guid roomId, Guid playerId, string playerName): IPacketBuildArgs;
 
 [GenerateSerializer] public record ReqBroadcastRoomArgs(Guid roomId, Guid from, string message) : IPacketBuildArgs;
 [GenerateSerializer] public record ResBroadcastRoomArgs(PacketErrorCodes result) : IPacketBuildArgs;
