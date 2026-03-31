@@ -59,4 +59,12 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         Assert.Equal(SystemPacket.ReqLeaveRoom, verifyPacket.SystemPacketType);
         return dataToSend;
     }
+
+    protected byte[] BuildReqJoinPlayRoom(Guid roomId)
+    {
+        byte[] dataToSend = SyncnetPacketBuilder.Build<ReqJoinRoomArgs>(new ReqJoinRoomArgs(roomId, ""));
+        PacketWrapper verifyPacket = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(dataToSend));
+        Assert.Equal(SystemPacket.ReqJoinRoom, verifyPacket.SystemPacketType);
+        return dataToSend;
+    }
 }

@@ -32,6 +32,16 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         packetWrapper = AsPacketWrapper(receiveBuffer, result.Count);
         Assert.Equal(SystemPacket.ResLeaveRoom, packetWrapper.SystemPacketType);
         Assert.Equal(PacketErrorCodes.Success, packetWrapper.SystemPacketAsResLeaveRoom().Result);
+
+
+        // Try to join to not existing room.
+        roomId = Guid.NewGuid();
+        dataToSend = BuildReqJoinPlayRoom(roomId);
+        await SendDataAsync(wsClient, dataToSend);
+        (receiveBuffer, result) = await ReceiveAsync(wsClient);
+        packetWrapper = AsPacketWrapper(receiveBuffer, result.Count);
+        Assert.Equal(SystemPacket.ResJoinRoom, packetWrapper.SystemPacketType);
+        Assert.Equal(PacketErrorCodes.RoomNotFound, packetWrapper.SystemPacketAsResJoinRoom().Result);
     }
 
 }
