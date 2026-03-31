@@ -14,7 +14,7 @@ public interface IPlayerActor : IGrainWithGuidKey
     Task<PacketErrorCodes> JoinPlayRoom(Guid playRoomId);
     Task<PacketErrorCodes> LeavePlayRoom(Guid playRoomId);
     Task<PacketErrorCodes> OnDirectDeliveryData(Guid fromPlayerId, string message, DirectDeliveryDataType dataType);
-    Task<PacketErrorCodes> OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember, PlayRoomMemberUpdate memberStatus);
+    Task<PacketErrorCodes> OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember, PlayRoomMemberUpdateReason memberStatus);
     Task PingPong(int seq);
     Task<PacketErrorCodes> SendDirectDeliverData(Guid toPlayerId, string message, DirectDeliveryDataType dataType);
     Task SetIdProvider(SupportedPlatformType idpFrom);

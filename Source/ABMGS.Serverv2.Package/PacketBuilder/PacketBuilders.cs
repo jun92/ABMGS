@@ -102,11 +102,14 @@ internal class ReqCreateRoomPacketBuilder : PacketBABuilder<ReqCreateRoomArgs>
     public override byte[] Build(ReqCreateRoomArgs args)
     {
         var builder = CreateBuilder();
+        StringOffset roomName = builder.CreateString(args.name);
+        StringOffset roomPassword = builder.CreateString(args.password);
+
         ReqCreateRoom.StartReqCreateRoom(builder);
-        ReqCreateRoom.AddName(builder, builder.CreateString(args.name));
+        ReqCreateRoom.AddName(builder, roomName);
         ReqCreateRoom.AddPrivate(builder, args.isPrivate);
         ReqCreateRoom.AddMaxCount(builder, args.maxCount);
-        ReqCreateRoom.AddPassword(builder, builder.CreateString(args.password));
+        ReqCreateRoom.AddPassword(builder, roomPassword);
 
         return Wrap(builder, SystemPacket.ReqCreateRoom, ReqCreateRoom.EndReqCreateRoom(builder).Value);
     }
@@ -117,8 +120,10 @@ internal class ResCreateRoomPacketBuilder : PacketBABuilder<ResCreateRoomArgs>
     public override byte[] Build(ResCreateRoomArgs args)
     {
         var builder = CreateBuilder();
+        Offset<GuidType> roomId = args.roomId.ToGuidType(builder);
         ResCreateRoom.StartResCreateRoom(builder);
         ResCreateRoom.AddResult(builder, args.result);
+        ResCreateRoom.AddRoomId(builder, roomId);
         return Wrap(builder, SystemPacket.ResCreateRoom, ResCreateRoom.EndResCreateRoom(builder).Value);
     }
 }

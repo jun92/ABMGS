@@ -20,7 +20,7 @@ public interface IPlayerBehavior
 
 }
 
-public enum PlayRoomMemberUpdate
+public enum PlayRoomMemberUpdateReason
 {
     None = 0,
     Join = 1,
@@ -183,15 +183,15 @@ public class PlayerActor : Grain, IPlayerActor
     /// Be called when members of a room has changed. - in and out.
     /// </summary>
     /// <param name="playRoomMember"></param>
-    /// <param name="memberStatus"></param>
+    /// <param name="updateReason"></param>
     /// <returns></returns>
     [OneWay]
-    public async Task<PacketErrorCodes> OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember, PlayRoomMemberUpdate memberStatus )
+    public async Task<PacketErrorCodes> OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember, PlayRoomMemberUpdateReason updateReason )
     {
         if (!_IsOnline) return PacketErrorCodes.PlayerOffline;
-        switch (memberStatus)
+        switch (updateReason)
         {
-            case PlayRoomMemberUpdate.Join:
+            case PlayRoomMemberUpdateReason.Join:
                 await _packetHandler!.PushSendData<OnPlayerJoinRoomArgs>(
                     new OnPlayerJoinRoomArgs(
                         playRoomMember.RoomId,
@@ -200,7 +200,7 @@ public class PlayerActor : Grain, IPlayerActor
                     )
                     );
                 return PacketErrorCodes.Success; 
-            case PlayRoomMemberUpdate.Leave:
+            case PlayRoomMemberUpdateReason.Leave:
                 await _packetHandler!.PushSendData<OnPlayerLeaveRoomArgs>(
                     new OnPlayerLeaveRoomArgs
                     (

@@ -58,9 +58,3 @@ table BroadcastRoom{
     from: GuidType;
     message: string;
 }
-
-table ReqDestroyRoom {
-    room_id: GuidType;
-    reason: string;
-}
-

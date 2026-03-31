@@ -21,7 +21,9 @@ public interface IPlayRoomActor : IGrainWithGuidKey
 public class PlayRoomActor : Grain, IPlayRoomActor
 {
     private readonly ILogger<PlayRoomActor> _logger;
-    private List<PlayRoomMember> players = new List<PlayRoomMember>();
+
+
+    private List<PlayRoomMember> players = new List<PlayRoomMember>(); // Consider to keep IPlayerActor ref instead of GUIDs.
 
     private string _displayName = String.Empty;
     private string _passwordForEntrance = String.Empty;
@@ -75,7 +77,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         foreach (var player in players)
         {
             IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(player.PlayerId);
-            await p.OnUpdateForPlayRoomMembers(joiner, PlayRoomMemberUpdate.Join);
+            await p.OnUpdateForPlayRoomMembers(joiner, PlayRoomMemberUpdateReason.Join);
         }
 
         players.Add(joiner);
@@ -99,7 +101,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
             foreach(var player in players)
             {
                 IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(player.PlayerId);
-                await p.OnUpdateForPlayRoomMembers(leaver, PlayRoomMemberUpdate.Leave);
+                await p.OnUpdateForPlayRoomMembers(leaver, PlayRoomMemberUpdateReason.Leave);
             }
         }
         players.Remove(leaver);
