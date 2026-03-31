@@ -120,10 +120,9 @@ internal class ResCreateRoomPacketBuilder : PacketBABuilder<ResCreateRoomArgs>
     public override byte[] Build(ResCreateRoomArgs args)
     {
         var builder = CreateBuilder();
-        Offset<GuidType> roomId = args.roomId.ToGuidType(builder);
         ResCreateRoom.StartResCreateRoom(builder);
         ResCreateRoom.AddResult(builder, args.result);
-        ResCreateRoom.AddRoomId(builder, roomId);
+        ResCreateRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
         return Wrap(builder, SystemPacket.ResCreateRoom, ResCreateRoom.EndResCreateRoom(builder).Value);
     }
 }
