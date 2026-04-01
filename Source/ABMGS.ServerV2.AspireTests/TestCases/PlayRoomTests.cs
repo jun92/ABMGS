@@ -33,13 +33,17 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         Assert.Equal(SystemPacket.ResLeaveRoom, packetWrapper.SystemPacketType);
         Assert.Equal(PacketErrorCodes.Success, packetWrapper.SystemPacketAsResLeaveRoom().Result);
 
+    }
+    [Fact]
+    public async Task PlayroomNotExistingFailTest()
+    {
+        var wsClient = await CreateAuthoredWebSocket();
 
-        // Try to join to not existing room.
-        roomId = Guid.NewGuid();
-        dataToSend = BuildReqJoinPlayRoom(roomId);
+        Guid roomId = Guid.NewGuid();
+        byte[] dataToSend = BuildReqJoinPlayRoom(roomId);
         await SendDataAsync(wsClient, dataToSend);
-        (receiveBuffer, result) = await ReceiveAsync(wsClient);
-        packetWrapper = AsPacketWrapper(receiveBuffer, result.Count);
+        var (receiveBuffer, result) = await ReceiveAsync(wsClient);
+        PacketWrapper packetWrapper = AsPacketWrapper(receiveBuffer, result.Count);
         Assert.Equal(SystemPacket.ResJoinRoom, packetWrapper.SystemPacketType);
         Assert.Equal(PacketErrorCodes.RoomNotFound, packetWrapper.SystemPacketAsResJoinRoom().Result);
     }
