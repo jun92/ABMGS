@@ -222,12 +222,6 @@ public class PlayerActor : Grain, IPlayerActor
 
         return result;
     }
-    
-    public async Task DestoroyPlayRoom(Guid playRoomId)
-    {
-        IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(playRoomId);
-        await playRoomActor.OnReqDestoryRoom(playRoomId);
-    }
 
     public async Task Broadcast(Guid playRoomId, string message)
     {

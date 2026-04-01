@@ -15,7 +15,6 @@ public interface IPlayRoomActor : IGrainWithGuidKey
     Task<bool> IsValidRoomToJoin();
     Task<PacketErrorCodes> JoinPlayer(PlayRoomMember joiner);
     Task<PacketErrorCodes> LeavePlayer(PlayRoomMember leaver);
-    Task OnReqDestoryRoom(Guid roomId);
     Task SetRoomInformation(string displayName, bool isPrivate, int maxCapacity, string roomPassword, PlayRoomMember owner);
 }
 
@@ -114,17 +113,6 @@ public class PlayRoomActor : Grain, IPlayRoomActor
 
         return PacketErrorCodes.Success;
     }
-
-    public async Task OnReqDestoryRoom(Guid roomId)
-    {
-        if( roomId.Equals(RoomId))
-        {
-            Init();
-            base.DeactivateOnIdle();
-        }
-    }
-
-
     protected void Init()
     {
         players.Clear();
