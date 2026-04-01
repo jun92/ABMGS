@@ -3,6 +3,7 @@ using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Protocols.Generated;
 using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Text;
 
 namespace SyncnetPlatform.Actors;
@@ -91,24 +92,26 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         {
             return PacketErrorCodes.RoomNotFound;
         }
-        if(leaver.PlayerId == _ownerPlayerId) // in case of the owner of the room leaving.
-        {
-            //Should destory this room.
 
-        }
-        else
-        {
-            foreach(var player in players)
-            {
-                IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(player.PlayerId);
-                await p.OnUpdateForPlayRoomMembers(leaver, PlayRoomMemberUpdateReason.Leave);
-            }
-        }
         players.Remove(leaver);
-        if(players.Count == 0)
+        if(players.Count == 0 )
         {
+            _ownerPlayerId = Guid.Empty;
             base.DeactivateOnIdle();
+            return PacketErrorCodes.Success;
         }
+
+        foreach(var player in players)
+        {
+            IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(player.PlayerId);
+            await p.OnUpdateForPlayRoomMembers(leaver, PlayRoomMemberUpdateReason.Leave);
+        }
+
+        if(_ownerPlayerId == leaver.PlayerId)
+        {
+            _ownerPlayerId = players.First().PlayerId;
+        }
+
         return PacketErrorCodes.Success;
     }
 
