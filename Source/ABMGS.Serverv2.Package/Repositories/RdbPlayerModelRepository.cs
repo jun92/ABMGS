@@ -21,7 +21,7 @@ public class RdbPlayerModelRepository : IPlayerModelRepository
     }
     
 
-    public async Task<PlayerData> GetOrCreate(Guid playerId)
+    public async Task<PlayerData> GetOrCreate(Guid playerId, string playerName = "")
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
         PlayerData? playerData = await dbContext.Players.Where(w => w.PlayerId == playerId).FirstOrDefaultAsync();
@@ -30,6 +30,7 @@ public class RdbPlayerModelRepository : IPlayerModelRepository
             playerData = new PlayerData
             {
                 PlayerId = playerId,
+                PlayerName = playerName
             };
             await dbContext.Players.AddAsync(playerData);
             await dbContext.SaveChangesAsync();
@@ -59,7 +60,7 @@ public class RdbPlayerModelRepository : IPlayerModelRepository
 public interface IPlayerModelRepository
 {
     Task<PlayerData?> Get(int id);
-    Task<PlayerData> GetOrCreate(Guid playerId);
+    Task<PlayerData> GetOrCreate(Guid playerId, string playerName = "");
     Task<PlayerData> Update(PlayerData playerData);
 }
 

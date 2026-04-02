@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="generated\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.1" />
     <PackageReference Include="Google.Apis.Auth" Version="1.73.0" />
     <PackageReference Include="Google.FlatBuffers" Version="25.2.10" />
@@ -33,10 +37,18 @@
     <Folder Include="Exceptions\" />
   </ItemGroup>
   
-	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+	<Target Name="FlatcGenerate" BeforeTargets="BeforeCompile">
+		<Message Text="Running flatc code generator" Importance="high" />
+		<RemoveDir Directories="./generated" />
+		<Exec Command="flatc -n -o ./generated ./fbs/Types.fbs" />
+		<Exec Command="flatc -n -o ./generated ./fbs/ErrorCodes.fbs" />
 		<Exec Command="flatc -n -o ./generated ./fbs/System.fbs" />
 		<Exec Command="flatc -n -o ./generated ./fbs/Player.fbs" />
 		<Exec Command="flatc -n -o ./generated ./fbs/Custom.fbs" />
+		<Exec Command="flatc -n -o ./generated ./fbs/Playroom.fbs" />
+		<ItemGroup>
+			<Compile Include="./generated/**/*.cs" />
+		</ItemGroup>
 	</Target>
 
 </Project>

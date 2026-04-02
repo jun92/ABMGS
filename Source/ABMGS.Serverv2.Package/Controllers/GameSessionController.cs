@@ -33,15 +33,6 @@ public class GameSessionController : ControllerBase
         _authenticationService = authenticationService;
     }
 
-    //[ProducesResponseType(StatusCodes.Status203NonAuthoritative)]
-    //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-    //[HttpGet("alive")]
-    //public IActionResult Authenticate()
-    //{
-    //    return Ok();
-    //}
-
-    // Issuing syncnet platform's own JWT token for further usage.
     [HttpGet("auth/token/{platformType}")]
     public IActionResult IssueToken([FromRoute] string platformType)
     {
@@ -105,4 +96,4 @@ public enum SupportedPlatformType
     apple,
     steam,
     guest
-}
+} 

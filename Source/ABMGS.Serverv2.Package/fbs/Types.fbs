@@ -1,0 +1,18 @@
+namespace SyncnetPlatform.Protocols.Generated;
+
+struct GuidType {
+    low: uint64;
+    high: uint64;
+}
+
+
+enum DirectDeliveryDataType: byte {
+    None = 0,
+    Whipher = 1,
+    InviteMessage = 2
+}
+
+table PlayerInfoInRoom {
+    player_id: GuidType;
+    player_name: string;
+}

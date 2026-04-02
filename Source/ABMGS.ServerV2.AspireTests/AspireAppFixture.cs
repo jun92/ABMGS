@@ -6,10 +6,8 @@ namespace ABMGS.ServerV2.AspireTest;
 
 public class AspireAppFixture : IAsyncLifetime
 {
-
-    public DistributedApplication App { get; private set;  }
-
-    public ResourceNotificationService ResourceNotificationService { get; private set; }
+    public DistributedApplication App { get; private set; } = null!;
+    public ResourceNotificationService ResourceNotificationService { get; private set; } = null!;
     public async Task InitializeAsync()
     {
         var builder = await DistributedApplicationTestingBuilder.CreateAsync<Projects.AppHost>();

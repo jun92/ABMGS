@@ -8,6 +8,7 @@ using SyncnetPlatform.Exceptions;
 using System.IO;
 using System.Net.WebSockets;
 using System.Threading.Channels;
+using SyncnetPlatform.Extensions;
 
 namespace SyncnetPlatform.Network.Sessions;
 
@@ -105,7 +106,7 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
     {
         IPacketHandlerActor packetHandlingActor = _clusterClient.GetGrain<IPacketHandlerActor>(playerId);
         IPlayerActor playerActor = _clusterClient.GetGrain<IPlayerActor>(playerId);
-        await playerActor.SetIdProvider(Controllers.SupportedPlatformType.guest);
+        await playerActor.SetOnline(true);
 
         byte[] receiveBuffer = new byte[4096];
         using var ms = new MemoryStream();
@@ -167,9 +168,8 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
     public async Task StartGameSession(Guid uniquePlayerId, WebSocket SocketObject)
     {
         ArgumentNullException.ThrowIfNull(SocketObject);
-        if (uniquePlayerId == Guid.Empty) 
-            throw new ArgumentException("PlayerId is empty", nameof(uniquePlayerId));
-
+        uniquePlayerId.ThrowIfInvalidGuid();
+        
         using var mainLoopExitTokenCts = new CancellationTokenSource();
         var mainLoopExitToken = mainLoopExitTokenCts.Token;
         
