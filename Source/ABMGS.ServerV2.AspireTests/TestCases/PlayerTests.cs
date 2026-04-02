@@ -62,7 +62,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
 
 
         string messageToSend = "Hello Friend";
-        var ReqDirectMessage = BuildReqDirectDeliveryData(player2Id, messageToSend, DirectDeliveryDataType.Whipher);
+        var ReqDirectMessage = BuildReqDirectDeliveryDataPacket(player2Id, messageToSend, DirectDeliveryDataType.Whipher);
         await SendDataAsync(wsClient1, ReqDirectMessage);
 
         (result, packetWrapper) = await ReceiveAsync(wsClient2);
@@ -96,7 +96,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         var player2Id = Guid.NewGuid();
 
         string messageToSend = "Hello Friend";
-        var ReqDirectMessage = BuildReqDirectDeliveryData(player2Id, messageToSend, DirectDeliveryDataType.Whipher);
+        var ReqDirectMessage = BuildReqDirectDeliveryDataPacket(player2Id, messageToSend, DirectDeliveryDataType.Whipher);
         await SendDataAsync(wsClient1, ReqDirectMessage);
 
         (result, packetWrapper) = await ReceiveAsync(wsClient1);

@@ -173,9 +173,12 @@ public class PlayerActor : Grain, IPlayerActor
         {
             return PacketErrorCodes.RoomNotFound;
         }
-        await playRoomActor.JoinPlayer(BuildPlayerRoomMember(roomId));
-        _joinedRoomList.Add(roomId);
-        return PacketErrorCodes.Success;
+        var result = await playRoomActor.JoinPlayer(BuildPlayerRoomMember(roomId));
+        if(result == PacketErrorCodes.Success)
+        {
+            _joinedRoomList.Add(roomId);
+        }
+        return result;
     }
     protected PlayRoomMember BuildPlayerRoomMember(Guid roomId) => new PlayRoomMember(roomId, GrainContext.GrainId.GetGuidKey(), _playerData.PlayerName);
 

@@ -9,6 +9,11 @@ namespace ABMGS.ServerV2.AspireTest;
 
 public partial class ABMGS_TestMain : IAsyncLifetime
 {
+    protected void VerifyPacket(byte[] data, SystemPacket expected)
+    {
+        PacketWrapper verifyPacket = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data));
+        Assert.Equal(expected, verifyPacket.SystemPacketType);
+    }
     protected byte[] BuildPingPacket(int seq = 1)
     {
         byte[] dataToSend = SyncnetPacketBuilder.Build<PingArgs>(new PingArgs(seq));
@@ -32,7 +37,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         return dataToSend;
     }
 
-    protected byte[] BuildReqDirectDeliveryData(Guid toPlayerId, string message, DirectDeliveryDataType dateType)
+    protected byte[] BuildReqDirectDeliveryDataPacket(Guid toPlayerId, string message, DirectDeliveryDataType dateType)
     {
         byte[] dataToSend = SyncnetPacketBuilder.Build<ReqDirectDeliveryDataArgs>(
             new ReqDirectDeliveryDataArgs(toPlayerId, message, dateType)
@@ -42,17 +47,17 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         return dataToSend;
     }
 
-    protected byte[] BuildReqCreatePlayRoom(string playRoomName)
+    protected byte[] BuildReqCreatePlayRoomPacket(string playRoomName, bool IsPrivate = false, string password ="", int maxCount = 1)
     {
         byte[] dataToSend = SyncnetPacketBuilder.Build<ReqCreateRoomArgs>(
-            new ReqCreateRoomArgs(playRoomName)
+            new ReqCreateRoomArgs(playRoomName, IsPrivate, password, maxCount)
             );
         PacketWrapper verifyPacket = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(dataToSend));
         Assert.Equal(SystemPacket.ReqCreateRoom, verifyPacket.SystemPacketType);
         return dataToSend;
     }
 
-    protected byte[] BuildReqLeavelPlayRoom(Guid roomId)
+    protected byte[] BuildReqLeavelPlayRoomPacket(Guid roomId)
     {
         byte[] dataToSend = SyncnetPacketBuilder.Build<ReqLeaveRoomArgs>(new ReqLeaveRoomArgs(roomId));
         PacketWrapper verifyPacket = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(dataToSend));
@@ -60,11 +65,19 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         return dataToSend;
     }
 
-    protected byte[] BuildReqJoinPlayRoom(Guid roomId)
+    protected byte[] BuildReqJoinPlayRoomPacket(Guid roomId)
     {
         byte[] dataToSend = SyncnetPacketBuilder.Build<ReqJoinRoomArgs>(new ReqJoinRoomArgs(roomId, ""));
         PacketWrapper verifyPacket = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(dataToSend));
         Assert.Equal(SystemPacket.ReqJoinRoom, verifyPacket.SystemPacketType);
         return dataToSend;
     }
+
+    protected byte[] BuildReqPlayerListInRoomPacket(Guid roomId)
+    {
+        byte[] dataToSend = SyncnetPacketBuilder.Build<ReqPlayerListInRoomArgs>(new ReqPlayerListInRoomArgs(roomId));
+        VerifyPacket(dataToSend, SystemPacket.ReqPlayerListInRoom);
+        return dataToSend; 
+    }
+    
 }
