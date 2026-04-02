@@ -15,25 +15,19 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         var wsClient = await CreateAuthoredWebSocket();
 
         string RandomPlayerName = "Guest" + CreateRandomString(6);
-        var dataToSend = BuildUpdatePlayerNamePacket(RandomPlayerName);
 
-        await SendDataAsync(wsClient, dataToSend);
-        var (receiveBuffer, result) = await ReceiveAsync(wsClient);
+        var (result, packetWrapper) = await SendAndReceive(wsClient, BuildUpdatePlayerNamePacket(RandomPlayerName));
 
         _output.WriteLine($"Count: {result.Count}");
         Assert.True(result.EndOfMessage);
         Assert.NotEqual(0, result.Count);
 
-        PacketWrapper packetWrapper = AsPacketWrapper(receiveBuffer, result.Count);
         Assert.Equal(SystemPacket.ResUpdatePlayerName, packetWrapper.SystemPacketType);
         Assert.Equal(PacketErrorCodes.Success, packetWrapper.SystemPacketAsResUpdatePlayerName().Result);
 
-        dataToSend = BuildReqUserInfoPacket();
-        await SendDataAsync(wsClient, dataToSend);
-        (receiveBuffer, result) = await ReceiveAsync(wsClient);
+        (result, packetWrapper) = await SendAndReceive(wsClient, BuildReqUserInfoPacket());
 
         Assert.True(result.EndOfMessage);
-        packetWrapper = AsPacketWrapper(receiveBuffer, result.Count);
 
         Assert.Equal(RandomPlayerName, packetWrapper.SystemPacketAsResUserInfo().PlayerName);
 
@@ -49,16 +43,16 @@ public partial class ABMGS_TestMain : IAsyncLifetime
 
         //Get Client1 User info
         await SendDataAsync(wsClient1, getUserInfoPacket);
-        var (receiveBuffer, result) = await ReceiveAsync(wsClient1);
-        ResUserInfo UserInfoClient1 = AsPacketWrapper(receiveBuffer, result.Count).SystemPacketAsResUserInfo();
+        var (result, packetWrapper) = await ReceiveAsync(wsClient1);
+        ResUserInfo UserInfoClient1 = packetWrapper.SystemPacketAsResUserInfo();
         Guid player1Id = new();
         player1Id.FromGuidType(UserInfoClient1.PlayerId);
         Assert.NotEqual(Guid.Empty, player1Id);
 
         //Get Client2 User info
         await SendDataAsync(wsClient2, getUserInfoPacket);
-        (receiveBuffer, result) = await ReceiveAsync(wsClient2);
-        ResUserInfo UserInfoClient2 = AsPacketWrapper(receiveBuffer, result.Count).SystemPacketAsResUserInfo();
+        (result, packetWrapper) = await ReceiveAsync(wsClient2);
+        ResUserInfo UserInfoClient2 = packetWrapper.SystemPacketAsResUserInfo();
         Guid player2Id = new();
         player2Id.FromGuidType(UserInfoClient2.PlayerId);
         Assert.NotEqual(Guid.Empty, player2Id);
@@ -71,13 +65,13 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         var ReqDirectMessage = BuildReqDirectDeliveryData(player2Id, messageToSend, DirectDeliveryDataType.Whipher);
         await SendDataAsync(wsClient1, ReqDirectMessage);
 
-        (receiveBuffer, result) = await ReceiveAsync(wsClient2);
-        OnDirectDeliveryData onDirectDeliveryData = AsPacketWrapper(receiveBuffer, result.Count).SystemPacketAsOnDirectDeliveryData();
+        (result, packetWrapper) = await ReceiveAsync(wsClient2);
+        OnDirectDeliveryData onDirectDeliveryData = packetWrapper.SystemPacketAsOnDirectDeliveryData();
         Assert.Equal(DirectDeliveryDataType.Whipher, onDirectDeliveryData.DataType);
         Assert.Equal(messageToSend, onDirectDeliveryData.Data);
 
-        (receiveBuffer, result) = await ReceiveAsync(wsClient1);
-        ResDirectDeliveryData resDirectDeliveryData = AsPacketWrapper(receiveBuffer, result.Count).SystemPacketAsResDirectDeliveryData();
+        (result, packetWrapper) = await ReceiveAsync(wsClient1);
+        ResDirectDeliveryData resDirectDeliveryData = packetWrapper.SystemPacketAsResDirectDeliveryData();
         Assert.Equal(PacketErrorCodes.Success, resDirectDeliveryData.Result);
 
         await CloseAuthoredWebSocket(wsClient1);
@@ -93,8 +87,8 @@ public partial class ABMGS_TestMain : IAsyncLifetime
 
         //Get Client1 User info
         await SendDataAsync(wsClient1, getUserInfoPacket);
-        var (receiveBuffer, result) = await ReceiveAsync(wsClient1);
-        ResUserInfo UserInfoClient1 = AsPacketWrapper(receiveBuffer, result.Count).SystemPacketAsResUserInfo();
+        var (result, packetWrapper) = await ReceiveAsync(wsClient1);
+        ResUserInfo UserInfoClient1 = packetWrapper.SystemPacketAsResUserInfo();
         Guid player1Id = new();
         player1Id.FromGuidType(UserInfoClient1.PlayerId);
         Assert.NotEqual(Guid.Empty, player1Id);
@@ -105,9 +99,9 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         var ReqDirectMessage = BuildReqDirectDeliveryData(player2Id, messageToSend, DirectDeliveryDataType.Whipher);
         await SendDataAsync(wsClient1, ReqDirectMessage);
 
-        (receiveBuffer, result) = await ReceiveAsync(wsClient1);
+        (result, packetWrapper) = await ReceiveAsync(wsClient1);
 
-        ResDirectDeliveryData resDirectDeliveryData = AsPacketWrapper(receiveBuffer, result.Count).SystemPacketAsResDirectDeliveryData();
+        ResDirectDeliveryData resDirectDeliveryData = packetWrapper.SystemPacketAsResDirectDeliveryData();
         Assert.Equal(PacketErrorCodes.PlayerOffline, resDirectDeliveryData.Result);
 
         await CloseAuthoredWebSocket(wsClient1);

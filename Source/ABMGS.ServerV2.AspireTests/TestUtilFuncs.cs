@@ -10,14 +10,21 @@ namespace ABMGS.ServerV2.AspireTest;
 
 public partial class ABMGS_TestMain : IAsyncLifetime
 {
-    protected async Task<(byte[], WebSocketReceiveResult)> ReceiveAsync(ClientWebSocket client)
+
+    protected async Task<(WebSocketReceiveResult, PacketWrapper)> SendAndReceive(ClientWebSocket client, byte[] packet)
+    {
+        await SendDataAsync(client, packet);
+        return await ReceiveAsync(client);
+    }
+    protected async Task<(WebSocketReceiveResult, PacketWrapper)> ReceiveAsync(ClientWebSocket client)
     {
         byte[] receiveBuffer = new byte[4096];
         WebSocketReceiveResult result = await client.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), defaultTimeoutToken.Token);
         Assert.False(defaultTimeoutToken.IsCancellationRequested);
         Assert.True(result.EndOfMessage);
         Assert.NotEqual(0, result.Count);
-        return (receiveBuffer, result);
+        PacketWrapper packetWrapper = AsPacketWrapper(receiveBuffer, result.Count);
+        return (result, packetWrapper);
     }
 
     protected async Task<ClientWebSocket> OpenAuthoredWebSocket(Uri wsUri, string token)
