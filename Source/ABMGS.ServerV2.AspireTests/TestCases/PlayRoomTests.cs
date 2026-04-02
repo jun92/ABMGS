@@ -18,7 +18,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         Assert.Equal(SystemPacket.ResCreateRoom, packetWrapper.SystemPacketType);
         Assert.Equal(PacketErrorCodes.Success, packetWrapper.SystemPacketAsResCreateRoom().Result);
         
-        Guid roomId = new Guid();
+        Guid roomId = default;
         roomId.FromGuidType(packetWrapper.SystemPacketAsResCreateRoom().RoomId);
 
         // Leave
@@ -64,13 +64,13 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         // Owner info.
         (result, packetWrapper) = await SendAndReceive(wsClientOwner, ReqUserInfoPacket);
         Assert.Equal(SystemPacket.ResUserInfo, packetWrapper.SystemPacketType);
-        Guid OwnerPlayerId = new Guid();
+        Guid OwnerPlayerId = default;
         OwnerPlayerId.FromGuidType(packetWrapper.SystemPacketAsResUserInfo().PlayerId);
 
         // Joiner info.
         (result, packetWrapper) = await SendAndReceive(wsClientJoiner, ReqUserInfoPacket);
         Assert.Equal(SystemPacket.ResUserInfo, packetWrapper.SystemPacketType);
-        Guid JoinerPlayerId = new Guid();
+        Guid JoinerPlayerId = default;
         JoinerPlayerId.FromGuidType(packetWrapper.SystemPacketAsResUserInfo().PlayerId);
 
         // Owner creates a room.
@@ -79,7 +79,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
 
         Assert.Equal(SystemPacket.ResCreateRoom, packetWrapper.SystemPacketType);
         Assert.Equal(PacketErrorCodes.Success, packetWrapper.SystemPacketAsResCreateRoom().Result);
-        Guid roomId = new Guid();
+        Guid roomId = default;
         roomId.FromGuidType(packetWrapper.SystemPacketAsResCreateRoom().RoomId);
 
         // Joiner trys to join.
@@ -91,8 +91,8 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         (result, packetWrapper) = await ReceiveAsync(wsClientOwner);
         Assert.Equal(SystemPacket.OnPlayerJoinRoom, packetWrapper.SystemPacketType);
 
-        Guid RecvRoomId = new Guid();
-        Guid JoinedPlayerId = new Guid();
+        Guid RecvRoomId = default;
+        Guid JoinedPlayerId = default;
 
         RecvRoomId.FromGuidType(packetWrapper.SystemPacketAsOnPlayerJoinRoom().RoomId);
         JoinedPlayerId.FromGuidType(packetWrapper.SystemPacketAsOnPlayerJoinRoom().PlayerId);

@@ -48,7 +48,7 @@ public class SystemPacketHandler : ISystemPacketHandler
     public async Task HandleReqDirectDeliveryData(ReqDirectDeliveryData request, PacketContext ctx)
     {
         IPlayerActor player = ctx.GetPlayer();
-        Guid toPlayerId = Guid.NewGuid();
+        Guid toPlayerId = default;
 
         toPlayerId.FromGuidType(request.ToPlayerId);
 
@@ -78,7 +78,7 @@ public class SystemPacketHandler : ISystemPacketHandler
     public async Task HandleReqJoinRoom(ReqJoinRoom request, PacketContext ctx)
     {
         IPlayerActor player = ctx.GetPlayer();
-        Guid RoomId = new Guid();
+        Guid RoomId = default;
         RoomId.FromGuidType(request.RoomId);
         PacketErrorCodes resultCode = await player.JoinPlayRoom(RoomId);
 
@@ -95,7 +95,7 @@ public class SystemPacketHandler : ISystemPacketHandler
     public async Task HandleReqPlayerListInRoom(ReqPlayerListInRoom request, PacketContext ctx)
     {
         IPlayerActor player = ctx.GetPlayer();
-        Guid RoomId = new Guid();
+        Guid RoomId = default;
         RoomId.FromGuidType(request.RoomId);
         List<PlayRoomMember> Players = await player.GetPlayerListInPlayRoom(RoomId);
 
@@ -110,7 +110,7 @@ public class SystemPacketHandler : ISystemPacketHandler
     public async Task HandleReqLeavePlayRoom(ReqLeaveRoom request, PacketContext ctx)
     {
         IPlayerActor player = ctx.GetPlayer();
-        Guid RoomId = new Guid();
+        Guid RoomId = default;
         RoomId.FromGuidType(request.RoomId);
         PacketErrorCodes result = await player.LeavePlayRoom(RoomId);
 
