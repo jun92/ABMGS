@@ -76,16 +76,17 @@ public class PlayerActor : Grain, IPlayerActor
 
     public async Task SetOnline(bool isOnline)
     {
-        _IsOnline = isOnline;
         if(isOnline == true )
         {
             Guid ThisPlayerId = GrainContext.GrainId.GetGuidKey();
             _playerData = await _playerModelRepository.GetOrCreate(ThisPlayerId);
             _dbid = _playerData.Id;
             _packetHandler = GrainFactory.GetGrain<IPacketHandlerActor>(ThisPlayerId);
+            _IsOnline = true;
         }
         else
         {
+            _IsOnline = false;
             _packetHandler = null;
             this.DelayDeactivation(TimeSpan.FromMinutes(1));
         }
