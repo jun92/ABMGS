@@ -172,6 +172,43 @@ internal class OnPlayerJoinRoomPacketBuilder : PacketBABuilder<OnPlayerJoinRoomA
     }
 }
 
+internal class ReqPlayerListInRoomPacketBuilder : PacketBABuilder<ReqPlayerListInRoomArgs>
+{
+    public override byte[] Build(ReqPlayerListInRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        ReqPlayerListInRoom.StartReqPlayerListInRoom(builder);
+        ReqPlayerListInRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
+        return Wrap(builder, SystemPacket.ReqPlayerListInRoom, ReqPlayerListInRoom.EndReqPlayerListInRoom(builder).Value);
+    }
+}
+
+internal class ResPlayerListInRoomPacketBuilder : PacketBABuilder<ResPlayerListInRoomArgs>
+{
+    public override byte[] Build(ResPlayerListInRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        List<Offset<PlayerInfoInRoom>> offset = new ();
+        foreach(var i in args.playerInfo)
+        {
+            StringOffset PlayerName = builder.CreateString(i.playerName);
+
+            PlayerInfoInRoom.StartPlayerInfoInRoom(builder);
+            PlayerInfoInRoom.AddPlayerName(builder, PlayerName);
+            PlayerInfoInRoom.AddPlayerId(builder, i.playerId.ToGuidType(builder));
+            offset.Add(PlayerInfoInRoom.EndPlayerInfoInRoom(builder));
+        }
+        VectorOffset members = ResPlayerListInRoom.CreateMembersVector(builder,offset.ToArray());
+
+
+        ResPlayerListInRoom.StartResPlayerListInRoom(builder);
+        ResPlayerListInRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
+        ResPlayerListInRoom.AddMembers(builder, members);
+
+        return Wrap(builder, SystemPacket.ResPlayerListInRoom, ResPlayerListInRoom.EndResPlayerListInRoom(builder).Value);
+    }
+}
+
 internal class ReqLeaveRoomPacketBuilder : PacketBABuilder<ReqLeaveRoomArgs>
 {
     public override byte[] Build(ReqLeaveRoomArgs args)

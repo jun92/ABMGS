@@ -91,6 +91,21 @@ public class SystemPacketHandler : ISystemPacketHandler
         await ctx.SendDataRaw(request.ByteBuffer.ToFullArray());
     }
 
+    [PacketHandler(typeof(ReqPlayerListInRoom))]
+    public async Task HandleReqPlayerListInRoom(ReqPlayerListInRoom request, PacketContext ctx)
+    {
+        IPlayerActor player = ctx.GetPlayer();
+        Guid RoomId = new Guid();
+        RoomId.FromGuidType(request.RoomId);
+        List<PlayRoomMember> Players = await player.GetPlayerListInPlayRoom(RoomId);
+
+        await ctx.SendData(
+            new ResPlayerListInRoomArgs(
+                RoomId, 
+                [.. Players.Select(s => new PlayerInfoInRoomArgs(s.PlayerId, s.PlayerName))]
+               ));
+    }
+
     [PacketHandler(typeof(ReqLeaveRoom))]
     public async Task HandleReqLeavePlayRoom(ReqLeaveRoom request, PacketContext ctx)
     {

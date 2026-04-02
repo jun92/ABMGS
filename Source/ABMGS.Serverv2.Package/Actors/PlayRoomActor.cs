@@ -12,6 +12,7 @@ namespace SyncnetPlatform.Actors;
 
 public interface IPlayRoomActor : IGrainWithGuidKey
 {
+    Task<List<PlayRoomMember>> GetPlayersInPlayRoom();
     Task<bool> IsValidRoomToJoin();
     Task<PacketErrorCodes> JoinPlayer(PlayRoomMember joiner);
     Task<PacketErrorCodes> LeavePlayer(PlayRoomMember leaver);
@@ -23,7 +24,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     private readonly ILogger<PlayRoomActor> _logger;
 
 
-    private List<PlayRoomMember> players = new List<PlayRoomMember>(); // Consider to keep IPlayerActor ref instead of GUIDs.
+    private List<PlayRoomMember> _players = new List<PlayRoomMember>();
 
     private string _displayName = String.Empty;
     private string _passwordForEntrance = String.Empty;
@@ -61,7 +62,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         _maxPlayerCapacity = maxCapacity;
         _isPrivate = isPrivate;
         _ownerPlayerId = owner.PlayerId;
-        players.Add(owner);
+        _players.Add(owner);
     }
 
     public Task<bool> IsValidRoomToJoin() => Task.FromResult(_ownerPlayerId !=  Guid.Empty);
@@ -74,15 +75,29 @@ public class PlayRoomActor : Grain, IPlayRoomActor
             return PacketErrorCodes.RoomNotFound;
         }
 
-        foreach (var player in players)
+        if(_players.Find(f => f.PlayerId == joiner.PlayerId) != null)
+        {
+            return PacketErrorCodes.AlreadyInRoom;
+        }
+        if(_players.Count == _maxPlayerCapacity)
+        {
+            return PacketErrorCodes.RoomFull;
+        }
+
+        foreach (var player in _players)
         {
             IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(player.PlayerId);
             await p.OnUpdateForPlayRoomMembers(joiner, PlayRoomMemberUpdateReason.Join);
         }
 
-        players.Add(joiner);
+        _players.Add(joiner);
 
         return PacketErrorCodes.Success;
+    }
+
+    public Task<List<PlayRoomMember>> GetPlayersInPlayRoom()
+    {
+        return Task.FromResult(_players);
     }
 
     public async Task<PacketErrorCodes> LeavePlayer(PlayRoomMember leaver)
@@ -92,15 +107,15 @@ public class PlayRoomActor : Grain, IPlayRoomActor
             return PacketErrorCodes.RoomNotFound;
         }
 
-        players.Remove(leaver);
-        if(players.Count == 0 )
+        _players.Remove(leaver);
+        if(_players.Count == 0 )
         {
             _ownerPlayerId = Guid.Empty;
             base.DeactivateOnIdle();
             return PacketErrorCodes.Success;
         }
 
-        foreach(var player in players)
+        foreach(var player in _players)
         {
             IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(player.PlayerId);
             await p.OnUpdateForPlayRoomMembers(leaver, PlayRoomMemberUpdateReason.Leave);
@@ -108,13 +123,13 @@ public class PlayRoomActor : Grain, IPlayRoomActor
 
         if(_ownerPlayerId == leaver.PlayerId)
         {
-            _ownerPlayerId = players.First().PlayerId;
+            _ownerPlayerId = _players.First().PlayerId;
         }
 
         return PacketErrorCodes.Success;
     }
     protected void Init()
     {
-        players.Clear();
+        _players.Clear();
     }
 }

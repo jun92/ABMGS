@@ -10,11 +10,12 @@ public interface IPlayerActor : IGrainWithGuidKey
 {
     Task<Guid> CreateAndJoinPlayRoom(string roomName, bool isPrivate, int maxCapacity, string roomPassword);
     public Task Echo(int seq);
+    Task<List<PlayRoomMember>> GetPlayerListInPlayRoom(Guid roomId);
     Task<string> GetPlayerName();
     Task<PacketErrorCodes> JoinPlayRoom(Guid playRoomId);
     Task<PacketErrorCodes> LeavePlayRoom(Guid playRoomId);
     Task<PacketErrorCodes> OnDirectDeliveryData(Guid fromPlayerId, string message, DirectDeliveryDataType dataType);
-    Task<PacketErrorCodes> OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember, PlayRoomMemberUpdateReason memberStatus);
+    Task OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember, PlayRoomMemberUpdateReason memberStatus);
     Task PingPong(int seq);
     Task<PacketErrorCodes> SendDirectDeliverData(Guid toPlayerId, string message, DirectDeliveryDataType dataType);
     Task SetIdProvider(SupportedPlatformType idpFrom);

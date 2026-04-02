@@ -186,9 +186,9 @@ public class PlayerActor : Grain, IPlayerActor
     /// <param name="updateReason"></param>
     /// <returns></returns>
     [OneWay]
-    public async Task<PacketErrorCodes> OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember, PlayRoomMemberUpdateReason updateReason )
+    public async Task OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember, PlayRoomMemberUpdateReason updateReason )
     {
-        if (!_IsOnline) return PacketErrorCodes.PlayerOffline;
+        if (!_IsOnline) return;
         switch (updateReason)
         {
             case PlayRoomMemberUpdateReason.Join:
@@ -199,7 +199,7 @@ public class PlayerActor : Grain, IPlayerActor
                         playRoomMember.PlayerName
                     )
                     );
-                return PacketErrorCodes.Success; 
+                break;
             case PlayRoomMemberUpdateReason.Leave:
                 await _packetHandler!.PushSendData<OnPlayerLeaveRoomArgs>(
                     new OnPlayerLeaveRoomArgs
@@ -209,9 +209,15 @@ public class PlayerActor : Grain, IPlayerActor
                         playRoomMember.PlayerName
                     )
                     );
-                return PacketErrorCodes.Success;
+                break;
         }
-        return PacketErrorCodes.UnknownError;
+    }
+
+    public async Task<List<PlayRoomMember>> GetPlayerListInPlayRoom(Guid roomId)
+    {
+        IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(roomId);
+        List<PlayRoomMember> Players = await playRoomActor.GetPlayersInPlayRoom();
+        return Players;
     }
 
     public async Task<PacketErrorCodes> LeavePlayRoom(Guid roomId)

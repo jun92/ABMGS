@@ -23,10 +23,19 @@ table ReqJoinRoom{
 table ResJoinRoom{
     result: PacketErrorCodes;
 }
-table OnPlayerJoinRoom {
+table OnPlayerJoinRoom{
     room_id: GuidType;
     player_id: GuidType;
     name: string;
+}
+
+table ReqPlayerListInRoom{
+    room_id: GuidType;
+}
+
+table ResPlayerListInRoom{
+    room_id: GuidType;
+    members: [PlayerInfoInRoom];
 }
 
 table ReqLeaveRoom{

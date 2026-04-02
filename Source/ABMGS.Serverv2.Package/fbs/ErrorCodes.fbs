@@ -8,6 +8,8 @@ enum PacketErrorCodes: int {
 
     //Play room
     RoomNotFound = 1000,
+    AlreadyInRoom = 1001,
+    RoomFull = 1002,
 
 
     // not handled error 

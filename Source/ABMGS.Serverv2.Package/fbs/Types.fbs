@@ -11,3 +11,8 @@ enum DirectDeliveryDataType: byte {
     Whipher = 1,
     InviteMessage = 2
 }
+
+table PlayerInfoInRoom {
+    player_id: GuidType;
+    player_name: string;
+}
