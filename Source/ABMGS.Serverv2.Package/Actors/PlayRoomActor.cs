@@ -36,10 +36,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         _logger = logger;
     }
 
-    public Guid RoomId {
-        private set { }
-        get { return GrainContext.GrainId.GetGuidKey();} 
-    }
+    public Guid RoomId => GrainContext.GrainId.GetGuidKey();
     /// <summary>
     /// Create new playroom and join the room owner automatically
     /// </summary>
