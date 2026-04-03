@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Orleans.Configuration;
+using Orleans.Dashboard;
 using StackExchange.Redis;
 using SyncnetPlatform.Databases;
 using SyncnetPlatform.Interfaces.Network.Handlers;
@@ -34,6 +35,11 @@ public static class SiloApplicationBuilderExtension
                 options.ConfigurationOptions = ConfigurationOptions.Parse(
                     builder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
             });
+            builder.AddDashboard(options =>
+            {
+                options.CounterUpdateIntervalMs = 5000;
+            });
+
         });
     }
     private static void SyncnetPlatformSiloDbContext(HostApplicationBuilder builder)

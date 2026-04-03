@@ -22,6 +22,7 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Configuration;
 using Microsoft.Extensions.Options;
+using Orleans.Dashboard;
 
 namespace SyncnetPlatform.Extensions;
 
@@ -79,6 +80,7 @@ public static class FrontendApplicationBuilderExtension
                 options.ConfigurationOptions = ConfigurationOptions.Parse(
                     builder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
             });
+            configure.AddDashboard();
         });
     }
     private static void ConfigureAuthentication(WebApplicationBuilder builder)
@@ -155,6 +157,7 @@ public static class FrontendApplicationBuilderExtension
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseWebSockets();
+        app.MapOrleansDashboard();
     }
 }
 
