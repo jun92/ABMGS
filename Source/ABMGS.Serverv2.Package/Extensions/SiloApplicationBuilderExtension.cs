@@ -23,19 +23,19 @@ public static class SiloApplicationBuilderExtension
         builder.Services.AddTransient<ISystemPacketHandler, SystemPacketHandler>();
         builder.Services.AddTransient<IPlayerModelRepository, RdbPlayerModelRepository>();
 
-        builder.UseOrleans(builder =>
+        builder.UseOrleans(siloBuilder =>
         {
-            builder.Configure<ClusterOptions>(options =>
+            siloBuilder.Configure<ClusterOptions>(options =>
             {
                 options.ClusterId = "SyncnetPlatformCluster";
                 options.ServiceId = "SyncnetPlatformService";
             });
-            builder.UseRedisClustering(options =>
+            siloBuilder.UseRedisClustering(options =>
             {
                 options.ConfigurationOptions = ConfigurationOptions.Parse(
-                    builder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
+                    siloBuilder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
             });
-            builder.AddDashboard(options =>
+            siloBuilder.AddDashboard(options =>
             {
                 options.CounterUpdateIntervalMs = 5000;
             });
