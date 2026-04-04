@@ -15,7 +15,7 @@ public class AspireAppFixture : IAsyncLifetime
     {
         _remoteEndpoint = Environment.GetEnvironmentVariable("TEST_REMOTE_ENDPOINT");
 
-        if (!string.IsNullOrEmpty(_remoteEndpoint))
+        if (!string.IsNullOrWhiteSpace(_remoteEndpoint))
         {
             // Skip starting local Aspire app, we are targeting a remote endpoint.
             return;
@@ -39,11 +39,9 @@ public class AspireAppFixture : IAsyncLifetime
 
     public async Task<HttpClient> CreateHttpClientToFrontEnd(string frontendName)
     {
-        if (!string.IsNullOrEmpty(_remoteEndpoint))
+        if (!string.IsNullOrWhiteSpace(_remoteEndpoint))
         {
-            var httpClient = new HttpClient();
-            httpClient.BaseAddress = new Uri(_remoteEndpoint);
-            return httpClient;
+            return new HttpClient{ BaseAddress = new Uri(_remoteEndpoint.TrimEnd('/') + "/")};
         }
 
         if (App == null)
