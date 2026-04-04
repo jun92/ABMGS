@@ -24,7 +24,7 @@ var silo = builder.AddProject<Projects.ABMGS_ServerV2_Silo>("silo")
     .WaitFor(rdbms)
     .WithReference(redis)
     .WithReference(rdbms)
-    .WithReplicas(2)
+    //.WithReplicas(2)
     ;
 
     
