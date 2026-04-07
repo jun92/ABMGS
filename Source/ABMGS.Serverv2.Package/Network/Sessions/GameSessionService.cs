@@ -110,8 +110,9 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
 
         byte[] receiveBuffer = new byte[4096];
         using var ms = new MemoryStream();
+        bool ExitLoop = false;
 
-        while (!mainLoopExitToken.IsCancellationRequested)
+        while (!mainLoopExitToken.IsCancellationRequested && !ExitLoop)
         {
             ms.SetLength(0);
             while (true)
@@ -124,19 +125,22 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
                 catch(OperationCanceledException)
                 {
                     // Exit with nothing wrong
-                    return;
+                    ExitLoop = true;
+                    break;
                 }
                 catch(WebSocketException ex)
                 {
                     // Abnormal socket exception and closure.
                     _logger.LogWarning(ex, "Socket closed abnormally.");
                     SocketObject.Abort();
-                    return;
+                    ExitLoop = true;
+                    break;
                 }
                 catch(FlatBufferPacketBuildException e)
                 {
                     _logger.LogCritical(e, "FlatBuffer Exception");
-                    return;
+                    ExitLoop = true;
+                    break;
                 }
 
                 if (result.MessageType == WebSocketMessageType.Close || result.Count == 0)
@@ -152,7 +156,8 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
                     {
                         _logger.LogError(ex, $"WebSocket exception while closing it: {nameof(RunGameLoop)}");
                     }
-                    return;
+                    ExitLoop = true;
+                    break;
                 }
 
                 ms.Write(receiveBuffer, 0, result.Count);
@@ -164,6 +169,8 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
                 }
             }
         }
+        await playerActor.SetOnline(false);
+
     }
     public async Task StartGameSession(Guid uniquePlayerId, WebSocket SocketObject)
     {
