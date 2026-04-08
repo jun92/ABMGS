@@ -110,9 +110,9 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
 
         byte[] receiveBuffer = new byte[4096];
         using var ms = new MemoryStream();
-        bool ExitLoop = false;
+        bool exitLoop = false;
 
-        while (!mainLoopExitToken.IsCancellationRequested && !ExitLoop)
+        while (!mainLoopExitToken.IsCancellationRequested && !exitLoop)
         {
             ms.SetLength(0);
             while (true)
@@ -125,7 +125,7 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
                 catch(OperationCanceledException)
                 {
                     // Exit with nothing wrong
-                    ExitLoop = true;
+                    exitLoop = true;
                     break;
                 }
                 catch(WebSocketException ex)
@@ -133,13 +133,13 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
                     // Abnormal socket exception and closure.
                     _logger.LogWarning(ex, "Socket closed abnormally.");
                     SocketObject.Abort();
-                    ExitLoop = true;
+                    exitLoop = true;
                     break;
                 }
                 catch(FlatBufferPacketBuildException e)
                 {
                     _logger.LogCritical(e, "FlatBuffer Exception");
-                    ExitLoop = true;
+                    exitLoop = true;
                     break;
                 }
 
@@ -156,7 +156,7 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
                     {
                         _logger.LogError(ex, $"WebSocket exception while closing it: {nameof(RunGameLoop)}");
                     }
-                    ExitLoop = true;
+                    exitLoop = true;
                     break;
                 }
 
