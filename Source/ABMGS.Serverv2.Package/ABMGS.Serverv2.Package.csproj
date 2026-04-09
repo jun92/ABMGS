@@ -36,6 +36,10 @@
     <Folder Include="Migrations\" />
     <Folder Include="Exceptions\" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AppServiceDefault\AppServiceDefault.csproj" />
+  </ItemGroup>
   
 	<Target Name="FlatcGenerate" BeforeTargets="BeforeCompile">
 		<Message Text="Running flatc code generator" Importance="high" />
