@@ -22,6 +22,7 @@ public static class SiloApplicationBuilderExtension
         builder.Services.AddSingleton<IPacketContextFactory, PacketContextFactory>();
         builder.Services.AddTransient<ISystemPacketHandler, SystemPacketHandler>();
         builder.Services.AddTransient<IPlayerModelRepository, RdbPlayerModelRepository>();
+        builder.AddServiceDefaults();
 
         builder.UseOrleans(siloBuilder =>
         {

@@ -35,6 +35,7 @@ public static class FrontendApplicationBuilderExtension
         ConfigureDatabase(builder);
        
         builder.Services.AddHttpClient();
+        builder.AddServiceDefaults();
 
         ConfigureAuthentication(builder);
         ConfigureOrleans(builder);
