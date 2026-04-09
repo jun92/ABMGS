@@ -118,5 +118,10 @@ public class SystemPacketHandler : ISystemPacketHandler
             new ResLeaveRoomArgs(result)
             );
     }
+    [PacketHandler(typeof(OnPlayerLeaveRoom))]
+    public async Task HandleOnPlayerLeaveRoom(OnPlayerLeaveRoom request, PacketContext ctx)
+    {
+        await ctx.SendDataRaw(request.ByteBuffer.ToFullArray());
+    }
 }
 
