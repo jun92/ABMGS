@@ -112,6 +112,12 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         Assert.Equal(SystemPacket.ResLeaveRoom, packetWrapper.SystemPacketType);
         Assert.Equal(PacketErrorCodes.Success, packetWrapper.SystemPacketAsResLeaveRoom().Result);
 
+        (result, packetWrapper) = await ReceiveAsync(wsClientJoiner);
+        Assert.Equal(SystemPacket.OnPlayerLeaveRoom, packetWrapper.SystemPacketType);
+        Guid notifiedLeaverPlayerId = new Guid();
+        notifiedLeaverPlayerId.FromGuidType(packetWrapper.SystemPacketAsOnPlayerLeaveRoom().PlayerId);
+        Assert.Equal(OwnerPlayerId, notifiedLeaverPlayerId);
+
         (result, packetWrapper) = await SendAndReceive(wsClientJoiner, BuildReqLeavelPlayRoomPacket(roomId));
         Assert.Equal(SystemPacket.ResLeaveRoom, packetWrapper.SystemPacketType);
         Assert.Equal(PacketErrorCodes.Success, packetWrapper.SystemPacketAsResLeaveRoom().Result);

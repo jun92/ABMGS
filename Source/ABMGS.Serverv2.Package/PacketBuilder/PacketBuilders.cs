@@ -237,9 +237,11 @@ internal class OnPlayerLeaveRoomPacketBuilder : PacketBABuilder<OnPlayerLeaveRoo
     public override byte[] Build(OnPlayerLeaveRoomArgs args)
     {
         var builder = CreateBuilder();
+        StringOffset leaverName = builder.CreateString(args.playerName);
         OnPlayerLeaveRoom.StartOnPlayerLeaveRoom(builder);
         OnPlayerLeaveRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
         OnPlayerLeaveRoom.AddPlayerId(builder, args.playerId.ToGuidType(builder));
+        OnPlayerLeaveRoom.AddName(builder, leaverName);
 
         return Wrap(builder, SystemPacket.OnPlayerLeaveRoom, OnPlayerLeaveRoom.EndOnPlayerLeaveRoom(builder).Value);
     }
