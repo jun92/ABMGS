@@ -1,0 +1,1 @@
+dotnet test -e TEST_REMOTE_ENDPOINT="http://localhost:5100/" --no-build
