@@ -27,12 +27,12 @@
 
 
 <ItemGroup>
-	<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5">
+	<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.6">
 	  <PrivateAssets>all</PrivateAssets>
 	  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	</PackageReference>
-	<PackageReference Include="Microsoft.Orleans.Clustering.Redis" Version="10.0.1" />
-	<PackageReference Include="Microsoft.Orleans.Server" Version="10.0.1" />
+	<PackageReference Include="Microsoft.Orleans.Clustering.Redis" Version="10.1.0" />
+	<PackageReference Include="Microsoft.Orleans.Server" Version="10.1.0" />
 </ItemGroup>
 <ItemGroup>
   <ProjectReference Include="..\ABMGS.Serverv2.Package\ABMGS.Serverv2.Package.csproj" />
@@ -46,7 +46,7 @@
 </ItemGroup>
 
 <ItemGroup>
-  <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.5" />
+  <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.6" />
   <Folder Include="Migrations\" />
 </ItemGroup>
 
