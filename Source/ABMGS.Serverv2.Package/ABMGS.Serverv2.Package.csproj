@@ -15,7 +15,7 @@
     <PackageReference Include="Asp.Versioning.Mvc" Version="10.0.0" />
     <PackageReference Include="Google.Apis.Auth" Version="1.74.0" />
     <PackageReference Include="Google.FlatBuffers" Version="25.2.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.8" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.18.0" />
     <PackageReference Include="Microsoft.Orleans.Clustering.Redis" Version="10.1.0" />
     <PackageReference Include="Microsoft.Orleans.Dashboard" Version="10.1.0" />
@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.8" />
     <ProjectReference Include="..\AppServiceDefault\AppServiceDefault.csproj" />
   </ItemGroup>
   
