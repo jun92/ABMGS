@@ -80,6 +80,7 @@ public static class FrontendApplicationBuilderExtension
             {
                 options.ConfigurationOptions = ConfigurationOptions.Parse(
                     builder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
+                options.ConfigurationOptions.CertificateValidation += (sender, certificate, chain, sslPolicyErrors) => true;
             });
             configure.AddDashboard();
         });
