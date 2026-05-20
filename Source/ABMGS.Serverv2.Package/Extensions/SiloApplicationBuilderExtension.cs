@@ -48,7 +48,7 @@ public static class SiloApplicationBuilderExtension
     {
         builder.Services.AddDbContextFactory<SyncnetDbContext>(opt =>
         {
-            opt.UseNpgsql(builder.Configuration.GetConnectionString("SyncnetPlatform"), optionBuilder =>
+            opt.UseNpgsql(builder.Configuration.GetConnectionString("postgres"), optionBuilder =>
             {
                 optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
             });
@@ -95,7 +95,7 @@ public class SyncnetSiloOptionsBuilder
         UseBuiltinDbContext = false;
         builder.Services.AddDbContextPool<DbContextType>(opt =>
         {
-            opt.UseNpgsql(builder.Configuration.GetConnectionString("SyncnetPlatform"), optionBuilder =>
+            opt.UseNpgsql(builder.Configuration.GetConnectionString("postgres"), optionBuilder =>
             {
                 optionBuilder.MigrationsAssembly(typeof(DbContextType).Assembly.FullName);
             });
