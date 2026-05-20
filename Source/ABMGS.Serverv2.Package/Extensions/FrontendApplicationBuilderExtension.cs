@@ -56,7 +56,7 @@ public static class FrontendApplicationBuilderExtension
     {
         builder.Services.AddDbContextFactory<SyncnetDbContext>(opt =>
         {
-            opt.UseNpgsql(builder.Configuration.GetConnectionString("SyncnetPlatform"));
+            opt.UseNpgsql(builder.Configuration.GetConnectionString("postgres"));
 
         });
         //builder.Services.AddDbContextPool<SyncnetDbContext>(opt => {
