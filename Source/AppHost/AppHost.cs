@@ -12,8 +12,9 @@ builder.Configuration.AddCommandLine(args).SetBasePath(Directory.GetCurrentDirec
     .AddJsonFile($"appsettings.{EnvironmentName}.json", true, true)
     .AddEnvironmentVariables();
 
+bool isGitHubActions = Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
 
-if (String.Compare(builder.Configuration.GetSection("UseCloud").Value, "true") == 0)
+if (String.Compare(builder.Configuration.GetSection("UseCloud").Value, "true") == 0 && !isGitHubActions)
 {
     var postgresConnectionString = builder.AddConnectionString("SyncnetPlatform");
     var redisConnectionString = builder.AddConnectionString("redis");
