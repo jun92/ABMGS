@@ -35,6 +35,7 @@ public static class SiloApplicationBuilderExtension
             {
                 options.ConfigurationOptions = ConfigurationOptions.Parse(
                     siloBuilder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
+                options.ConfigurationOptions.CertificateValidation += (sender, certificate, chain, sslPolicyErrors) => true;
             });
             siloBuilder.AddDashboard(options =>
             {
