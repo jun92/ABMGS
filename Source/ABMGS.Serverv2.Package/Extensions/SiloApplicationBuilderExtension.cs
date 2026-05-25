@@ -53,13 +53,6 @@ public static class SiloApplicationBuilderExtension
                 optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
             });
         });
-        //builder.Services.AddDbContextPool<SyncnetDbContext>(opt =>
-        //{
-        //    opt.UseNpgsql(builder.Configuration.GetConnectionString("SyncnetPlatform"), optionBuilder =>
-        //    {
-        //        optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
-        //    });
-        //});
     }
     public static void AddSyncnetPlatformSilo(this HostApplicationBuilder builder)
     {
