@@ -19,17 +19,20 @@ using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Repositories;
 using System.Text;
 using Serilog;
-using Serilog.Events;
 using Serilog.Configuration;
 using Microsoft.Extensions.Options;
 using Orleans.Dashboard;
+using SyncnetPlatform.Extensions.Options;
 
 namespace SyncnetPlatform.Extensions;
 
-public static class FrontendApplicationBuilderExtension
+public static partial class FrontendApplicationBuilderExtension
 {
     // For Clients
-    public static void AddSyncnetPlatformFrontend(this WebApplicationBuilder builder, Action<SyncnetLoggerOption>? LoggerAction = null)
+    public static void AddSyncnetPlatformFrontend(
+        this WebApplicationBuilder builder, 
+        Action<SyncnetLoggerOption>? LoggerAction = null,
+        Action<SyncnetTelemetryOption>? TelemetryAction = null)
     {
         ConfigureGameServices(builder);
         ConfigureDatabase(builder);
@@ -59,9 +62,6 @@ public static class FrontendApplicationBuilderExtension
             opt.UseNpgsql(builder.Configuration.GetConnectionString("postgres"));
 
         });
-        //builder.Services.AddDbContextPool<SyncnetDbContext>(opt => {
-        //    opt.UseNpgsql(builder.Configuration.GetConnectionString("SyncnetPlatform"));
-        //});
         builder.Services.AddTransient<IPlayerModelRepository, RdbPlayerModelRepository>();
         builder.Services.AddTransient<IExternalIdentityRepository, RdbExternalIdentityRepository>();
 
@@ -144,14 +144,6 @@ public static class FrontendApplicationBuilderExtension
             if(option.IncludeThreadId) LoggerConfiguration.Enrich.WithThreadId();
 
         });
-    }
-
-    public class SyncnetLoggerOption
-    {
-        public LogEventLevel MinimumLevel { get; set; } = LogEventLevel.Information;
-        public LogEventLevel Override { get; set; } = LogEventLevel.Warning;
-        public bool EnableConsole { get; set; } = true;
-        public bool IncludeThreadId { get; set; } = true;  
     }
 
     public static void UseFrontendSyncnetPlatform(this WebApplication app)
