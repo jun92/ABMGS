@@ -49,6 +49,7 @@ public static partial class FrontendApplicationBuilderExtension
         
         
         ConfigureLogger(builder, LoggerAction);
+        ConfigureTelemetry(builder, TelemetryAction);
     }
 
     private static void ConfigureGameServices(WebApplicationBuilder builder)
@@ -159,17 +160,15 @@ public static partial class FrontendApplicationBuilderExtension
             {
                 logging.IncludeFormattedMessage = true;
                 logging.IncludeScopes = true;
-
-                logging.AddOtlpExporter(opt =>
-                {
-                    opt.Endpoint = new Uri(syncnetTelemetryOptions.Logging.Endpoint);
-                    opt.Protocol = syncnetTelemetryOptions.Logging.Protocol;
-                });
             });
             builder.Services.AddOpenTelemetry()
                 .WithLogging(logging =>
                 {
-                    logging.AddOtlpExporter();
+                    logging.AddOtlpExporter(opt =>
+                    {
+                        opt.Endpoint = new Uri(syncnetTelemetryOptions.Logging.Endpoint);
+                        opt.Protocol = syncnetTelemetryOptions.Logging.Protocol;
+                    });
 
                 })
                 .WithMetrics(metrics =>
