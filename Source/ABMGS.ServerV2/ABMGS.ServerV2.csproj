@@ -5,6 +5,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>SyncnetPlatform</RootNamespace>
+	<UserSecretsId>941b012f-ae08-477a-9911-42fb74dff4fb</UserSecretsId>
+
   </PropertyGroup>
 
   <ItemGroup>
