@@ -46,34 +46,34 @@ namespace Microsoft.Extensions.Hosting
 
         public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
         {
-            builder.Logging.AddOpenTelemetry(logging =>
-            {
-                logging.IncludeFormattedMessage = true;
-                logging.IncludeScopes = true;
-            });
+            //builder.Logging.AddOpenTelemetry(logging =>
+            //{
+            //    logging.IncludeFormattedMessage = true;
+            //    logging.IncludeScopes = true;
+            //});
 
-            builder.Services.AddOpenTelemetry()
-                .WithMetrics(metrics =>
-                {
-                    metrics.AddAspNetCoreInstrumentation()
-                        .AddHttpClientInstrumentation()
-                        .AddRuntimeInstrumentation();
-                })
-                .WithTracing(tracing =>
-                {
-                    tracing.AddSource(builder.Environment.ApplicationName)
-                        .AddAspNetCoreInstrumentation(tracing =>
-                            // Exclude health check requests from tracing
-                            tracing.Filter = context =>
-                                !context.Request.Path.StartsWithSegments(HealthEndpointPath)
-                                && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath)
-                        )
-                        // Uncomment the following line to enable gRPC instrumentation (requires the OpenTelemetry.Instrumentation.GrpcNetClient package)
-                        //.AddGrpcClientInstrumentation()
-                        .AddHttpClientInstrumentation();
-                });
+            //builder.Services.AddOpenTelemetry()
+            //    .WithMetrics(metrics =>
+            //    {
+            //        metrics.AddAspNetCoreInstrumentation()
+            //            .AddHttpClientInstrumentation()
+            //            .AddRuntimeInstrumentation();
+            //    })
+            //    .WithTracing(tracing =>
+            //    {
+            //        tracing.AddSource(builder.Environment.ApplicationName)
+            //            .AddAspNetCoreInstrumentation(tracing =>
+            //                // Exclude health check requests from tracing
+            //                tracing.Filter = context =>
+            //                    !context.Request.Path.StartsWithSegments(HealthEndpointPath)
+            //                    && !context.Request.Path.StartsWithSegments(AlivenessEndpointPath)
+            //            )
+            //            // Uncomment the following line to enable gRPC instrumentation (requires the OpenTelemetry.Instrumentation.GrpcNetClient package)
+            //            //.AddGrpcClientInstrumentation()
+            //            .AddHttpClientInstrumentation();
+            //    });
 
-            builder.AddOpenTelemetryExporters();
+            //builder.AddOpenTelemetryExporters();
 
             return builder;
         }
