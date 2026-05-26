@@ -22,13 +22,13 @@ Action<SyncnetTelemetryOption> telemetryConfigure = option =>
     protocol = builder.Configuration.GetValue<string>("ConnectionStrings:telemetry:metric:Protocol")!;
     if (Enum.TryParse<OtlpExportProtocol>(protocol, ignoreCase: false, out outProtocol))
     {
-        option.Logging.Protocol = outProtocol;
+        option.Metric.Protocol = outProtocol;
     }
     option.Trace.Endpoint = builder.Configuration.GetValue<string>("ConnectionStrings:telemetry:trace:EndPoint")!;
     protocol = builder.Configuration.GetValue<string>("ConnectionStrings:telemetry:trace:Protocol")!;
     if (Enum.TryParse<OtlpExportProtocol>(protocol, ignoreCase: false, out outProtocol))
     {
-        option.Logging.Protocol = outProtocol;
+        option.Trace.Protocol = outProtocol;
     }
 };
 
