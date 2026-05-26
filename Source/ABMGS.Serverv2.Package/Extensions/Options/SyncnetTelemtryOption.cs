@@ -5,9 +5,9 @@ namespace SyncnetPlatform.Extensions.Options;
 
 public class SyncnetTelemetryOption
 {
-    public required TelemetryEndpoint Logging { get; set; }
-    public required TelemetryEndpoint Trace { get; set; }
-    public required TelemetryEndpoint Metric { get; set; }
+    public required TelemetryEndpoint Logging { get; set; } = new();
+    public required TelemetryEndpoint Trace { get; set; } = new();
+    public required TelemetryEndpoint Metric { get; set; } = new();
 }
 
 public class TelemetryEndpoint
