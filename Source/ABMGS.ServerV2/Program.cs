@@ -1,13 +1,46 @@
+using Polly.Telemetry;
+using Microsoft.Extensions.Configuration;
 using SyncnetPlatform.Extensions;
+using SyncnetPlatform.Extensions.Options;
+using OpenTelemetry.Exporter;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddSyncnetPlatformFrontend();
+
+// if want to use external telemetry services, for using default aspire dashboard, should be null.
+var IsSpecificTelemetryEndpoints = builder.Configuration.GetSection("ConnectionStrings:telemetry").Exists();
+
+Action<SyncnetTelemetryOption> telemetryConfigure = option =>
+{
+    option.Logging.Endpoint = builder.Configuration.GetValue<string>("ConnectionStrings:telemetry:logging:EndPoint")!;
+    string protocol = builder.Configuration.GetValue<string>("ConnectionStrings:telemetry:logging:Protocol")!;
+    if (Enum.TryParse<OtlpExportProtocol>(protocol, ignoreCase: false, out var outProtocol))
+    {
+        option.Logging.Protocol = outProtocol;
+    }
+    option.Metric.Endpoint = builder.Configuration.GetValue<string>("ConnectionStrings:telemetry:metric:EndPoint")!;
+    protocol = builder.Configuration.GetValue<string>("ConnectionStrings:telemetry:metric:Protocol")!;
+    if (Enum.TryParse<OtlpExportProtocol>(protocol, ignoreCase: false, out outProtocol))
+    {
+        option.Logging.Protocol = outProtocol;
+    }
+    option.Trace.Endpoint = builder.Configuration.GetValue<string>("ConnectionStrings:telemetry:trace:EndPoint")!;
+    protocol = builder.Configuration.GetValue<string>("ConnectionStrings:telemetry:trace:Protocol")!;
+    if (Enum.TryParse<OtlpExportProtocol>(protocol, ignoreCase: false, out outProtocol))
+    {
+        option.Logging.Protocol = outProtocol;
+    }
+};
+
+builder.AddSyncnetPlatformFrontend(TelemetryAction: IsSpecificTelemetryEndpoints ? telemetryConfigure: null);
+
 builder.Services.AddControllers();
 
 
 var app = builder.Build();
 
+
+app.Configuration.GetSection("ConnectionStrings:telemetry:logging").GetValue<string>("Endpoint");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
