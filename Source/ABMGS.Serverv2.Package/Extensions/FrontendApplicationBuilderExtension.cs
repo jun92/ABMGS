@@ -38,6 +38,9 @@ public static partial class FrontendApplicationBuilderExtension
         Action<SyncnetLoggerOption>? LoggerAction = null,
         Action<SyncnetTelemetryOption>? TelemetryAction = null)
     {
+        if (LoggerAction != null) builder.Services.Configure(LoggerAction);
+        if (TelemetryAction != null) builder.Services.Configure(TelemetryAction);
+
         ConfigureGameServices(builder);
         ConfigureDatabase(builder);
        
@@ -47,9 +50,8 @@ public static partial class FrontendApplicationBuilderExtension
         ConfigureAuthentication(builder);
         ConfigureOrleans(builder);
         
-        
-        ConfigureLogger(builder, LoggerAction);
-        ConfigureTelemetry(builder, TelemetryAction);
+        ConfigureLogger(builder);
+        ConfigureTelemetry(builder);
     }
 
     private static void ConfigureGameServices(WebApplicationBuilder builder)
@@ -69,7 +71,6 @@ public static partial class FrontendApplicationBuilderExtension
         });
         builder.Services.AddTransient<IPlayerModelRepository, RdbPlayerModelRepository>();
         builder.Services.AddTransient<IExternalIdentityRepository, RdbExternalIdentityRepository>();
-
     }
 
     private static void ConfigureOrleans(WebApplicationBuilder builder)
@@ -131,69 +132,66 @@ public static partial class FrontendApplicationBuilderExtension
 
     }
 
-    private static void ConfigureLogger(WebApplicationBuilder builder, Action<SyncnetLoggerOption>? LoggerAction = null)
+    private static void ConfigureLogger(WebApplicationBuilder builder)
     {
-        if (LoggerAction != null)
-        {
-            builder.Services.Configure(LoggerAction);
-        }
 
-        builder.Host.UseSerilog((context, services, LoggerConfiguration) => 
-        { 
+        Serilog.Debugging.SelfLog.Enable(Console.Error);
+
+        builder.Services.AddSerilog((services, loggerConfig) =>
+        {
             SyncnetLoggerOption option = services.GetRequiredService<IOptions<SyncnetLoggerOption>>().Value;
-            LoggerConfiguration
+            SyncnetTelemetryOption syncnetTelemetryOptions = services.GetRequiredService<IOptions<SyncnetTelemetryOption>>().Value;
+
+            loggerConfig
                 .MinimumLevel.Is(option.MinimumLevel)
                 .MinimumLevel.Override("Microsoft", option.Override)
+                .WriteTo.OpenTelemetry(option =>
+                {
+                    option.Endpoint = syncnetTelemetryOptions.Logging.Endpoint;
+                    option.Protocol = Serilog.Sinks.OpenTelemetry.OtlpProtocol.Grpc;
+                    option.ResourceAttributes = new Dictionary<string, object>
+                    {
+                        ["service.name"] = builder.Environment.ApplicationName,
+                        ["from"] = "local"
+                    };
+
+                }, ignoreEnvironment: true)
                 .Enrich.FromLogContext();
-            if(option.EnableConsole) LoggerConfiguration.WriteTo.Console();
-            if(option.IncludeThreadId) LoggerConfiguration.Enrich.WithThreadId();
+            
+            if(option.EnableConsole) loggerConfig.WriteTo.Console();
+            if(option.IncludeThreadId) loggerConfig.Enrich.WithThreadId();
 
         });
     }
-    private static void ConfigureTelemetry(WebApplicationBuilder builder, Action<SyncnetTelemetryOption>? telemetryAction)
+    private static void ConfigureTelemetry(WebApplicationBuilder builder)
     {
-        if (telemetryAction != null)
-        {
-            builder.Services.Configure(telemetryAction);
-            SyncnetTelemetryOption syncnetTelemetryOptions = builder.Services.BuildServiceProvider().GetRequiredService<IOptions<SyncnetTelemetryOption>>().Value;
-            builder.Logging.AddOpenTelemetry(logging =>
+        SyncnetTelemetryOption syncnetTelemetryOptions = builder.Services.BuildServiceProvider().GetRequiredService<IOptions<SyncnetTelemetryOption>>().Value;
+        builder.Services.AddOpenTelemetry()
+            .WithMetrics(metrics =>
             {
-                logging.IncludeFormattedMessage = true;
-                logging.IncludeScopes = true;
-            });
-            builder.Services.AddOpenTelemetry()
-                .WithLogging(logging =>
+                metrics
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddRuntimeInstrumentation()
+                    .AddMeter("SyncnetPlatform");
+                metrics.AddOtlpExporter(option =>
                 {
-                    logging.AddOtlpExporter(opt =>
-                    {
-                        opt.Endpoint = new Uri(syncnetTelemetryOptions.Logging.Endpoint);
-                        opt.Protocol = syncnetTelemetryOptions.Logging.Protocol;
-                    });
-
-                })
-                .WithMetrics(metrics =>
-                {
-                    metrics.AddAspNetCoreInstrumentation()
-                        .AddHttpClientInstrumentation()
-                        .AddRuntimeInstrumentation()
-                        .AddMeter("SyncnetPlatform");
-                    metrics.AddOtlpExporter(option =>
-                    {
-                        option.Endpoint = new Uri(syncnetTelemetryOptions.Metric.Endpoint);
-                        option.Protocol = syncnetTelemetryOptions.Metric.Protocol;
-                    });
-                })
-                .WithTracing(trace =>
-                {
-                    trace.AddAspNetCoreInstrumentation().AddHttpClientInstrumentation()
-                        .AddSource("syncnet.traces")
-                        .AddOtlpExporter(option =>
-                        {
-                            option.Endpoint = new Uri(syncnetTelemetryOptions.Trace.Endpoint);
-                            option.Protocol = syncnetTelemetryOptions.Trace.Protocol;
-                        });
+                    option.Endpoint = new Uri(syncnetTelemetryOptions.Metric.Endpoint);
+                    option.Protocol = syncnetTelemetryOptions.Metric.Protocol;
                 });
-        }
+            })
+            .WithTracing(trace =>
+            {
+                trace
+                    .AddAspNetCoreInstrumentation()
+                    .AddHttpClientInstrumentation()
+                    .AddSource("syncnet.traces")
+                    .AddOtlpExporter(option =>
+                    {
+                        option.Endpoint = new Uri(syncnetTelemetryOptions.Trace.Endpoint);
+                        option.Protocol = syncnetTelemetryOptions.Trace.Protocol;
+                    });
+            });
     }
 
     public static void UseFrontendSyncnetPlatform(this WebApplication app)
