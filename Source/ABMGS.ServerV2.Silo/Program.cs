@@ -1,5 +1,6 @@
 using OpenTelemetry.Exporter;
 using SyncnetPlatform.Extensions;
+using SyncnetPlatform.Extensions.Options;
 
 string? EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
@@ -25,7 +26,10 @@ if( UseMyCustomDb )
 }
 else
 {
-    builder.AddSyncnetPlatformSilo(TelemetryAction: option =>
+    var IsSpecificTelemetryEndpoints = builder.Configuration.GetSection("ConnectionStrings:telemetry").Exists();
+
+
+    Action<SyncnetTelemetryOption> telemetryConfigure = option =>
     {
         option.Logging.Endpoint = builder.Configuration.GetValue<string>("ConnectionStrings:telemetry:logging:Endpoint")!;
         string protocol = builder.Configuration.GetValue<string>("ConnectionStrings:telemetry:logging:Protocol")!;
@@ -45,15 +49,8 @@ else
         {
             option.Trace.Protocol = outProtocol;
         }
-        //option.Logging.Endpoint = "http://loki.syncnet.dev:4317";
-        //option.Logging.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
-
-        //option.Trace.Endpoint = "http://tempo.syncnet.dev:4317";
-        //option.Trace.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
-
-        //option.Metric.Endpoint = "http://prometheus.syncnet.dev:9090/api/v1/otlp/v1/metrics";
-        //option.Metric.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
-    });
+    };
+    builder.AddSyncnetPlatformSilo(TelemetryAction:  IsSpecificTelemetryEndpoints ? telemetryConfigure : null);
 }
 
 var host = builder.Build();
