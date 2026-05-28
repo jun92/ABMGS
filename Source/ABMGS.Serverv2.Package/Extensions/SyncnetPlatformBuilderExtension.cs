@@ -39,32 +39,35 @@ public static class SyncnetPlatformBuilderExtension
         Action<SyncnetLoggerOption>? LoggerAction = null,
         Action<SyncnetTelemetryOption>? TelemetryAction = null)
     {
+        AddSyncnetPlatformCommon(builder, LoggerAction, TelemetryAction);
+       
+        builder.Services.AddHttpClient();
+        ConfigureAuthentication(builder);
+        ConfigureOrleansAsClient(builder);
+    }
+    public static void AddSyncnetPlatformSilo(
+        this WebApplicationBuilder builder, 
+        Action<SyncnetLoggerOption>? LoggerAction = null,
+        Action<SyncnetTelemetryOption>? TelemetryAction = null)
+    {
+        AddSyncnetPlatformCommon(builder, LoggerAction, TelemetryAction);
+        ConfigureOrleansAsSilo(builder);
+        SyncnetPlatformSiloDbContext(builder);
+    }
+    private static void AddSyncnetPlatformCommon(
+        WebApplicationBuilder builder, 
+        Action<SyncnetLoggerOption>? LoggerAction = null,
+        Action<SyncnetTelemetryOption>? TelemetryAction = null)
+    {
         if (LoggerAction != null) builder.Services.Configure(LoggerAction);
         if (TelemetryAction != null) builder.Services.Configure(TelemetryAction);
 
+        builder.AddServiceDefaults();
         ConfigureGameServices(builder);
         ConfigureDatabase(builder);
-       
-        builder.Services.AddHttpClient();
-        builder.AddServiceDefaults();
 
-        ConfigureAuthentication(builder);
-        ConfigureOrleansAsClient(builder);
-        
         ConfigureLogger(builder);
         ConfigureTelemetry(builder);
-    }
-    public static void AddSyncnetPlatformSilo(this WebApplicationBuilder builder)
-    {
-        builder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
-        builder.Services.AddSingleton<IPacketContextFactory, PacketContextFactory>();
-        builder.Services.AddTransient<ISystemPacketHandler, SystemPacketHandler>();
-
-        ConfigureDatabase(builder);
-        builder.AddServiceDefaults();
-
-        ConfigureOrleansAsSilo(builder);
-        SyncnetPlatformSiloDbContext(builder);
     }
 
     private static void ConfigureGameServices(WebApplicationBuilder builder)
@@ -84,6 +87,16 @@ public static class SyncnetPlatformBuilderExtension
         });
         builder.Services.AddTransient<IPlayerModelRepository, RdbPlayerModelRepository>();
         builder.Services.AddTransient<IExternalIdentityRepository, RdbExternalIdentityRepository>();
+    }
+    private static void SyncnetPlatformSiloDbContext(WebApplicationBuilder builder)
+    {
+        builder.Services.AddDbContextFactory<SyncnetDbContext>(opt =>
+        {
+            opt.UseNpgsql(builder.Configuration.GetConnectionString("postgres"), optionBuilder =>
+            {
+                optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
+            });
+        });
     }
 
     private static void ConfigureOrleansAsClient(WebApplicationBuilder builder)
@@ -106,15 +119,12 @@ public static class SyncnetPlatformBuilderExtension
             ?? throw new InvalidOperationException());
     }
 
+    // 개발/테스트 환경에서 검증을 무조건 통과시키도록 true 반환
     private static bool VerifyRedisTls(
         object sender,
         System.Security.Cryptography.X509Certificates.X509Certificate? certificate,
         System.Security.Cryptography.X509Certificates.X509Chain? chain,
-        System.Net.Security.SslPolicyErrors sslPolicyErrors)
-    {
-        // 개발/테스트 환경에서 검증을 무조건 통과시키도록 true 반환
-        return true;
-    }
+        System.Net.Security.SslPolicyErrors sslPolicyErrors) => true;
     private static void ConfigureOrleansAsSilo(WebApplicationBuilder builder)
     {
         builder.UseOrleans(siloBuilder =>
@@ -239,16 +249,7 @@ public static class SyncnetPlatformBuilderExtension
             });
     }
 
-    private static void SyncnetPlatformSiloDbContext(WebApplicationBuilder builder)
-    {
-        builder.Services.AddDbContextFactory<SyncnetDbContext>(opt =>
-        {
-            opt.UseNpgsql(builder.Configuration.GetConnectionString("postgres"), optionBuilder =>
-            {
-                optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
-            });
-        });
-    }
+    
 
     public static void UseFrontendSyncnetPlatform(this WebApplication app)
     {
