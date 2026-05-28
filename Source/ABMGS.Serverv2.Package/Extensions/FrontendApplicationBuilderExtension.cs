@@ -152,7 +152,6 @@ public static partial class FrontendApplicationBuilderExtension
                     option.ResourceAttributes = new Dictionary<string, object>
                     {
                         ["service.name"] = builder.Environment.ApplicationName,
-                        ["from"] = "local"
                     };
 
                 }, ignoreEnvironment: true)
