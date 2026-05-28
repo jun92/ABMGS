@@ -1,3 +1,4 @@
+using OpenTelemetry.Exporter;
 using SyncnetPlatform.Extensions;
 
 string? EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
@@ -15,6 +16,7 @@ bool UseMyCustomDb = false;
 
 if( UseMyCustomDb )
 {
+    // disable temporary.
     //builder.AddSyncnetPlatformSilo(optionsBulider =>
     //{
     //    optionsBulider.UseBuiltinDbContext = false;
@@ -25,14 +27,32 @@ else
 {
     builder.AddSyncnetPlatformSilo(TelemetryAction: option =>
     {
-        option.Logging.Endpoint = "http://loki.syncnet.dev:4317";
-        option.Logging.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+        option.Logging.Endpoint = builder.Configuration.GetValue<string>("ConnectionStrings:telemetry:logging:Endpoint")!;
+        string protocol = builder.Configuration.GetValue<string>("ConnectionStrings:telemetry:logging:Protocol")!;
+        if (Enum.TryParse<OtlpExportProtocol>(protocol, ignoreCase: false, out var outProtocol))
+        {
+            option.Logging.Protocol = outProtocol;
+        }
+        option.Metric.Endpoint = builder.Configuration.GetValue<string>("ConnectionStrings:telemetry:metric:Endpoint")!;
+        protocol = builder.Configuration.GetValue<string>("ConnectionStrings:telemetry:metric:Protocol")!;
+        if (Enum.TryParse<OtlpExportProtocol>(protocol, ignoreCase: false, out outProtocol))
+        {
+            option.Metric.Protocol = outProtocol;
+        }
+        option.Trace.Endpoint = builder.Configuration.GetValue<string>("ConnectionStrings:telemetry:trace:Endpoint")!;
+        protocol = builder.Configuration.GetValue<string>("ConnectionStrings:telemetry:trace:Protocol")!;
+        if (Enum.TryParse<OtlpExportProtocol>(protocol, ignoreCase: false, out outProtocol))
+        {
+            option.Trace.Protocol = outProtocol;
+        }
+        //option.Logging.Endpoint = "http://loki.syncnet.dev:4317";
+        //option.Logging.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
 
-        option.Trace.Endpoint = "http://tempo.syncnet.dev:4317";
-        option.Trace.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+        //option.Trace.Endpoint = "http://tempo.syncnet.dev:4317";
+        //option.Trace.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
 
-        option.Metric.Endpoint = "http://prometheus.syncnet.dev:9090/api/v1/otlp/v1/metrics";
-        option.Metric.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
+        //option.Metric.Endpoint = "http://prometheus.syncnet.dev:9090/api/v1/otlp/v1/metrics";
+        //option.Metric.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
     });
 }
 
