@@ -32,7 +32,7 @@ Action<SyncnetTelemetryOption> telemetryConfigure = option =>
     }
 };
 
-builder.AddSyncnetPlatformFrontend(TelemetryAction: IsSpecificTelemetryEndpoints ? telemetryConfigure: null);
+builder.AddSyncnetPlatformClient(TelemetryAction: IsSpecificTelemetryEndpoints ? telemetryConfigure: null);
 
 builder.Services.AddControllers();
 
