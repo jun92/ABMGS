@@ -23,11 +23,11 @@ bool UseMyCustomDb = false;
 
 if( UseMyCustomDb )
 {
-    builder.AddSyncnetPlatformSilo(optionsBulider =>
-    {
-        optionsBulider.UseBuiltinDbContext = false;
-        optionsBulider.RegisterDbContext<SyncnetDbContextExtend>(builder);
-    });
+    //builder.AddSyncnetPlatformSilo(optionsBulider =>
+    //{
+    //    optionsBulider.UseBuiltinDbContext = false;
+    //    optionsBulider.RegisterDbContext<SyncnetDbContextExtend>(builder);
+    //});
 }
 else
 {

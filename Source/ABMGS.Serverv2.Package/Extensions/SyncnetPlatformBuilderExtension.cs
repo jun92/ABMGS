@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
+using Orleans.Clustering.Redis;
 using Orleans.Configuration;
 using Orleans.Dashboard;
 using Orleans.Hosting;
@@ -30,10 +31,10 @@ using System.Text;
 
 namespace SyncnetPlatform.Extensions;
 
-public static partial class FrontendApplicationBuilderExtension
+public static class SyncnetPlatformBuilderExtension
 {
     // For Clients
-    public static void AddSyncnetPlatformFrontend(
+    public static void AddSyncnetPlatformClient(
         this WebApplicationBuilder builder, 
         Action<SyncnetLoggerOption>? LoggerAction = null,
         Action<SyncnetTelemetryOption>? TelemetryAction = null)
@@ -48,10 +49,22 @@ public static partial class FrontendApplicationBuilderExtension
         builder.AddServiceDefaults();
 
         ConfigureAuthentication(builder);
-        ConfigureOrleans(builder);
+        ConfigureOrleansAsClient(builder);
         
         ConfigureLogger(builder);
         ConfigureTelemetry(builder);
+    }
+    public static void AddSyncnetPlatformSilo(this WebApplicationBuilder builder)
+    {
+        builder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
+        builder.Services.AddSingleton<IPacketContextFactory, PacketContextFactory>();
+        builder.Services.AddTransient<ISystemPacketHandler, SystemPacketHandler>();
+
+        ConfigureDatabase(builder);
+        builder.AddServiceDefaults();
+
+        ConfigureOrleansAsSilo(builder);
+        SyncnetPlatformSiloDbContext(builder);
     }
 
     private static void ConfigureGameServices(WebApplicationBuilder builder)
@@ -73,23 +86,56 @@ public static partial class FrontendApplicationBuilderExtension
         builder.Services.AddTransient<IExternalIdentityRepository, RdbExternalIdentityRepository>();
     }
 
-    private static void ConfigureOrleans(WebApplicationBuilder builder)
+    private static void ConfigureOrleansAsClient(WebApplicationBuilder builder)
     {
         builder.UseOrleansClient(configure =>
         {
-            configure.Configure<ClusterOptions>(options =>
-            {
-                options.ClusterId = "SyncnetPlatformCluster";
-                options.ServiceId = "SyncnetPlatformService";
-            });
+            configure.Configure<ClusterOptions>(ClusterOptionsAction);
             configure.UseRedisClustering(options =>
             {
-                options.ConfigurationOptions = ConfigurationOptions.Parse(
-                    builder.Configuration.GetConnectionString("redis") ?? throw new InvalidOperationException());
-                options.ConfigurationOptions.CertificateValidation += (sender, certificate, chain, sslPolicyErrors) => true;
+                options.ConfigurationOptions = GetRedisConfiguration(builder);
+                options.ConfigurationOptions.CertificateValidation += VerifyRedisTls;
             });
             configure.AddDashboard();
         });
+    }
+
+    private static ConfigurationOptions GetRedisConfiguration(WebApplicationBuilder builder)
+    {
+        return ConfigurationOptions.Parse(builder.Configuration.GetConnectionString("redis") 
+            ?? throw new InvalidOperationException());
+    }
+
+    private static bool VerifyRedisTls(
+        object sender,
+        System.Security.Cryptography.X509Certificates.X509Certificate? certificate,
+        System.Security.Cryptography.X509Certificates.X509Chain? chain,
+        System.Net.Security.SslPolicyErrors sslPolicyErrors)
+    {
+        // 개발/테스트 환경에서 검증을 무조건 통과시키도록 true 반환
+        return true;
+    }
+    private static void ConfigureOrleansAsSilo(WebApplicationBuilder builder)
+    {
+        builder.UseOrleans(siloBuilder =>
+        {
+            siloBuilder.Configure<ClusterOptions>(ClusterOptionsAction);
+            siloBuilder.UseRedisClustering(options =>
+            {
+                options.ConfigurationOptions = GetRedisConfiguration(builder);
+                options.ConfigurationOptions.CertificateValidation += VerifyRedisTls;
+
+            });
+            siloBuilder.AddDashboard(options =>
+            {
+                options.CounterUpdateIntervalMs = 5000;
+            });
+        });
+    }
+    private static void ClusterOptionsAction(ClusterOptions options)
+    {
+        options.ClusterId = "SyncnetPlatformCluster";
+        options.ServiceId = "SyncnetPlatformService";
     }
     private static void ConfigureAuthentication(WebApplicationBuilder builder)
     {
@@ -191,6 +237,17 @@ public static partial class FrontendApplicationBuilderExtension
                         option.Protocol = syncnetTelemetryOptions.Trace.Protocol;
                     });
             });
+    }
+
+    private static void SyncnetPlatformSiloDbContext(WebApplicationBuilder builder)
+    {
+        builder.Services.AddDbContextFactory<SyncnetDbContext>(opt =>
+        {
+            opt.UseNpgsql(builder.Configuration.GetConnectionString("postgres"), optionBuilder =>
+            {
+                optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
+            });
+        });
     }
 
     public static void UseFrontendSyncnetPlatform(this WebApplication app)
