@@ -201,20 +201,19 @@ public static class SyncnetPlatformBuilderExtension
             loggerConfig
                 .MinimumLevel.Is(option.MinimumLevel)
                 .MinimumLevel.Override("Microsoft", option.Override)
-                .WriteTo.OpenTelemetry(option =>
-                {
-                    option.Endpoint = syncnetTelemetryOptions.Logging.Endpoint;
-                    option.Protocol = Serilog.Sinks.OpenTelemetry.OtlpProtocol.Grpc;
-                    option.ResourceAttributes = new Dictionary<string, object>
-                    {
-                        ["service.name"] = builder.Environment.ApplicationName,
-                    };
-
-                }, ignoreEnvironment: true)
                 .Enrich.FromLogContext();
             
             if(option.EnableConsole) loggerConfig.WriteTo.Console();
             if(option.IncludeThreadId) loggerConfig.Enrich.WithThreadId();
+            if (!string.IsNullOrEmpty(syncnetTelemetryOptions.Logging.Endpoint)) loggerConfig.WriteTo.OpenTelemetry(option =>
+            {
+                option.Endpoint = syncnetTelemetryOptions.Logging.Endpoint;
+                option.Protocol = Serilog.Sinks.OpenTelemetry.OtlpProtocol.Grpc;
+                option.ResourceAttributes = new Dictionary<string, object>
+                {
+                    ["service.name"] = builder.Environment.ApplicationName,
+                };
+            }, ignoreEnvironment: true);
 
         });
     }
@@ -229,23 +228,39 @@ public static class SyncnetPlatformBuilderExtension
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation()
                     .AddMeter("SyncnetPlatform");
-                metrics.AddOtlpExporter(option =>
+                
+                if(string.IsNullOrEmpty(syncnetTelemetryOptions.Metric.Endpoint))
                 {
-                    option.Endpoint = new Uri(syncnetTelemetryOptions.Metric.Endpoint);
-                    option.Protocol = syncnetTelemetryOptions.Metric.Protocol;
-                });
+                    metrics.AddOtlpExporter();
+                }
+                else
+                {
+                    metrics.AddOtlpExporter(option =>
+                    {
+                        option.Endpoint = new Uri(syncnetTelemetryOptions.Metric.Endpoint);
+                        option.Protocol = syncnetTelemetryOptions.Metric.Protocol;
+                    });
+                }
             })
             .WithTracing(trace =>
             {
                 trace
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddSource("syncnet.traces")
-                    .AddOtlpExporter(option =>
+                    .AddSource("syncnet.traces");
+
+                if(string.IsNullOrEmpty(syncnetTelemetryOptions.Trace.Endpoint))
+                {
+                    trace.AddOtlpExporter();
+                }
+                else
+                {
+                    trace.AddOtlpExporter(option =>
                     {
                         option.Endpoint = new Uri(syncnetTelemetryOptions.Trace.Endpoint);
                         option.Protocol = syncnetTelemetryOptions.Trace.Protocol;
                     });
+                }
             });
     }
 
