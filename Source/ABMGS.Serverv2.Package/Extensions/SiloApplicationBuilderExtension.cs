@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +17,7 @@ namespace SyncnetPlatform.Extensions;
 
 public static class SiloApplicationBuilderExtension
 {
-    private static void SyncnetPlatformSiloCommon(HostApplicationBuilder builder)
+    private static void SyncnetPlatformSiloCommon(WebApplicationBuilder builder)
     {
         builder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
         builder.Services.AddSingleton<IPacketContextFactory, PacketContextFactory>();
@@ -44,7 +45,7 @@ public static class SiloApplicationBuilderExtension
 
         });
     }
-    private static void SyncnetPlatformSiloDbContext(HostApplicationBuilder builder)
+    private static void SyncnetPlatformSiloDbContext(WebApplicationBuilder builder)
     {
         builder.Services.AddDbContextFactory<SyncnetDbContext>(opt =>
         {
@@ -54,13 +55,13 @@ public static class SiloApplicationBuilderExtension
             });
         });
     }
-    public static void AddSyncnetPlatformSilo(this HostApplicationBuilder builder)
+    public static void AddSyncnetPlatformSilo(this WebApplicationBuilder builder)
     {
         SyncnetPlatformSiloCommon(builder);
         SyncnetPlatformSiloDbContext(builder);
     }
     public static void AddSyncnetPlatformSilo(
-        this HostApplicationBuilder builder,
+        this WebApplicationBuilder builder,
         Action<SyncnetSiloOptionsBuilder>? optionBuilder)
     {
         SyncnetPlatformSiloCommon(builder);
@@ -83,7 +84,7 @@ public class SyncnetSiloOptionsBuilder
 {
     public bool UseBuiltinDbContext { get; set; }
 
-    public void RegisterDbContext<DbContextType>(HostApplicationBuilder builder) where DbContextType : SyncnetDbContext
+    public void RegisterDbContext<DbContextType>(WebApplicationBuilder builder) where DbContextType : SyncnetDbContext
     {
         UseBuiltinDbContext = false;
         builder.Services.AddDbContextPool<DbContextType>(opt =>

@@ -1,5 +1,3 @@
-
-
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -11,7 +9,8 @@ using SyncnetPlatform.Databases;
 
 string? EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
-var builder = Host.CreateApplicationBuilder(args);
+//var builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration
     .AddCommandLine(args)
