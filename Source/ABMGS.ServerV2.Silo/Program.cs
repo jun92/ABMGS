@@ -1,15 +1,7 @@
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
-using Orleans.Configuration;
-using StackExchange.Redis;
 using SyncnetPlatform.Extensions;
-using Microsoft.Extensions.DependencyInjection;
-using SyncnetPlatform.Databases;
 
 string? EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
-//var builder = Host.CreateApplicationBuilder(args);
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration
@@ -31,7 +23,17 @@ if( UseMyCustomDb )
 }
 else
 {
-    builder.AddSyncnetPlatformSilo();
+    builder.AddSyncnetPlatformSilo(TelemetryAction: option =>
+    {
+        option.Logging.Endpoint = "http://loki.syncnet.dev:4317";
+        option.Logging.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+
+        option.Trace.Endpoint = "http://tempo.syncnet.dev:4317";
+        option.Trace.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+
+        option.Metric.Endpoint = "http://prometheus.syncnet.dev:9090/api/v1/otlp/v1/metrics";
+        option.Metric.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
+    });
 }
 
 var host = builder.Build();
