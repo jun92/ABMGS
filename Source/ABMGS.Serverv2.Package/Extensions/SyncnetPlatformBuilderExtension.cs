@@ -66,7 +66,7 @@ public static class SyncnetPlatformBuilderExtension
         ConfigureGameServices(builder);
         ConfigureDatabase(builder);
 
-        ConfigureLogger(builder, LoggerAction);
+        ConfigureLogger(builder, LoggerAction, TelemetryAction);
         ConfigureTelemetry(builder, TelemetryAction);
     }
 
