@@ -124,7 +124,12 @@ public static class SyncnetPlatformBuilderExtension
         object sender,
         System.Security.Cryptography.X509Certificates.X509Certificate? certificate,
         System.Security.Cryptography.X509Certificates.X509Chain? chain,
-        System.Net.Security.SslPolicyErrors sslPolicyErrors) => true;
+        System.Net.Security.SslPolicyErrors sslPolicyErrors)
+
+    {
+        string? env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        return env == "Development";
+    }
     private static void ConfigureOrleansAsSilo(WebApplicationBuilder builder)
     {
         builder.UseOrleans(siloBuilder =>
@@ -213,7 +218,9 @@ public static class SyncnetPlatformBuilderExtension
             if (!string.IsNullOrEmpty(telemetryOption.Logging.Endpoint)) loggerConfig.WriteTo.OpenTelemetry(option =>
             {
                 option.Endpoint = telemetryOption.Logging.Endpoint;
-                option.Protocol = Serilog.Sinks.OpenTelemetry.OtlpProtocol.Grpc;
+                option.Protocol = telemetryOption.Logging.Protocol == OpenTelemetry.Exporter.OtlpExportProtocol.Grpc ?
+                    Serilog.Sinks.OpenTelemetry.OtlpProtocol.Grpc :
+                    Serilog.Sinks.OpenTelemetry.OtlpProtocol.HttpProtobuf;
                 option.ResourceAttributes = new Dictionary<string, object>
                 {
                     ["service.name"] = builder.Environment.ApplicationName,
