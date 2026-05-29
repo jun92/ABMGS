@@ -36,11 +36,7 @@ builder.AddSyncnetPlatformClient(TelemetryAction: IsSpecificTelemetryEndpoints ?
 
 builder.Services.AddControllers();
 
-
 var app = builder.Build();
-
-
-app.Configuration.GetSection("ConnectionStrings:telemetry:logging").GetValue<string>("Endpoint");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
