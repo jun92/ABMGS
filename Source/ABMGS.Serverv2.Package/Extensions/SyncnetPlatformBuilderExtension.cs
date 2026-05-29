@@ -66,8 +66,8 @@ public static class SyncnetPlatformBuilderExtension
         ConfigureGameServices(builder);
         ConfigureDatabase(builder);
 
-        ConfigureLogger(builder);
-        ConfigureTelemetry(builder);
+        ConfigureLogger(builder, LoggerAction);
+        ConfigureTelemetry(builder, TelemetryAction);
     }
 
     private static void ConfigureGameServices(WebApplicationBuilder builder)
@@ -188,26 +188,31 @@ public static class SyncnetPlatformBuilderExtension
 
     }
 
-    private static void ConfigureLogger(WebApplicationBuilder builder)
+    private static void ConfigureLogger(
+        WebApplicationBuilder builder, 
+        Action<SyncnetLoggerOption>? LoggerAction = null,
+        Action<SyncnetTelemetryOption>? TelemetryAction = null)
     {
-
         Serilog.Debugging.SelfLog.Enable(Console.Error);
 
         builder.Services.AddSerilog((services, loggerConfig) =>
         {
-            SyncnetLoggerOption option = services.GetRequiredService<IOptions<SyncnetLoggerOption>>().Value;
-            SyncnetTelemetryOption syncnetTelemetryOptions = services.GetRequiredService<IOptions<SyncnetTelemetryOption>>().Value;
+            SyncnetLoggerOption loggerOption = new();
+            SyncnetTelemetryOption telemetryOption = new();
+
+            if (LoggerAction != null) LoggerAction(loggerOption);
+            if (TelemetryAction != null) TelemetryAction(telemetryOption); 
 
             loggerConfig
-                .MinimumLevel.Is(option.MinimumLevel)
-                .MinimumLevel.Override("Microsoft", option.Override)
+                .MinimumLevel.Is(loggerOption.MinimumLevel)
+                .MinimumLevel.Override("Microsoft", loggerOption.Override)
                 .Enrich.FromLogContext();
             
-            if(option.EnableConsole) loggerConfig.WriteTo.Console();
-            if(option.IncludeThreadId) loggerConfig.Enrich.WithThreadId();
-            if (!string.IsNullOrEmpty(syncnetTelemetryOptions.Logging.Endpoint)) loggerConfig.WriteTo.OpenTelemetry(option =>
+            if(loggerOption.EnableConsole) loggerConfig.WriteTo.Console();
+            if(loggerOption.IncludeThreadId) loggerConfig.Enrich.WithThreadId();
+            if (!string.IsNullOrEmpty(telemetryOption.Logging.Endpoint)) loggerConfig.WriteTo.OpenTelemetry(option =>
             {
-                option.Endpoint = syncnetTelemetryOptions.Logging.Endpoint;
+                option.Endpoint = telemetryOption.Logging.Endpoint;
                 option.Protocol = Serilog.Sinks.OpenTelemetry.OtlpProtocol.Grpc;
                 option.ResourceAttributes = new Dictionary<string, object>
                 {
@@ -217,9 +222,11 @@ public static class SyncnetPlatformBuilderExtension
 
         });
     }
-    private static void ConfigureTelemetry(WebApplicationBuilder builder)
+    private static void ConfigureTelemetry(WebApplicationBuilder builder, Action<SyncnetTelemetryOption>? TelemetryAction = null)
     {
-        SyncnetTelemetryOption syncnetTelemetryOptions = builder.Services.BuildServiceProvider().GetRequiredService<IOptions<SyncnetTelemetryOption>>().Value;
+        SyncnetTelemetryOption telemetryOption = new();
+        if (TelemetryAction != null) TelemetryAction(telemetryOption);
+
         builder.Services.AddOpenTelemetry()
             .WithMetrics(metrics =>
             {
@@ -229,7 +236,7 @@ public static class SyncnetPlatformBuilderExtension
                     .AddRuntimeInstrumentation()
                     .AddMeter("SyncnetPlatform");
                 
-                if(string.IsNullOrEmpty(syncnetTelemetryOptions.Metric.Endpoint))
+                if(string.IsNullOrEmpty(telemetryOption.Metric.Endpoint))
                 {
                     metrics.AddOtlpExporter();
                 }
@@ -237,8 +244,8 @@ public static class SyncnetPlatformBuilderExtension
                 {
                     metrics.AddOtlpExporter(option =>
                     {
-                        option.Endpoint = new Uri(syncnetTelemetryOptions.Metric.Endpoint);
-                        option.Protocol = syncnetTelemetryOptions.Metric.Protocol;
+                        option.Endpoint = new Uri(telemetryOption.Metric.Endpoint);
+                        option.Protocol = telemetryOption.Metric.Protocol;
                     });
                 }
             })
@@ -249,7 +256,7 @@ public static class SyncnetPlatformBuilderExtension
                     .AddHttpClientInstrumentation()
                     .AddSource("syncnet.traces");
 
-                if(string.IsNullOrEmpty(syncnetTelemetryOptions.Trace.Endpoint))
+                if(string.IsNullOrEmpty(telemetryOption.Trace.Endpoint))
                 {
                     trace.AddOtlpExporter();
                 }
@@ -257,8 +264,8 @@ public static class SyncnetPlatformBuilderExtension
                 {
                     trace.AddOtlpExporter(option =>
                     {
-                        option.Endpoint = new Uri(syncnetTelemetryOptions.Trace.Endpoint);
-                        option.Protocol = syncnetTelemetryOptions.Trace.Protocol;
+                        option.Endpoint = new Uri(telemetryOption.Trace.Endpoint);
+                        option.Protocol = telemetryOption.Trace.Protocol;
                     });
                 }
             });
