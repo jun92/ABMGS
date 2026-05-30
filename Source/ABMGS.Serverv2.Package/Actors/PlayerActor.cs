@@ -12,6 +12,11 @@ using SyncnetPlatform.Protocols.Generated;
 using SyncnetPlatform.Repositories;
 using System.ComponentModel.DataAnnotations;
 using PacketBuilder = SyncnetPlatform.Network.Utils.SyncnetPacketBuilder;
+using System.Threading.Channels;
+using System.Diagnostics;
+using Google.FlatBuffers;
+using SyncnetPlatform.Interfaces.Network.Utils;
+using SyncnetPlatform.Network.Handlers;
 
 namespace SyncnetPlatform.Actors;
 
@@ -30,10 +35,32 @@ public enum PlayRoomMemberUpdateReason
 
 [GenerateSerializer] public record PlayRoomMember(Guid RoomId, Guid PlayerId, string PlayerName);
 
-public class PlayerActor : Grain, IPlayerActor
+public class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, ILocalPlayer
 {
+    private static readonly ActivitySource TraceSource = new("syncnet.traces");
+
+    private readonly struct PendingPacket
+    {
+        public byte[] Data { get; }
+        public Activity? QueueActivity { get; }
+
+        public PendingPacket(byte[] data, Activity? queueActivity)
+        {
+            Data = data;
+            QueueActivity = queueActivity;
+        }
+    }
+
     private readonly ILogger<PlayerActor> _logger;
     private readonly IPlayerModelRepository _playerModelRepository;
+
+    private readonly IPacketRouter _routeTable;
+    private readonly IPacketContextFactory _packetContextFactory;
+    private readonly ISystemPacketHandler _systemPacketHandler;
+    private readonly Channel<PendingPacket> _receiveQueueChannel;
+    private CancellationTokenSource? _ctsForRunRoutingPackets;
+    private Task? _runRoutingPackets;
+    private PacketContext? _packetContext = null;
 
     // player data
 
@@ -50,7 +77,6 @@ public class PlayerActor : Grain, IPlayerActor
     
 
     protected PlayerData _playerData = new();
-    protected IPacketHandlerActor? _packetHandler = null;
 
     /// <summary>
     /// This indicates the actor has been activated from real player with corrent websocket connection.
@@ -66,12 +92,25 @@ public class PlayerActor : Grain, IPlayerActor
 
     public PlayerActor(
         ILogger<PlayerActor> logger,
-        IPlayerModelRepository playerModelRepository
+        IPlayerModelRepository playerModelRepository,
+        IPacketRouter routeTable,
+        IPacketContextFactory packetContextFactory,
+        ISystemPacketHandler systemPacketHandler
         )
     {
         _logger = logger;
         _playerModelRepository = playerModelRepository;
-        
+        _routeTable = routeTable;
+        _packetContextFactory = packetContextFactory;
+        _systemPacketHandler = systemPacketHandler;
+
+        _receiveQueueChannel = Channel.CreateBounded<PendingPacket>(new BoundedChannelOptions(150)
+        {
+            FullMode = BoundedChannelFullMode.Wait,
+            SingleReader = true,
+            SingleWriter = true,
+            AllowSynchronousContinuations = false
+        });
     }
 
     public async Task SetOnline(bool isOnline)
@@ -81,13 +120,11 @@ public class PlayerActor : Grain, IPlayerActor
             Guid ThisPlayerId = GrainContext.GrainId.GetGuidKey();
             _playerData = await _playerModelRepository.GetOrCreate(ThisPlayerId);
             _dbid = _playerData.Id;
-            _packetHandler = GrainFactory.GetGrain<IPacketHandlerActor>(ThisPlayerId);
             _IsOnline = true;
         }
         else
         {
             _IsOnline = false;
-            _packetHandler = null;
             this.DelayDeactivation(TimeSpan.FromMinutes(1));
         }
     }
@@ -98,11 +135,24 @@ public class PlayerActor : Grain, IPlayerActor
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
+        _ctsForRunRoutingPackets = new CancellationTokenSource();
+        _packetContext = _packetContextFactory.Create(this.GetGrainId().GetGuidKey(), this);
+
+        _runRoutingPackets = RunRoutingPackets(_ctsForRunRoutingPackets.Token);
+
+        _routeTable.BuildParamExtractionFuncs<PacketWrapper>();
+        _routeTable.BuildPacketHandlerFunctions<ISystemPacketHandler>(_systemPacketHandler);
+
         await base.OnActivateAsync(cancellationToken);
     }
 
     public override async Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
     {
+        _ctsForRunRoutingPackets?.Cancel();
+        _receiveQueueChannel.Writer.TryComplete();
+        if (_runRoutingPackets != null) await _runRoutingPackets;
+        _packetContext = null;
+
         if(_IsDirtyPlayerData)
         {
             await _playerModelRepository.Update(_playerData);
@@ -240,6 +290,50 @@ public class PlayerActor : Grain, IPlayerActor
 
     }
 
+    public Guid PlayerId => GrainContext.GrainId.GetGuidKey();
+
+
+    public async Task InvokeHandler(byte[] data)
+    {
+        if(_packetContext == null )
+        {
+            _packetContext = _packetContextFactory.Create(this.GetGrainId().GetGuidKey(), this);
+        }
+        await _routeTable.Execute(
+            PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data)), _packetContext);
+    }
+
+    public async Task PushRecievedData(byte[] Data)
+    {
+        var queueActivity = TraceSource.StartActivity("QueueResidenceTime", ActivityKind.Internal);
+        await _receiveQueueChannel.Writer.WriteAsync(new PendingPacket(Data, queueActivity));
+    }
+
+    public async Task RunRoutingPackets(CancellationToken shutdownToken)
+    {
+        try
+        {
+            await foreach (var pending in _receiveQueueChannel.Reader.ReadAllAsync(shutdownToken))
+            {
+                pending.QueueActivity?.Dispose();
+
+                using var handleActivity = TraceSource.StartActivity(
+                    "HandlePacketLogic", 
+                    ActivityKind.Internal, 
+                    parentContext: pending.QueueActivity?.Context ?? default);
+
+                await InvokeHandler(pending.Data);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Normal shutdown
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in RunRoutingPackets loop");
+        }
+    }
 }
 
 
