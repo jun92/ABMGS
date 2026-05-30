@@ -104,7 +104,6 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
     }
     protected async Task RunGameLoop(Guid playerId, WebSocket SocketObject, CancellationToken mainLoopExitToken)
     {
-        IPacketHandlerActor packetHandlingActor = _clusterClient.GetGrain<IPacketHandlerActor>(playerId);
         IPlayerActor playerActor = _clusterClient.GetGrain<IPlayerActor>(playerId);
         await playerActor.SetOnline(true);
 
@@ -164,7 +163,7 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
 
                 if (result.EndOfMessage)
                 {
-                    await packetHandlingActor.PushRecievedData(ms.ToArray());
+                    await playerActor.PushRecievedData(ms.ToArray());
                     break;
                 }
             }
