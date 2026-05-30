@@ -6,7 +6,7 @@ using System.Net.WebSockets;
 
 namespace SyncnetPlatform.Interfaces.Actors;
 
-public interface IPlayerActor : IGrainWithGuidKey
+public interface IPlayerActor : IGrainWithGuidKey, IPacketHandlerActor
 {
     Task<Guid> CreateAndJoinPlayRoom(string roomName, bool isPrivate, int maxCapacity, string roomPassword);
     public Task Echo(int seq);
