@@ -35,7 +35,7 @@ public enum PlayRoomMemberUpdateReason
 
 [GenerateSerializer] public record PlayRoomMember(Guid RoomId, Guid PlayerId, string PlayerName);
 
-public class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, ILocalPlayer
+public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPacketHandler
 {
     private static readonly ActivitySource TraceSource = new("syncnet.traces");
 
@@ -56,7 +56,6 @@ public class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, ILocalPlaye
 
     private readonly IPacketRouter _routeTable;
     private readonly IPacketContextFactory _packetContextFactory;
-    private readonly ISystemPacketHandler _systemPacketHandler;
     private readonly Channel<PendingPacket> _receiveQueueChannel;
     private CancellationTokenSource? _ctsForRunRoutingPackets;
     private Task? _runRoutingPackets;
@@ -94,15 +93,13 @@ public class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, ILocalPlaye
         ILogger<PlayerActor> logger,
         IPlayerModelRepository playerModelRepository,
         IPacketRouter routeTable,
-        IPacketContextFactory packetContextFactory,
-        ISystemPacketHandler systemPacketHandler
+        IPacketContextFactory packetContextFactory
         )
     {
         _logger = logger;
         _playerModelRepository = playerModelRepository;
         _routeTable = routeTable;
         _packetContextFactory = packetContextFactory;
-        _systemPacketHandler = systemPacketHandler;
 
         _receiveQueueChannel = Channel.CreateBounded<PendingPacket>(new BoundedChannelOptions(150)
         {
@@ -136,12 +133,12 @@ public class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, ILocalPlaye
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         _ctsForRunRoutingPackets = new CancellationTokenSource();
-        _packetContext = _packetContextFactory.Create(this.GetGrainId().GetGuidKey(), this);
+        _packetContext = _packetContextFactory.Create(this.GetGrainId().GetGuidKey());
 
         _runRoutingPackets = RunRoutingPackets(_ctsForRunRoutingPackets.Token);
 
         _routeTable.BuildParamExtractionFuncs<PacketWrapper>();
-        _routeTable.BuildPacketHandlerFunctions<ISystemPacketHandler>(_systemPacketHandler);
+        _routeTable.BuildPacketHandlerFunctions<PlayerActor>(this);
 
         await base.OnActivateAsync(cancellationToken);
     }
@@ -297,7 +294,7 @@ public class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, ILocalPlaye
     {
         if(_packetContext == null )
         {
-            _packetContext = _packetContextFactory.Create(this.GetGrainId().GetGuidKey(), this);
+            _packetContext = _packetContextFactory.Create(this.GetGrainId().GetGuidKey());
         }
         await _routeTable.Execute(
             PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data)), _packetContext);

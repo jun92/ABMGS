@@ -1,4 +1,3 @@
-using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 
 namespace SyncnetPlatform.Network.Handlers;
@@ -12,9 +11,9 @@ public class PacketContextFactory : IPacketContextFactory
         _grainFactory = grainFactory;
     }
 
-    public PacketContext Create(Guid playerId, ILocalPlayer localPlayer)
+    public PacketContext Create(Guid playerId)
     {
-        return new PacketContext(playerId, _grainFactory, localPlayer);
+        return new PacketContext(playerId, _grainFactory);
     }
 }
 

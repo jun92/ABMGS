@@ -1,54 +1,45 @@
 using Microsoft.Extensions.Logging;
-using SyncnetPlatform.Actors;
-using SyncnetPlatform.Extensions;
-using SyncnetPlatform.Interfaces.Actors;
-using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Network.Attributes;
-using SyncnetPlatform.Network.Utils;
+using SyncnetPlatform.Network.Handlers;
 using SyncnetPlatform.Protocols.Generated;
+using SyncnetPlatform.Extensions;
+using SyncnetPlatform.Network.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace SyncnetPlatform.Network.Handlers;
+namespace SyncnetPlatform.Actors;
 
-public class SystemPacketHandler : ISystemPacketHandler
+public partial class PlayerActor
 {
-    private readonly ILogger<SystemPacketHandler> _logger;
-    public SystemPacketHandler(ILogger<SystemPacketHandler> logger)
-    {
-        _logger = logger;
-    }
-
     [PacketHandler(typeof(Ping))]
     public async Task HandlePing(Ping request, PacketContext ctx)
     {
-        ILocalPlayer player = ctx.GetPlayer();
-        await player.PingPong(request.Seq);
+        await PingPong(request.Seq);
     }
 
     [PacketHandler(typeof(ReqUserInfo))]
     public async Task HandleReqUserInfo(ReqUserInfo request, PacketContext ctx)
     {
-        ILocalPlayer player = ctx.GetPlayer();
-        string playerName = await player.GetPlayerName();
+        string playerName = await GetPlayerName();
         await ctx.SendData(new ResUserInfoArgs(ctx.GetPlayerId(), playerName));
     }
 
     [PacketHandler(typeof(ReqUpdatePlayerName))]
     public async Task HandleReqUpdatePlayerName(ReqUpdatePlayerName request, PacketContext ctx)
     {
-        ILocalPlayer player = ctx.GetPlayer();
-        await player.UpdatePlayerName(request.PlayerName);
+        await UpdatePlayerName(request.PlayerName);
         await ctx.SendData(new ResUpdatePlayerNameArgs(PacketErrorCodes.Success));
     }
 
     [PacketHandler(typeof(ReqDirectDeliveryData))]
     public async Task HandleReqDirectDeliveryData(ReqDirectDeliveryData request, PacketContext ctx)
     {
-        ILocalPlayer player = ctx.GetPlayer();
         Guid toPlayerId = default;
-
         toPlayerId.FromGuidType(request.ToPlayerId);
 
-        PacketErrorCodes result = await player.SendDirectDeliverData(
+        PacketErrorCodes result = await SendDirectDeliverData(
             toPlayerId,
             request.Data, 
             request.DataType);
@@ -56,34 +47,29 @@ public class SystemPacketHandler : ISystemPacketHandler
         await ctx.SendData(new ResDirectDeliveryDataArgs(result));
     }
 
-
     [PacketHandler(typeof(ReqCreateRoom))]
     public async Task HandleReqCreateroom(ReqCreateRoom request, PacketContext ctx)
     {
-        ILocalPlayer player = ctx.GetPlayer();
-
-        Guid RoomId = await player.CreateAndJoinPlayRoom(request.Name, request.Private, request.MaxCount, request.Password);
+        Guid RoomId = await CreateAndJoinPlayRoom(request.Name, request.Private, request.MaxCount, request.Password);
         await ctx.SendData(new ResCreateRoomArgs(PacketErrorCodes.Success, RoomId));
     }
+
     [PacketHandler(typeof(ReqJoinRoom))]
     public async Task HandleReqJoinRoom(ReqJoinRoom request, PacketContext ctx)
     {
-        ILocalPlayer player = ctx.GetPlayer();
         Guid RoomId = default;
         RoomId.FromGuidType(request.RoomId);
-        PacketErrorCodes resultCode = await player.JoinPlayRoom(RoomId);
+        PacketErrorCodes resultCode = await JoinPlayRoom(RoomId);
 
         await ctx.SendData(new ResJoinRoomArgs(resultCode));
     }
 
-
     [PacketHandler(typeof(ReqPlayerListInRoom))]
     public async Task HandleReqPlayerListInRoom(ReqPlayerListInRoom request, PacketContext ctx)
     {
-        ILocalPlayer player = ctx.GetPlayer();
         Guid RoomId = default;
         RoomId.FromGuidType(request.RoomId);
-        List<PlayRoomMember> Players = await player.GetPlayerListInPlayRoom(RoomId);
+        List<PlayRoomMember> Players = await GetPlayerListInPlayRoom(RoomId);
 
         await ctx.SendData(
             new ResPlayerListInRoomArgs(
@@ -95,15 +81,12 @@ public class SystemPacketHandler : ISystemPacketHandler
     [PacketHandler(typeof(ReqLeaveRoom))]
     public async Task HandleReqLeavePlayRoom(ReqLeaveRoom request, PacketContext ctx)
     {
-        ILocalPlayer player = ctx.GetPlayer();
         Guid RoomId = default;
         RoomId.FromGuidType(request.RoomId);
-        PacketErrorCodes result = await player.LeavePlayRoom(RoomId);
+        PacketErrorCodes result = await LeavePlayRoom(RoomId);
 
         await ctx.SendData<ResLeaveRoomArgs>(
             new ResLeaveRoomArgs(result)
             );
     }
-
 }
-
