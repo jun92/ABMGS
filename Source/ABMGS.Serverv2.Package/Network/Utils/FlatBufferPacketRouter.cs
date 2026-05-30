@@ -15,28 +15,28 @@ namespace SyncnetPlatform.Network.Utils;
 public class FlatBufferPacketRouter : IPacketRouter
 {
     private readonly ILogger<FlatBufferPacketRouter> _logger;
-    private readonly Dictionary<SystemPacket, Action<object, PacketContext>> _packetHandlerTable = [];
+    private readonly Dictionary<SystemPacket, Func<object, PacketContext, Task>> _packetHandlerTable = [];
     private readonly Dictionary<SystemPacket, Func<PacketWrapper, object>> _paramExtractionFuncTable = [];
 
     public FlatBufferPacketRouter(ILogger<FlatBufferPacketRouter> logger)
     {
         _logger = logger;
     }
-    public void Execute(PacketWrapper packetWrapper, PacketContext ctx)
+    public async Task Execute(PacketWrapper packetWrapper, PacketContext ctx)
     {
         if(_paramExtractionFuncTable.TryGetValue(packetWrapper.SystemPacketType, out var paramGetfunc))
         {
             if(_packetHandlerTable.TryGetValue(packetWrapper.SystemPacketType, out var handleFunc))
             {
-                handleFunc(paramGetfunc(packetWrapper), ctx);
+                await handleFunc(paramGetfunc(packetWrapper), ctx);
                 return;
             }
         }
         _logger.LogError($"Not found the handler function for type of {packetWrapper.SystemPacketType.ToString()}");
     }
-    public void Execute(object packet, PacketContext ctx)
+    public Task Execute(object packet, PacketContext ctx)
     {
-        Execute((PacketWrapper)packet, ctx);
+        return Execute((PacketWrapper)packet, ctx);
     }
 
     //public void BuildParamExtractionFuncs(PacketWrapper packetWrapper) 

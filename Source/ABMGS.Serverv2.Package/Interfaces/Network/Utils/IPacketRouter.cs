@@ -10,5 +10,5 @@ public interface IPacketRouter
 {
     void BuildPacketHandlerFunctions<PacketHandlerType>(PacketHandlerType handler) where PacketHandlerType : IPacketHandler;
     void BuildParamExtractionFuncs<PacketWrapperType>() where PacketWrapperType : IFlatbufferObject;
-    void Execute(object packet, PacketContext ctx);
+    Task Execute(object packet, PacketContext ctx);
 }
