@@ -11,14 +11,16 @@ public class PacketContext
 {
     private readonly IGrainFactory _grainFactory;
     private readonly Guid _playerId;
+    private readonly ILocalPlayer _localPlayer;
 
-    public PacketContext(Guid playerId, IGrainFactory grainFactory)
+    public PacketContext(Guid playerId, IGrainFactory grainFactory, ILocalPlayer localPlayer)
     {
         _playerId = playerId;
         _grainFactory = grainFactory;
+        _localPlayer = localPlayer;
     }
     public Guid GetPlayerId() => _playerId;
-    public IPlayerActor GetPlayer() => _grainFactory.GetGrain<IPlayerActor>(_playerId);
+    public ILocalPlayer GetPlayer() => _localPlayer;
     public IPlayerDataActor GetPlayerData() => _grainFactory.GetGrain<IPlayerDataActor>(_playerId);
     public IPlayerInventoryActor GetPlayerInventory() => _grainFactory.GetGrain<IPlayerInventoryActor>(_playerId);
     //public async Task SendData(Guid toPlayerId, byte[] data)

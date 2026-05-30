@@ -20,14 +20,14 @@ public class SystemPacketHandler : ISystemPacketHandler
     [PacketHandler(typeof(Ping))]
     public async Task HandlePing(Ping request, PacketContext ctx)
     {
-        IPlayerActor player = ctx.GetPlayer();
+        ILocalPlayer player = ctx.GetPlayer();
         await player.PingPong(request.Seq);
     }
 
     [PacketHandler(typeof(ReqUserInfo))]
     public async Task HandleReqUserInfo(ReqUserInfo request, PacketContext ctx)
     {
-        IPlayerActor player = ctx.GetPlayer();
+        ILocalPlayer player = ctx.GetPlayer();
         string playerName = await player.GetPlayerName();
         await ctx.SendData(new ResUserInfoArgs(ctx.GetPlayerId(), playerName));
     }
@@ -35,7 +35,7 @@ public class SystemPacketHandler : ISystemPacketHandler
     [PacketHandler(typeof(ReqUpdatePlayerName))]
     public async Task HandleReqUpdatePlayerName(ReqUpdatePlayerName request, PacketContext ctx)
     {
-        IPlayerActor player = ctx.GetPlayer();
+        ILocalPlayer player = ctx.GetPlayer();
         await player.UpdatePlayerName(request.PlayerName);
         await ctx.SendData(new ResUpdatePlayerNameArgs(PacketErrorCodes.Success));
     }
@@ -43,7 +43,7 @@ public class SystemPacketHandler : ISystemPacketHandler
     [PacketHandler(typeof(ReqDirectDeliveryData))]
     public async Task HandleReqDirectDeliveryData(ReqDirectDeliveryData request, PacketContext ctx)
     {
-        IPlayerActor player = ctx.GetPlayer();
+        ILocalPlayer player = ctx.GetPlayer();
         Guid toPlayerId = default;
 
         toPlayerId.FromGuidType(request.ToPlayerId);
@@ -60,7 +60,7 @@ public class SystemPacketHandler : ISystemPacketHandler
     [PacketHandler(typeof(ReqCreateRoom))]
     public async Task HandleReqCreateroom(ReqCreateRoom request, PacketContext ctx)
     {
-        IPlayerActor player = ctx.GetPlayer();
+        ILocalPlayer player = ctx.GetPlayer();
 
         Guid RoomId = await player.CreateAndJoinPlayRoom(request.Name, request.Private, request.MaxCount, request.Password);
         await ctx.SendData(new ResCreateRoomArgs(PacketErrorCodes.Success, RoomId));
@@ -68,7 +68,7 @@ public class SystemPacketHandler : ISystemPacketHandler
     [PacketHandler(typeof(ReqJoinRoom))]
     public async Task HandleReqJoinRoom(ReqJoinRoom request, PacketContext ctx)
     {
-        IPlayerActor player = ctx.GetPlayer();
+        ILocalPlayer player = ctx.GetPlayer();
         Guid RoomId = default;
         RoomId.FromGuidType(request.RoomId);
         PacketErrorCodes resultCode = await player.JoinPlayRoom(RoomId);
@@ -80,7 +80,7 @@ public class SystemPacketHandler : ISystemPacketHandler
     [PacketHandler(typeof(ReqPlayerListInRoom))]
     public async Task HandleReqPlayerListInRoom(ReqPlayerListInRoom request, PacketContext ctx)
     {
-        IPlayerActor player = ctx.GetPlayer();
+        ILocalPlayer player = ctx.GetPlayer();
         Guid RoomId = default;
         RoomId.FromGuidType(request.RoomId);
         List<PlayRoomMember> Players = await player.GetPlayerListInPlayRoom(RoomId);
@@ -95,7 +95,7 @@ public class SystemPacketHandler : ISystemPacketHandler
     [PacketHandler(typeof(ReqLeaveRoom))]
     public async Task HandleReqLeavePlayRoom(ReqLeaveRoom request, PacketContext ctx)
     {
-        IPlayerActor player = ctx.GetPlayer();
+        ILocalPlayer player = ctx.GetPlayer();
         Guid RoomId = default;
         RoomId.FromGuidType(request.RoomId);
         PacketErrorCodes result = await player.LeavePlayRoom(RoomId);
