@@ -32,7 +32,7 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
         {
             FullMode = BoundedChannelFullMode.Wait,
             SingleReader = true,
-            SingleWriter = true,
+            SingleWriter = false,
             AllowSynchronousContinuations = false,
             Capacity = 100 // TODO: Should go to config something later.
         });
