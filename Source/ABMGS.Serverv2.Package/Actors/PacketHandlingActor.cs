@@ -54,15 +54,14 @@ public class PacketHandlingActor : Grain, IPacketHandlerActor
         _packetContext = null;
     }
 
-    public Task InvokeHandler(byte[] data)
+    public async Task InvokeHandler(byte[] data)
     {
         if(_packetContext == null )
         {
             _packetContext = _packetContextFactory.Create(this.GetGrainId().GetGuidKey());
         }
-        _routeTable.Execute(
+        await _routeTable.Execute(
             PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data)), _packetContext);
-        return Task.CompletedTask;
     }
 
     public Task PushRecievedData(byte[] Data)
@@ -71,11 +70,6 @@ public class PacketHandlingActor : Grain, IPacketHandlerActor
         return Task.CompletedTask;
     }
 
-    public Task PushSendData<SyncnetPacketType>(SyncnetPacketType packet) where SyncnetPacketType : IPacketBuildArgs
-    {
-        _receiveQueue.Enqueue(SyncnetPacketBuilder.Build<SyncnetPacketType>(packet));
-        return Task.CompletedTask;
-    }
     public async Task RunRoutingPackets(CancellationToken shutdownToken)
     {
         while(!shutdownToken.IsCancellationRequested)

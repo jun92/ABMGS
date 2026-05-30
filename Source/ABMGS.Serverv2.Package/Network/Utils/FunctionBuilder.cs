@@ -20,7 +20,7 @@ public static class FunctionBuilder
         return lambda.Compile();
     }
 
-    public static Action<object, PacketContext> BuildFunctionWithParameterType<HoldingClassType>(
+    public static Func<object, PacketContext, Task> BuildFunctionWithParameterType<HoldingClassType>(
         HoldingClassType classInstance, 
         MethodInfo method) 
     {
@@ -40,7 +40,7 @@ public static class FunctionBuilder
             paramPacketContext
             );
 
-        var lambda = Expression.Lambda<Action<object, PacketContext>>(methodCallExpression, parameter, paramPacketContext);
+        var lambda = Expression.Lambda<Func<object, PacketContext, Task>>(methodCallExpression, parameter, paramPacketContext);
 
         return lambda.Compile();
     }

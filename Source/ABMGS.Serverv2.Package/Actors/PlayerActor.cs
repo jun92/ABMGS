@@ -115,14 +115,14 @@ public class PlayerActor : Grain, IPlayerActor
         return Task.CompletedTask;
     }
 
-    public Task PingPong(int seq)
+    public async Task PingPong(int seq)
     {
         if(!_IsOnline)
         {
-            return Task.CompletedTask;
+            return;
         }
-        _packetHandler!.PushSendData<PongArgs>(new PongArgs(seq + 1));
-        return Task.CompletedTask;
+        var sendData = GrainFactory.GetGrain<ISendDataGrain>(GrainContext.GrainId.GetGuidKey());
+        await sendData.Send(PacketBuilder.Build<PongArgs>(new PongArgs(seq + 1)));
     }
 
     public Task UpdatePlayerName(string newName)
@@ -149,7 +149,8 @@ public class PlayerActor : Grain, IPlayerActor
             return PacketErrorCodes.PlayerOffline;
         }
         OnDirectDeliveryDataArgs data = new OnDirectDeliveryDataArgs(fromPlayerId, message, dataType);
-        await _packetHandler!.PushSendData<OnDirectDeliveryDataArgs>(data);
+        var sendData = GrainFactory.GetGrain<ISendDataGrain>(GrainContext.GrainId.GetGuidKey());
+        await sendData.Send(PacketBuilder.Build<OnDirectDeliveryDataArgs>(data));
         return PacketErrorCodes.Success;
     }
 
@@ -193,26 +194,26 @@ public class PlayerActor : Grain, IPlayerActor
     public async Task OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember, PlayRoomMemberUpdateReason updateReason )
     {
         if (!_IsOnline) return;
+        var sendData = GrainFactory.GetGrain<ISendDataGrain>(GrainContext.GrainId.GetGuidKey());
         switch (updateReason)
         {
             case PlayRoomMemberUpdateReason.Join:
-                await _packetHandler!.PushSendData<OnPlayerJoinRoomArgs>(
+                await sendData.Send(PacketBuilder.Build<OnPlayerJoinRoomArgs>(
                     new OnPlayerJoinRoomArgs(
                         playRoomMember.RoomId,
                         playRoomMember.PlayerId,
                         playRoomMember.PlayerName
                     )
-                    );
+                    ));
                 break;
             case PlayRoomMemberUpdateReason.Leave:
-                await _packetHandler!.PushSendData<OnPlayerLeaveRoomArgs>(
-                    new OnPlayerLeaveRoomArgs
-                    (
+                await sendData.Send(PacketBuilder.Build<OnPlayerLeaveRoomArgs>(
+                    new OnPlayerLeaveRoomArgs(
                         playRoomMember.RoomId,
                         playRoomMember.PlayerId,
                         playRoomMember.PlayerName
                     )
-                    );
+                    ));
                 break;
         }
     }

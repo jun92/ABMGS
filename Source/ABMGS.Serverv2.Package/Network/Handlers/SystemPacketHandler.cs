@@ -23,11 +23,7 @@ public class SystemPacketHandler : ISystemPacketHandler
         IPlayerActor player = ctx.GetPlayer();
         await player.PingPong(request.Seq);
     }
-    [PacketHandler(typeof(Pong))]
-    public async Task HandlePong(Pong request, PacketContext ctx)
-    {
-        await ctx.SendDataRaw(request.ByteBuffer.ToFullArray());
-    }
+
     [PacketHandler(typeof(ReqUserInfo))]
     public async Task HandleReqUserInfo(ReqUserInfo request, PacketContext ctx)
     {
@@ -60,11 +56,6 @@ public class SystemPacketHandler : ISystemPacketHandler
         await ctx.SendData(new ResDirectDeliveryDataArgs(result));
     }
 
-    [PacketHandler(typeof(OnDirectDeliveryData))]
-    public async Task HandleOnDirectDeliveryData(OnDirectDeliveryData request, PacketContext ctx)
-    {
-        await ctx.SendDataRaw(request.ByteBuffer.ToFullArray());
-    }
 
     [PacketHandler(typeof(ReqCreateRoom))]
     public async Task HandleReqCreateroom(ReqCreateRoom request, PacketContext ctx)
@@ -85,11 +76,6 @@ public class SystemPacketHandler : ISystemPacketHandler
         await ctx.SendData(new ResJoinRoomArgs(resultCode));
     }
 
-    [PacketHandler(typeof(OnPlayerJoinRoom))]
-    public async Task HandleOnPlayerJoinRoom(OnPlayerJoinRoom request, PacketContext ctx)
-    {
-        await ctx.SendDataRaw(request.ByteBuffer.ToFullArray());
-    }
 
     [PacketHandler(typeof(ReqPlayerListInRoom))]
     public async Task HandleReqPlayerListInRoom(ReqPlayerListInRoom request, PacketContext ctx)
@@ -118,10 +104,6 @@ public class SystemPacketHandler : ISystemPacketHandler
             new ResLeaveRoomArgs(result)
             );
     }
-    [PacketHandler(typeof(OnPlayerLeaveRoom))]
-    public async Task HandleOnPlayerLeaveRoom(OnPlayerLeaveRoom request, PacketContext ctx)
-    {
-        await ctx.SendDataRaw(request.ByteBuffer.ToFullArray());
-    }
+
 }
 
