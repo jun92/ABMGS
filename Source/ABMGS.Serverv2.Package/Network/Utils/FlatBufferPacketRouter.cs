@@ -5,7 +5,6 @@ using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Utils;
 using SyncnetPlatform.Network.Attributes;
-using SyncnetPlatform.Network.Handlers;
 using SyncnetPlatform.Protocols.Generated;
 using System.Linq;
 using System.Reflection;
@@ -15,28 +14,28 @@ namespace SyncnetPlatform.Network.Utils;
 public class FlatBufferPacketRouter : IPacketRouter
 {
     private readonly ILogger<FlatBufferPacketRouter> _logger;
-    private readonly Dictionary<SystemPacket, Func<object, PacketContext, Task>> _packetHandlerTable = [];
+    private readonly Dictionary<SystemPacket, Func<object, Task>> _packetHandlerTable = [];
     private readonly Dictionary<SystemPacket, Func<PacketWrapper, object>> _paramExtractionFuncTable = [];
 
     public FlatBufferPacketRouter(ILogger<FlatBufferPacketRouter> logger)
     {
         _logger = logger;
     }
-    public async Task Execute(PacketWrapper packetWrapper, PacketContext ctx)
+    public async Task Execute(PacketWrapper packetWrapper)
     {
         if(_paramExtractionFuncTable.TryGetValue(packetWrapper.SystemPacketType, out var paramGetfunc))
         {
             if(_packetHandlerTable.TryGetValue(packetWrapper.SystemPacketType, out var handleFunc))
             {
-                await handleFunc(paramGetfunc(packetWrapper), ctx);
+                await handleFunc(paramGetfunc(packetWrapper));
                 return;
             }
         }
         _logger.LogError($"Not found the handler function for type of {packetWrapper.SystemPacketType.ToString()}");
     }
-    public Task Execute(object packet, PacketContext ctx)
+    public Task Execute(object packet)
     {
-        return Execute((PacketWrapper)packet, ctx);
+        return Execute((PacketWrapper)packet);
     }
 
     //public void BuildParamExtractionFuncs(PacketWrapper packetWrapper) 

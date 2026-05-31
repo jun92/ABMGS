@@ -23,7 +23,6 @@ using SyncnetPlatform.Extensions.Options;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using SyncnetPlatform.Interfaces.Network.Utils;
-using SyncnetPlatform.Network.Handlers;
 using SyncnetPlatform.Network.Sessions;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Repositories;
@@ -75,7 +74,6 @@ public static class SyncnetPlatformBuilderExtension
     {
         builder.Services.AddTransient<IGameSessionService, GameSessionService>();
         builder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
-        builder.Services.AddSingleton<IPacketContextFactory, PacketContextFactory>();
     }
 
     private static void ConfigureDatabase(WebApplicationBuilder builder)

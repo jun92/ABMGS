@@ -10,7 +10,6 @@ using SyncnetPlatform.Databases;
 using SyncnetPlatform.Extensions.Options;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Utils;
-using SyncnetPlatform.Network.Handlers;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Repositories;
 
