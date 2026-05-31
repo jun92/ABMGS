@@ -60,6 +60,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     private CancellationTokenSource? _ctsForRunRoutingPackets;
     private Task? _runRoutingPackets;
     private PacketContext? _packetContext = null;
+    private ISendDataGrain _sendDataGrain = null!;
 
     // player data
 
@@ -134,6 +135,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     {
         _ctsForRunRoutingPackets = new CancellationTokenSource();
         _packetContext = _packetContextFactory.Create(this.GetGrainId().GetGuidKey());
+        _sendDataGrain = GrainFactory.GetGrain<ISendDataGrain>(this.GetGrainId().GetGuidKey());
 
         _runRoutingPackets = RunRoutingPackets(_ctsForRunRoutingPackets.Token);
 
@@ -168,8 +170,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         {
             return;
         }
-        var sendData = GrainFactory.GetGrain<ISendDataGrain>(GrainContext.GrainId.GetGuidKey());
-        await sendData.Send(PacketBuilder.Build<PongArgs>(new PongArgs(seq + 1)));
+        await _sendDataGrain.Send(PacketBuilder.Build<PongArgs>(new PongArgs(seq + 1)));
     }
 
     public Task UpdatePlayerName(string newName)
@@ -196,8 +197,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
             return PacketErrorCodes.PlayerOffline;
         }
         OnDirectDeliveryDataArgs data = new OnDirectDeliveryDataArgs(fromPlayerId, message, dataType);
-        var sendData = GrainFactory.GetGrain<ISendDataGrain>(GrainContext.GrainId.GetGuidKey());
-        await sendData.Send(PacketBuilder.Build<OnDirectDeliveryDataArgs>(data));
+        await _sendDataGrain.Send(PacketBuilder.Build<OnDirectDeliveryDataArgs>(data));
         return PacketErrorCodes.Success;
     }
 
@@ -241,11 +241,10 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     public async Task OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember, PlayRoomMemberUpdateReason updateReason )
     {
         if (!_IsOnline) return;
-        var sendData = GrainFactory.GetGrain<ISendDataGrain>(GrainContext.GrainId.GetGuidKey());
         switch (updateReason)
         {
             case PlayRoomMemberUpdateReason.Join:
-                await sendData.Send(PacketBuilder.Build<OnPlayerJoinRoomArgs>(
+                await _sendDataGrain.Send(PacketBuilder.Build<OnPlayerJoinRoomArgs>(
                     new OnPlayerJoinRoomArgs(
                         playRoomMember.RoomId,
                         playRoomMember.PlayerId,
@@ -254,7 +253,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
                     ));
                 break;
             case PlayRoomMemberUpdateReason.Leave:
-                await sendData.Send(PacketBuilder.Build<OnPlayerLeaveRoomArgs>(
+                await _sendDataGrain.Send(PacketBuilder.Build<OnPlayerLeaveRoomArgs>(
                     new OnPlayerLeaveRoomArgs(
                         playRoomMember.RoomId,
                         playRoomMember.PlayerId,
