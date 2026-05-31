@@ -5,6 +5,6 @@ namespace SyncnetPlatform.Utils.Telemetry;
 
 public static class SyncnetTelemetry
 {
-    public static readonly ActivitySource TraceSource = new(Constants.Telemetry.TraceSource);
+    public static readonly ActivitySource Trace = new(Constants.Telemetry.TraceSource);
     public static readonly Meter Meter = new(Constants.Telemetry.MeterName);
 }

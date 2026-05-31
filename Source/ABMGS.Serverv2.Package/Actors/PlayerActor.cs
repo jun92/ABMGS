@@ -302,7 +302,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
 
     public async Task PushRecievedData(byte[] Data)
     {
-        var queueActivity = SyncnetTelemetry.TraceSource.StartActivity("InReceiveQueue", ActivityKind.Internal);
+        var queueActivity = SyncnetTelemetry.Trace.StartActivity("InReceiveQueue", ActivityKind.Internal);
         await _receiveQueueChannel.Writer.WriteAsync(new PendingPacket(Data, queueActivity));
     }
 
@@ -314,7 +314,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
             {
                 pending.QueueActivity?.Dispose();
 
-                using var handleActivity = SyncnetTelemetry.TraceSource.StartActivity(
+                using var handleActivity = SyncnetTelemetry.Trace.StartActivity(
                     "HandlePacketLogic", 
                     ActivityKind.Internal, 
                     parentContext: pending.QueueActivity?.Context ?? default);
