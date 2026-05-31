@@ -17,6 +17,8 @@ using System.Diagnostics;
 using Google.FlatBuffers;
 using SyncnetPlatform.Interfaces.Network.Utils;
 using SyncnetPlatform.Network.Handlers;
+using SyncnetPlatform.Utils;
+using SyncnetPlatform.Utils.Telemetry;
 
 namespace SyncnetPlatform.Actors;
 
@@ -37,8 +39,6 @@ public enum PlayRoomMemberUpdateReason
 
 public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPacketHandler
 {
-    private static readonly ActivitySource TraceSource = new("syncnet.traces");
-
     private readonly struct PendingPacket
     {
         public byte[] Data { get; }
@@ -302,7 +302,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
 
     public async Task PushRecievedData(byte[] Data)
     {
-        var queueActivity = TraceSource.StartActivity("QueueResidenceTime", ActivityKind.Internal);
+        var queueActivity = SyncnetTelemetry.TraceSource.StartActivity("InReceiveQueue", ActivityKind.Internal);
         await _receiveQueueChannel.Writer.WriteAsync(new PendingPacket(Data, queueActivity));
     }
 
@@ -314,7 +314,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
             {
                 pending.QueueActivity?.Dispose();
 
-                using var handleActivity = TraceSource.StartActivity(
+                using var handleActivity = SyncnetTelemetry.TraceSource.StartActivity(
                     "HandlePacketLogic", 
                     ActivityKind.Internal, 
                     parentContext: pending.QueueActivity?.Context ?? default);
