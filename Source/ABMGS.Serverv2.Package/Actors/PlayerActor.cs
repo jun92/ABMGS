@@ -16,7 +16,6 @@ using System.Threading.Channels;
 using System.Diagnostics;
 using Google.FlatBuffers;
 using SyncnetPlatform.Interfaces.Network.Utils;
-using SyncnetPlatform.Network.Handlers;
 using SyncnetPlatform.Utils;
 using SyncnetPlatform.Utils.Telemetry;
 
@@ -55,11 +54,9 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     private readonly IPlayerModelRepository _playerModelRepository;
 
     private readonly IPacketRouter _routeTable;
-    private readonly IPacketContextFactory _packetContextFactory;
     private readonly Channel<PendingPacket> _receiveQueueChannel;
     private CancellationTokenSource? _ctsForRunRoutingPackets;
     private Task? _runRoutingPackets;
-    private PacketContext? _packetContext = null;
     private ISendDataGrain _sendDataGrain = null!;
 
     // player data
@@ -93,14 +90,12 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     public PlayerActor(
         ILogger<PlayerActor> logger,
         IPlayerModelRepository playerModelRepository,
-        IPacketRouter routeTable,
-        IPacketContextFactory packetContextFactory
+        IPacketRouter routeTable
         )
     {
         _logger = logger;
         _playerModelRepository = playerModelRepository;
         _routeTable = routeTable;
-        _packetContextFactory = packetContextFactory;
 
         _receiveQueueChannel = Channel.CreateBounded<PendingPacket>(new BoundedChannelOptions(150)
         {
@@ -134,7 +129,6 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         _ctsForRunRoutingPackets = new CancellationTokenSource();
-        _packetContext = _packetContextFactory.Create(this.GetGrainId().GetGuidKey());
         _sendDataGrain = GrainFactory.GetGrain<ISendDataGrain>(this.GetGrainId().GetGuidKey());
 
         _runRoutingPackets = RunRoutingPackets(_ctsForRunRoutingPackets.Token);
@@ -150,7 +144,6 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         _ctsForRunRoutingPackets?.Cancel();
         _receiveQueueChannel.Writer.TryComplete();
         if (_runRoutingPackets != null) await _runRoutingPackets;
-        _packetContext = null;
 
         if(_IsDirtyPlayerData)
         {
@@ -291,12 +284,8 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
 
     public async Task InvokeHandler(byte[] data)
     {
-        if(_packetContext == null )
-        {
-            _packetContext = _packetContextFactory.Create(this.GetGrainId().GetGuidKey());
-        }
         await _routeTable.Execute(
-            PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data)), _packetContext);
+            PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data)));
     }
 
     public async Task PushRecievedData(byte[] Data)
