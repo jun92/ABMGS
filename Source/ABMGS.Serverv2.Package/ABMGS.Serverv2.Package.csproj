@@ -20,7 +20,7 @@
     <PackageReference Include="Microsoft.Orleans.Clustering.Redis" Version="10.1.0" />
     <PackageReference Include="Microsoft.Orleans.Dashboard" Version="10.1.0" />
     <PackageReference Include="Microsoft.Orleans.Server" Version="10.1.0" />
-    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
