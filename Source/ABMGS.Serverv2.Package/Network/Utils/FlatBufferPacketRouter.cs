@@ -6,15 +6,19 @@ using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Utils;
 using SyncnetPlatform.Network.Attributes;
 using SyncnetPlatform.Protocols.Generated;
+using SyncnetPlatform.Utils.Telemetry;
 using System.Linq;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace SyncnetPlatform.Network.Utils;
 
 public class FlatBufferPacketRouter : IPacketRouter
 {
+    private record PacketHandlerInfo(Func<object, Task> HandlerFunc, string MethodName);
     private readonly ILogger<FlatBufferPacketRouter> _logger;
-    private readonly Dictionary<SystemPacket, Func<object, Task>> _packetHandlerTable = [];
+    //private readonly Dictionary<SystemPacket, Func<object, Task>> _packetHandlerTable = [];
+    private readonly Dictionary<SystemPacket, PacketHandlerInfo> _packetHandlerTable = [];
     private readonly Dictionary<SystemPacket, Func<PacketWrapper, object>> _paramExtractionFuncTable = [];
 
     public FlatBufferPacketRouter(ILogger<FlatBufferPacketRouter> logger)
@@ -25,9 +29,11 @@ public class FlatBufferPacketRouter : IPacketRouter
     {
         if(_paramExtractionFuncTable.TryGetValue(packetWrapper.SystemPacketType, out var paramGetfunc))
         {
-            if(_packetHandlerTable.TryGetValue(packetWrapper.SystemPacketType, out var handleFunc))
+            if(_packetHandlerTable.TryGetValue(packetWrapper.SystemPacketType, out var handlerInfo))
             {
-                await handleFunc(paramGetfunc(packetWrapper));
+                using var methodActivity = SyncnetTelemetry.Trace.StartActivity(handlerInfo.MethodName, ActivityKind.Internal);
+                methodActivity?.SetTag("packet.type", packetWrapper.SystemPacketType.ToString());
+                await handlerInfo.HandlerFunc(paramGetfunc(packetWrapper));
                 return;
             }
         }
@@ -76,7 +82,9 @@ public class FlatBufferPacketRouter : IPacketRouter
             {
                 if(Enum.TryParse(attr.PacketType.Name, out SystemPacket packetType))
                 {
-                    _packetHandlerTable[packetType] = FunctionBuilder.BuildFunctionWithParameterType(handler, method);
+                    var methodName = $"{handler.GetType().Name}.{method.Name}";
+                    //_packetHandlerTable[packetType] = FunctionBuilder.BuildFunctionWithParameterType(handler, method);
+                    _packetHandlerTable[packetType] = new PacketHandlerInfo(FunctionBuilder.BuildFunctionWithParameterType(handler, method), methodName);
                     _logger.LogInformation($"Now binded the type of {packetType.ToString()} to the function: {method.Name} ");
                 }
             }
