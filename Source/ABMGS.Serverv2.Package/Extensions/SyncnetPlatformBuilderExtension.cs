@@ -27,6 +27,7 @@ using SyncnetPlatform.Network.Handlers;
 using SyncnetPlatform.Network.Sessions;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Repositories;
+using SyncnetPlatform.Utils;
 using System.Text;
 
 namespace SyncnetPlatform.Extensions;
@@ -240,7 +241,7 @@ public static class SyncnetPlatformBuilderExtension
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation()
-                    .AddMeter("SyncnetPlatform");
+                    .AddMeter(Constants.Telemetry.MeterName);
                 
                 if(string.IsNullOrEmpty(telemetryOption.Metric.Endpoint))
                 {
@@ -260,7 +261,7 @@ public static class SyncnetPlatformBuilderExtension
                 trace
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddSource("syncnet.traces");
+                    .AddSource(Constants.Telemetry.TraceSource);
 
                 if(string.IsNullOrEmpty(telemetryOption.Trace.Endpoint))
                 {
