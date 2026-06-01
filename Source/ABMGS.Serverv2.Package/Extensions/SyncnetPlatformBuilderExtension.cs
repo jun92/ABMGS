@@ -27,6 +27,7 @@ using SyncnetPlatform.Network.Sessions;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Repositories;
 using SyncnetPlatform.Utils;
+using SyncnetPlatform.Utils.Telemetry;
 using System.Text;
 
 namespace SyncnetPlatform.Extensions;
@@ -143,6 +144,7 @@ public static class SyncnetPlatformBuilderExtension
             {
                 options.CounterUpdateIntervalMs = 5000;
             });
+            siloBuilder.AddIncomingGrainCallFilter<SyncnetIncomingGrainCallFilter>();
         });
     }
     private static void ClusterOptionsAction(ClusterOptions options)
