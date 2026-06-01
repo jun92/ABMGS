@@ -300,13 +300,13 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         {
             await foreach (var pending in _receiveQueueChannel.Reader.ReadAllAsync(shutdownToken))
             {
+                ActivityContext parentContext = pending.QueueActivity?.Context ?? default;
                 pending.QueueActivity?.Dispose();
 
                 using var handleActivity = SyncnetTelemetry.Trace.StartActivity(
                     "HandlePacketLogic", 
-                    ActivityKind.Internal, 
-                    parentContext: pending.QueueActivity?.Context ?? default);
-
+                    ActivityKind.Internal
+                    );
                 await InvokeHandler(pending.Data);
             }
         }
