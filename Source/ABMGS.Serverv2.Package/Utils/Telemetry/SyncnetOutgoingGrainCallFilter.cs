@@ -21,12 +21,6 @@ public class SyncnetOutgoingGrainCallFilter : IOutgoingGrainCallFilter
         {
             RequestContext.Set("traceparent", Activity.Current.Id);
         }
-        //var currentActivity = Activity.Current;
-        //if (currentActivity != null)
-        //{
-        //    RequestContext.Set("traceparent", currentActivity.Id);
-        //}
-
         await context.Invoke();
     }
 }
