@@ -17,7 +17,7 @@ public class SyncnetOutgoingGrainCallFilter : IOutgoingGrainCallFilter
 
     public async Task Invoke(IOutgoingGrainCallContext context)
     {
-        if(Activity.Current != null)
+        if (Activity.Current?.Id != null)
         {
             RequestContext.Set("traceparent", Activity.Current.Id);
         }

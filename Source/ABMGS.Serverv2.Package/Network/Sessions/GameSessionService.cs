@@ -8,15 +8,29 @@ using System.IO;
 using System.Net.WebSockets;
 using System.Threading.Channels;
 using SyncnetPlatform.Extensions;
+using System.Diagnostics;
+using SyncnetPlatform.Utils.Telemetry;
 
 namespace SyncnetPlatform.Network.Sessions;
 
 public class GameSessionService : IGameSessionService, ISendDataObserver
 {
+    protected readonly struct PendingSendPacket
+    {
+        public byte[] Data { get; }
+        public ActivityContext ParentContext { get; }
+
+        public PendingSendPacket(byte[] data, ActivityContext parentContext)
+        {
+            Data = data;
+            ParentContext = parentContext;
+        }
+    }
+
     private readonly ILogger<GameSessionService> _logger;
     private readonly IClusterClient _clusterClient;
 
-    private readonly Channel<byte[]> _sendingQueueChannel;
+    private readonly Channel<PendingSendPacket> _sendingQueueChannel;
     private ISendDataObserver? _sendDataObserver;
     private Task? _sendLoopTask;
 
@@ -27,7 +41,7 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
         _logger = logger;
         _clusterClient = clusterClient;
 
-        _sendingQueueChannel = Channel.CreateBounded<byte[]>(new BoundedChannelOptions(100)
+        _sendingQueueChannel = Channel.CreateBounded<PendingSendPacket>(new BoundedChannelOptions(100)
         {
             FullMode = BoundedChannelFullMode.Wait,
             SingleReader = true,
@@ -40,21 +54,28 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
 
     public async Task SendDataAsync(byte[] data)
     {
-        await _sendingQueueChannel.Writer.WriteAsync(data);
+        var parentContext = Activity.Current?.Context ?? default;
+        await _sendingQueueChannel.Writer.WriteAsync(new PendingSendPacket(data, parentContext));
     }
 
     protected async Task SendDataLoop(
         WebSocket socket, 
-        Channel<byte[]> channel, 
+        Channel<PendingSendPacket> channel, 
         CancellationToken sendLoopExitToken)
     {
         try
         {
-            await foreach (var payload in channel.Reader.ReadAllAsync(sendLoopExitToken))
+            await foreach (var pending in channel.Reader.ReadAllAsync(sendLoopExitToken))
             {
                 if (socket.State != WebSocketState.Open) break;
+
+                using var sendActivity = SyncnetTelemetry.Trace.StartActivity(
+                    "SendResponse", 
+                    ActivityKind.Internal, 
+                    parentContext: pending.ParentContext);
+
                 await socket.SendAsync(
-                    new ArraySegment<byte>(payload),
+                    new ArraySegment<byte>(pending.Data),
                     WebSocketMessageType.Binary,
                     true,
                     sendLoopExitToken);

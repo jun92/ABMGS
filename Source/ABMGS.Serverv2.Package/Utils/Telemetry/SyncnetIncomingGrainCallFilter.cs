@@ -22,7 +22,8 @@ public class SyncnetIncomingGrainCallFilter : IIncomingGrainCallFilter
 
     public async Task Invoke(IIncomingGrainCallContext context)
     {
-        if (context.Grain.GetType().Namespace == null || !context.Grain.GetType().Namespace.StartsWith("SyncnetPlatform"))
+        var grainNamespace = context.Grain.GetType().Namespace;
+        if (grainNamespace == null || !grainNamespace.StartsWith("SyncnetPlatform"))
         {
             await context.Invoke();
             return;
