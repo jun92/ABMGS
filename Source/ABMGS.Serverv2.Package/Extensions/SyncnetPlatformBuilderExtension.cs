@@ -264,6 +264,7 @@ public static class SyncnetPlatformBuilderExtension
                 trace
                     .AddAspNetCoreInstrumentation( option =>
                     {
+                        // /ws/gamesession shows whole life of the connection and it is meaningless.
                         option.Filter = httpContext =>
                         {
                             return httpContext.Request.Path != Constants.Endpoints.GameSessionWebSocket;
