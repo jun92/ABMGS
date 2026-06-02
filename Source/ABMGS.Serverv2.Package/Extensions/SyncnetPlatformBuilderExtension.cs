@@ -262,7 +262,13 @@ public static class SyncnetPlatformBuilderExtension
             .WithTracing(trace =>
             {
                 trace
-                    .AddAspNetCoreInstrumentation()
+                    .AddAspNetCoreInstrumentation( option =>
+                    {
+                        option.Filter = httpContext =>
+                        {
+                            return httpContext.Request.Path != Constants.Endpoints.GameSessionWebSocket;
+                        };
+                    })
                     .AddHttpClientInstrumentation()
                     .AddSource(Constants.Telemetry.TraceSource);
 
