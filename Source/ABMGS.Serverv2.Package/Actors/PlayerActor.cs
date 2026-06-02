@@ -290,8 +290,12 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
 
     public async Task PushRecievedData(byte[] Data)
     {
+        var currentActivity = Activity.Current;
+        Activity.Current = null;
         var queueActivity = SyncnetTelemetry.Trace.StartActivity("InReceiveQueue", ActivityKind.Internal);
         await _receiveQueueChannel.Writer.WriteAsync(new PendingPacket(Data, queueActivity));
+
+        Activity.Current = currentActivity;
     }
 
     public async Task RunRoutingPackets(CancellationToken shutdownToken)
@@ -305,8 +309,13 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
 
                 using var handleActivity = SyncnetTelemetry.Trace.StartActivity(
                     "HandlePacketLogic", 
-                    ActivityKind.Internal
+                    ActivityKind.Internal,
+                    parentContext: parentContext
                     );
+                //if (handleActivity != null)
+                //{
+                //    RequestContext.Set("traceparent", handleActivity.Id);
+                //}
                 await InvokeHandler(pending.Data);
             }
         }
