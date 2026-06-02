@@ -11,4 +11,8 @@ public static class Constants
         public const string TraceSource = "Syncnet.Trace";
         public const string MeterName = "SyncnetPlatform";
     }
+    public static class Endpoints
+    {
+        public const string GameSessionWebSocket = "/ws/gamesession";
+    }
 }
