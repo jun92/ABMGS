@@ -31,7 +31,14 @@ public class SyncnetIncomingGrainCallFilter : IIncomingGrainCallFilter
         {
             return new CallMetadata(method, context.Grain.GetType());
         });
-        using var activity = SyncnetTelemetry.Trace.StartActivity(metadata.ActivityName, ActivityKind.Server);
+
+        ActivityContext parentContext = default;
+        if (RequestContext.Get("traceparent") is string traceparent)
+        {
+            parentContext = ActivityContext.Parse(traceparent, null);
+
+        }
+        using var activity = SyncnetTelemetry.Trace.StartActivity(metadata.ActivityName, ActivityKind.Server, parentContext);
         if (activity != null)
         {
             activity.SetTag("orleans.grain.type", metadata.GrainType);

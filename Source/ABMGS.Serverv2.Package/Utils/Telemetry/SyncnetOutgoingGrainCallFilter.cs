@@ -1,0 +1,32 @@
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text;
+
+namespace SyncnetPlatform.Utils.Telemetry;
+
+public class SyncnetOutgoingGrainCallFilter : IOutgoingGrainCallFilter
+{
+    private readonly ILogger<SyncnetOutgoingGrainCallFilter> _logger;
+
+    public SyncnetOutgoingGrainCallFilter(ILogger<SyncnetOutgoingGrainCallFilter> logger)
+    {
+        _logger = logger;
+    }
+
+    public async Task Invoke(IOutgoingGrainCallContext context)
+    {
+        if(Activity.Current != null)
+        {
+            RequestContext.Set("traceparent", Activity.Current.Id);
+        }
+        //var currentActivity = Activity.Current;
+        //if (currentActivity != null)
+        //{
+        //    RequestContext.Set("traceparent", currentActivity.Id);
+        //}
+
+        await context.Invoke();
+    }
+}

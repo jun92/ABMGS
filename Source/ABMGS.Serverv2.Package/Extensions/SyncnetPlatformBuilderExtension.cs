@@ -109,6 +109,8 @@ public static class SyncnetPlatformBuilderExtension
                 options.ConfigurationOptions.CertificateValidation += VerifyRedisTls;
             });
             configure.AddDashboard();
+            configure.AddIncomingGrainCallFilter<SyncnetIncomingGrainCallFilter>();
+            configure.AddOutgoingGrainCallFilter<SyncnetOutgoingGrainCallFilter>();
         });
     }
 
@@ -145,6 +147,7 @@ public static class SyncnetPlatformBuilderExtension
                 options.CounterUpdateIntervalMs = 5000;
             });
             siloBuilder.AddIncomingGrainCallFilter<SyncnetIncomingGrainCallFilter>();
+            siloBuilder.AddOutgoingGrainCallFilter<SyncnetOutgoingGrainCallFilter>();
         });
     }
     private static void ClusterOptionsAction(ClusterOptions options)
