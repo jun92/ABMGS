@@ -26,7 +26,7 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
             ParentContext = parentContext;
         }
     }
-
+    private readonly SyncnetMetricsService _syncnetMetricsService;
     private readonly ILogger<GameSessionService> _logger;
     private readonly IClusterClient _clusterClient;
 
@@ -36,7 +36,8 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
 
     public GameSessionService(
         ILogger<GameSessionService> logger, 
-        IClusterClient clusterClient)
+        IClusterClient clusterClient,
+        SyncnetMetricsService syncnetMetricsService)
     {
         _logger = logger;
         _clusterClient = clusterClient;
@@ -50,6 +51,7 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
             Capacity = 100 // TODO: Should go to config something later.
         });
         _sendDataObserver = null;
+        _syncnetMetricsService = syncnetMetricsService;
     }
 
     public async Task SendDataAsync(byte[] data)
@@ -131,6 +133,8 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
         using var ms = new MemoryStream();
         bool exitLoop = false;
 
+        _syncnetMetricsService.AddConnection();
+
         while (!mainLoopExitToken.IsCancellationRequested && !exitLoop)
         {
             ms.SetLength(0);
@@ -189,6 +193,7 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
             }
         }
         await playerActor.SetOnline(false);
+        _syncnetMetricsService.RemoveConnection();
 
     }
     public async Task StartGameSession(Guid uniquePlayerId, WebSocket SocketObject)
