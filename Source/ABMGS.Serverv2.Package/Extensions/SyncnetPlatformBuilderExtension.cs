@@ -245,7 +245,7 @@ public static class SyncnetPlatformBuilderExtension
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddRuntimeInstrumentation()
-                    .AddMeter(Constants.Telemetry.MeterName);
+                    .AddMeter(Constants.Telemetry.ConnectionMeterName);
                 
                 if(string.IsNullOrEmpty(telemetryOption.Metric.Endpoint))
                 {
