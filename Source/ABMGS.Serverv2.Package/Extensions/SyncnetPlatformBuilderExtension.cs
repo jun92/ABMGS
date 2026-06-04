@@ -263,7 +263,7 @@ public static class SyncnetPlatformBuilderExtension
             .WithTracing(trace =>
             {
                 trace
-                    .AddAspNetCoreInstrumentation( option =>
+                    .AddAspNetCoreInstrumentation(option =>
                     {
                         // /ws/gamesession shows whole life of the connection and it is meaningless.
                         option.Filter = httpContext =>
@@ -273,6 +273,10 @@ public static class SyncnetPlatformBuilderExtension
                     })
                     .AddHttpClientInstrumentation()
                     .AddSource(Constants.Telemetry.TraceSource);
+                if(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+                {
+                    trace.SetSampler(new AlwaysOnSampler());
+                }
 
                 if(string.IsNullOrEmpty(telemetryOption.Trace.Endpoint))
                 {
