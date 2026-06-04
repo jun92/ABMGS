@@ -49,10 +49,15 @@ public class SyncnetIncomingGrainCallFilter : IIncomingGrainCallFilter
             activity.SetTag("orleans.grain.id", context.TargetContext.GrainId.ToString());
         }
         long startTime = Stopwatch.GetTimestamp();
-
-        await context.Invoke();
-        double elapsedMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
-        _metricsService.RecordGrainCall(metadata.GrainType, metadata.MethodName, elapsedMs);
+        try
+        {
+            await context.Invoke();
+        }
+        finally
+        {
+            double elapsedMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
+            _metricsService.RecordGrainCall(metadata.GrainType, metadata.MethodName, elapsedMs);
+        }
     }
 }
 
