@@ -12,10 +12,12 @@ public class SyncnetIncomingGrainCallFilter : IIncomingGrainCallFilter
 {
     private readonly ILogger<SyncnetIncomingGrainCallFilter> _logger;
     private static readonly ConcurrentDictionary<MethodInfo, CallMetadata> _callMetadata = new();
+    private readonly SyncnetMetricsService _metricsService;
 
-    public SyncnetIncomingGrainCallFilter(ILogger<SyncnetIncomingGrainCallFilter> logger)
+    public SyncnetIncomingGrainCallFilter(ILogger<SyncnetIncomingGrainCallFilter> logger, SyncnetMetricsService metricsService)
     {
         _logger = logger;
+        _metricsService = metricsService;
     }
 
 
@@ -46,8 +48,11 @@ public class SyncnetIncomingGrainCallFilter : IIncomingGrainCallFilter
             activity.SetTag("orleans.grain.method", metadata.MethodName);
             activity.SetTag("orleans.grain.id", context.TargetContext.GrainId.ToString());
         }
+        long startTime = Stopwatch.GetTimestamp();
 
         await context.Invoke();
+        double elapsedMs = Stopwatch.GetElapsedTime(startTime).TotalMilliseconds;
+        _metricsService.RecordGrainCall(metadata.GrainType, metadata.MethodName, elapsedMs);
     }
 }
 

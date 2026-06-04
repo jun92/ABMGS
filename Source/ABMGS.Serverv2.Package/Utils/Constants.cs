@@ -9,7 +9,7 @@ public static class Constants
     public static class Telemetry
     {
         public const string TraceSource = "Syncnet.Trace";
-        public const string MeterName = "SyncnetPlatform";
+        public const string ConnectionMeterName = "syncnet.connection.active";
     }
     public static class Endpoints
     {
