@@ -17,13 +17,15 @@ public class FlatBufferPacketRouter : IPacketRouter
 {
     private record PacketHandlerInfo(Func<object, Task> HandlerFunc, string MethodName);
     private readonly ILogger<FlatBufferPacketRouter> _logger;
+    private readonly SyncnetMetricsService _metricsService;
     //private readonly Dictionary<SystemPacket, Func<object, Task>> _packetHandlerTable = [];
     private readonly Dictionary<SystemPacket, PacketHandlerInfo> _packetHandlerTable = [];
     private readonly Dictionary<SystemPacket, Func<PacketWrapper, object>> _paramExtractionFuncTable = [];
 
-    public FlatBufferPacketRouter(ILogger<FlatBufferPacketRouter> logger)
+    public FlatBufferPacketRouter(ILogger<FlatBufferPacketRouter> logger, SyncnetMetricsService metricsService)
     {
         _logger = logger;
+        _metricsService = metricsService;
     }
     public async Task Execute(PacketWrapper packetWrapper)
     {
@@ -33,7 +35,18 @@ public class FlatBufferPacketRouter : IPacketRouter
             {
                 using var methodActivity = SyncnetTelemetry.Trace.StartActivity(handlerInfo.MethodName, ActivityKind.Internal);
                 methodActivity?.SetTag("packet.type", packetWrapper.SystemPacketType.ToString());
-                await handlerInfo.HandlerFunc(paramGetfunc(packetWrapper));
+
+                long startTime = Stopwatch.GetTimestamp();
+                try
+                {
+                    await handlerInfo.HandlerFunc(paramGetfunc(packetWrapper));
+                    _metricsService.RecordPacketProcessed(packetWrapper.SystemPacketType.ToString(), Stopwatch.GetElapsedTime(startTime).TotalMilliseconds, "Success");
+                }
+                catch (Exception)
+                {
+                    _metricsService.RecordPacketProcessed(packetWrapper.SystemPacketType.ToString(), Stopwatch.GetElapsedTime(startTime).TotalMilliseconds, "Error");
+                    throw;
+                }
                 return;
             }
         }
