@@ -50,8 +50,8 @@ else
             option.Trace.Protocol = outProtocol;
         }
     };
-    //builder.AddSyncnetPlatformSilo(TelemetryAction:  IsSpecificTelemetryEndpoints ? telemetryConfigure : null);
-    builder.AddSyncnetPlatformSilo();
+    builder.AddSyncnetPlatformSilo(TelemetryAction:  IsSpecificTelemetryEndpoints ? telemetryConfigure : null);
+    //builder.AddSyncnetPlatformSilo();
 }
 
 var host = builder.Build();
