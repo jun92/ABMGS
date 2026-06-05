@@ -57,15 +57,14 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
     public async Task SendDataAsync(byte[] data)
     {
         ActivityContext parentContext = default;
-        if( RequestContext.Get("traceparent") is string traceparent)
+        if( RequestContext.Get("traceparent") is string traceparent && ActivityContext.TryParse(traceparent, null, out var parsedContext))
         {
-            parentContext = ActivityContext.Parse(traceparent, null );
+            parentContext = parsedContext;
         }
         else
         {
             parentContext = Activity.Current?.Context ?? default;
         }
-        //var parentContext = Activity.Current?.Context ?? default;
         await _sendingQueueChannel.Writer.WriteAsync(new PendingSendPacket(data, parentContext));
     }
 
