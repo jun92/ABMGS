@@ -37,9 +37,9 @@ public class SyncnetIncomingGrainCallFilter : IIncomingGrainCallFilter
         });
 
         ActivityContext parentContext = default;
-        if (RequestContext.Get("traceparent") is string traceparent)
+        if (RequestContext.Get("traceparent") is string traceparent && ActivityContext.TryParse(traceparent, null, out var parsedContext))
         {
-            parentContext = ActivityContext.Parse(traceparent, null);
+            parentContext = parsedContext;
 
         }
         using var activity = SyncnetTelemetry.Trace.StartActivity(metadata.ActivityName, ActivityKind.Server, parentContext);
