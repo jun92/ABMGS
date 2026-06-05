@@ -10,6 +10,7 @@ using SyncnetPlatform.Utils.Telemetry;
 using System.Linq;
 using System.Reflection;
 using System.Diagnostics;
+using System.Collections.Concurrent;
 
 namespace SyncnetPlatform.Network.Utils;
 
@@ -19,6 +20,7 @@ public class FlatBufferPacketRouter : IPacketRouter
     private readonly ILogger<FlatBufferPacketRouter> _logger;
     private readonly SyncnetMetricsService _metricsService;
     //private readonly Dictionary<SystemPacket, Func<object, Task>> _packetHandlerTable = [];
+    private static readonly ConcurrentDictionary<SystemPacket, string> _packetTypeNames = new();
     private readonly Dictionary<SystemPacket, PacketHandlerInfo> _packetHandlerTable = [];
     private readonly Dictionary<SystemPacket, Func<PacketWrapper, object>> _paramExtractionFuncTable = [];
 
@@ -33,18 +35,19 @@ public class FlatBufferPacketRouter : IPacketRouter
         {
             if(_packetHandlerTable.TryGetValue(packetWrapper.SystemPacketType, out var handlerInfo))
             {
+                var packetName = _packetTypeNames.GetOrAdd(packetWrapper.SystemPacketType, t => t.ToString());
                 using var methodActivity = SyncnetTelemetry.Trace.StartActivity(handlerInfo.MethodName, ActivityKind.Internal);
-                methodActivity?.SetTag("packet.type", packetWrapper.SystemPacketType.ToString());
+                methodActivity?.SetTag("packet.type", packetName);
 
                 long startTime = Stopwatch.GetTimestamp();
                 try
                 {
                     await handlerInfo.HandlerFunc(paramGetfunc(packetWrapper));
-                    _metricsService.RecordPacketProcessed(packetWrapper.SystemPacketType.ToString(), Stopwatch.GetElapsedTime(startTime).TotalMilliseconds, "Success");
+                    _metricsService.RecordPacketProcessed(packetName, Stopwatch.GetElapsedTime(startTime).TotalMilliseconds, "Success");
                 }
                 catch (Exception)
                 {
-                    _metricsService.RecordPacketProcessed(packetWrapper.SystemPacketType.ToString(), Stopwatch.GetElapsedTime(startTime).TotalMilliseconds, "Error");
+                    _metricsService.RecordPacketProcessed(packetName, Stopwatch.GetElapsedTime(startTime).TotalMilliseconds, "Error");
                     throw;
                 }
                 return;
