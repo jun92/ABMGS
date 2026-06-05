@@ -312,10 +312,6 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
                     ActivityKind.Internal,
                     parentContext: parentContext
                     );
-                //if (handleActivity != null)
-                //{
-                //    RequestContext.Set("traceparent", handleActivity.Id);
-                //}
                 await InvokeHandler(pending.Data);
             }
         }
