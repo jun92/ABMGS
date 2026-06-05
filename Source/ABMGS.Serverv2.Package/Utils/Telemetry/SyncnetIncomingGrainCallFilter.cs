@@ -11,7 +11,8 @@ namespace SyncnetPlatform.Utils.Telemetry;
 public class SyncnetIncomingGrainCallFilter : IIncomingGrainCallFilter
 {
     private readonly ILogger<SyncnetIncomingGrainCallFilter> _logger;
-    private static readonly ConcurrentDictionary<MethodInfo, CallMetadata> _callMetadata = new();
+    //private static readonly ConcurrentDictionary<MethodInfo, CallMetadata> _callMetadata = new();
+    private static readonly ConcurrentDictionary<(MethodInfo, Type), CallMetadata> _callMetadata = new();
     private readonly SyncnetMetricsService _metricsService;
 
     public SyncnetIncomingGrainCallFilter(ILogger<SyncnetIncomingGrainCallFilter> logger, SyncnetMetricsService metricsService)
@@ -30,9 +31,9 @@ public class SyncnetIncomingGrainCallFilter : IIncomingGrainCallFilter
             await context.Invoke();
             return;
         }
-        var metadata = _callMetadata.GetOrAdd(context.InterfaceMethod, method =>
+        var metadata = _callMetadata.GetOrAdd((context.InterfaceMethod, context.Grain.GetType()), key =>
         {
-            return new CallMetadata(method, context.Grain.GetType());
+            return new CallMetadata(key.Item1, key.Item2);
         });
 
         ActivityContext parentContext = default;
