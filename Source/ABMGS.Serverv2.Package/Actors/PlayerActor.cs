@@ -292,10 +292,15 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     {
         var currentActivity = Activity.Current;
         Activity.Current = null;
-        var queueActivity = SyncnetTelemetry.Trace.StartActivity("InReceiveQueue", ActivityKind.Internal);
-        await _receiveQueueChannel.Writer.WriteAsync(new PendingPacket(Data, queueActivity));
-
-        Activity.Current = currentActivity;
+        try
+        {
+            var queueActivity = SyncnetTelemetry.Trace.StartActivity("InReceiveQueue", ActivityKind.Internal);
+            await _receiveQueueChannel.Writer.WriteAsync(new PendingPacket(Data, queueActivity));
+        }
+        finally
+        {
+            Activity.Current = currentActivity;
+        }
     }
 
     public async Task RunRoutingPackets(CancellationToken shutdownToken)
