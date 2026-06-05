@@ -273,7 +273,7 @@ public static class SyncnetPlatformBuilderExtension
                     })
                     .AddHttpClientInstrumentation()
                     .AddSource(Constants.Telemetry.TraceSource);
-                if(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+                if(builder.Environment.IsDevelopment())
                 {
                     trace.SetSampler(new AlwaysOnSampler());
                 }
