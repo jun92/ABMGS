@@ -144,66 +144,71 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
 
         _syncnetMetricsService.AddConnection();
 
-        while (!mainLoopExitToken.IsCancellationRequested && !exitLoop)
+        try
         {
-            ms.SetLength(0);
-            while (true)
+            while (!mainLoopExitToken.IsCancellationRequested && !exitLoop)
             {
-                ValueWebSocketReceiveResult result;
-                try
+                ms.SetLength(0);
+                while (true)
                 {
-                    result = await SocketObject.ReceiveAsync(new Memory<byte>(receiveBuffer), mainLoopExitToken);
-                }
-                catch(OperationCanceledException)
-                {
-                    // Exit with nothing wrong
-                    exitLoop = true;
-                    break;
-                }
-                catch(WebSocketException ex)
-                {
-                    // Abnormal socket exception and closure.
-                    _logger.LogWarning(ex, "Socket closed abnormally.");
-                    SocketObject.Abort();
-                    exitLoop = true;
-                    break;
-                }
-                catch(FlatBufferPacketBuildException e)
-                {
-                    _logger.LogCritical(e, "FlatBuffer Exception");
-                    exitLoop = true;
-                    break;
-                }
-
-                if (result.MessageType == WebSocketMessageType.Close || result.Count == 0)
-                {
+                    ValueWebSocketReceiveResult result;
                     try
                     {
-                        await SocketObject.CloseAsync(
-                            WebSocketCloseStatus.NormalClosure,
-                            "Socket Closed",
-                            mainLoopExitToken);
+                        result = await SocketObject.ReceiveAsync(new Memory<byte>(receiveBuffer), mainLoopExitToken);
+                    }
+                    catch(OperationCanceledException)
+                    {
+                        // Exit with nothing wrong
+                        exitLoop = true;
+                        break;
                     }
                     catch(WebSocketException ex)
                     {
-                        _logger.LogError(ex, $"WebSocket exception while closing it: {nameof(RunGameLoop)}");
+                        // Abnormal socket exception and closure.
+                        _logger.LogWarning(ex, "Socket closed abnormally.");
+                        SocketObject.Abort();
+                        exitLoop = true;
+                        break;
                     }
-                    exitLoop = true;
-                    break;
-                }
+                    catch(FlatBufferPacketBuildException e)
+                    {
+                        _logger.LogCritical(e, "FlatBuffer Exception");
+                        exitLoop = true;
+                        break;
+                    }
 
-                ms.Write(receiveBuffer, 0, result.Count);
+                    if (result.MessageType == WebSocketMessageType.Close || result.Count == 0)
+                    {
+                        try
+                        {
+                            await SocketObject.CloseAsync(
+                                WebSocketCloseStatus.NormalClosure,
+                                "Socket Closed",
+                                mainLoopExitToken);
+                        }
+                        catch(WebSocketException ex)
+                        {
+                            _logger.LogError(ex, $"WebSocket exception while closing it: {nameof(RunGameLoop)}");
+                        }
+                        exitLoop = true;
+                        break;
+                    }
 
-                if (result.EndOfMessage)
-                {
-                    await playerActor.PushRecievedData(ms.ToArray());
-                    break;
+                    ms.Write(receiveBuffer, 0, result.Count);
+
+                    if (result.EndOfMessage)
+                    {
+                        await playerActor.PushRecievedData(ms.ToArray());
+                        break;
+                    }
                 }
             }
         }
-        await playerActor.SetOnline(false);
-        _syncnetMetricsService.RemoveConnection();
-
+        finally
+        {
+            await playerActor.SetOnline(false);
+            _syncnetMetricsService.RemoveConnection();
+        }
     }
     public async Task StartGameSession(Guid uniquePlayerId, WebSocket SocketObject)
     {
