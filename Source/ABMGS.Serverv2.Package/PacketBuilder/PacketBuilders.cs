@@ -1,4 +1,5 @@
 using Google.FlatBuffers;
+using SyncnetPlatform.Extensions;
 using SyncnetPlatform.Protocols.Generated;
 
 namespace SyncnetPlatform.Network.Utils;
@@ -60,10 +61,11 @@ internal class ResUserInfoPacketBuilder: PacketBABuilder<ResUserInfoArgs>
     public override byte[] Build(ResUserInfoArgs args)
     {
         var builder = CreateBuilder();
-        StringOffset playerName = builder.CreateString(args.playerName); /*IMPORTANT TO BE CALLED BEFORE START?? FUNCTION*/
+        StringOffset playerName = builder.CreateString(args.PlayerName); /*IMPORTANT TO BE CALLED BEFORE START?? FUNCTION*/
+        Offset<GuidType> playerId = args.PlayerId.ToGuidType(builder);
 
         ResUserInfo.StartResUserInfo(builder);
-        ResUserInfo.AddPlayerId(builder, GuidType.CreateGuidType(builder, args.playerId.ToByteArray()));
+        ResUserInfo.AddPlayerId(builder, playerId);
         ResUserInfo.AddPlayerName(builder, playerName);
         Offset<ResUserInfo> offsetUserInfo = ResUserInfo.EndResUserInfo(builder);
 
@@ -78,7 +80,7 @@ internal class ReqUpdatePlayerNamePacketBuilder: PacketBABuilder<ReqUpdatePlayer
         var builder = CreateBuilder();
         return Wrap(builder,
             SystemPacket.ReqUpdatePlayerName,
-            ReqUpdatePlayerName.CreateReqUpdatePlayerName(builder, builder.CreateString(args.playerName)).Value
+            ReqUpdatePlayerName.CreateReqUpdatePlayerName(builder, builder.CreateString(args.PlayerName)).Value
             );
     }
 }
@@ -90,7 +92,198 @@ internal class ResUpdatePlayerNamePacketBuilder : PacketBABuilder<ResUpdatePlaye
         var builder = CreateBuilder();
         return Wrap(builder,
             SystemPacket.ResUpdatePlayerName,
-            ResUpdatePlayerName.CreateResUpdatePlayerName(builder, args.result, builder.CreateString(args.message)).Value
+            ResUpdatePlayerName.CreateResUpdatePlayerName(builder, args.Result).Value
             );
+    }
+}
+
+internal class ReqCreateRoomPacketBuilder : PacketBABuilder<ReqCreateRoomArgs>
+{
+    public override byte[] Build(ReqCreateRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        StringOffset roomName = builder.CreateString(args.name);
+        StringOffset roomPassword = builder.CreateString(args.password);
+
+        ReqCreateRoom.StartReqCreateRoom(builder);
+        ReqCreateRoom.AddName(builder, roomName);
+        ReqCreateRoom.AddPrivate(builder, args.isPrivate);
+        ReqCreateRoom.AddMaxCount(builder, args.maxCount);
+        ReqCreateRoom.AddPassword(builder, roomPassword);
+
+        return Wrap(builder, SystemPacket.ReqCreateRoom, ReqCreateRoom.EndReqCreateRoom(builder).Value);
+    }
+}
+
+internal class ResCreateRoomPacketBuilder : PacketBABuilder<ResCreateRoomArgs>
+{
+    public override byte[] Build(ResCreateRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        ResCreateRoom.StartResCreateRoom(builder);
+        ResCreateRoom.AddResult(builder, args.result);
+        ResCreateRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
+        return Wrap(builder, SystemPacket.ResCreateRoom, ResCreateRoom.EndResCreateRoom(builder).Value);
+    }
+}
+
+internal class ReqJoinRoomPacketBuilder : PacketBABuilder<ReqJoinRoomArgs>
+{
+    public override byte[] Build(ReqJoinRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        StringOffset roomPassword = builder.CreateString(args.password);
+
+        ReqJoinRoom.StartReqJoinRoom(builder);
+        ReqJoinRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
+        ReqJoinRoom.AddPassword(builder, roomPassword);
+        return Wrap(builder, SystemPacket.ReqJoinRoom, ReqJoinRoom.EndReqJoinRoom(builder).Value);
+    }
+}
+
+internal class ResJoinRoomPacketBuilder : PacketBABuilder<ResJoinRoomArgs>
+{
+    public override byte[] Build(ResJoinRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        return Wrap(
+            builder, 
+            SystemPacket.ResJoinRoom, 
+            ResJoinRoom.CreateResJoinRoom(builder, args.result).Value);
+    }
+}
+
+internal class OnPlayerJoinRoomPacketBuilder : PacketBABuilder<OnPlayerJoinRoomArgs>
+{
+    public override byte[] Build(OnPlayerJoinRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        StringOffset playerName = builder.CreateString(args.playerName);
+        
+        OnPlayerJoinRoom.StartOnPlayerJoinRoom(builder);
+        OnPlayerJoinRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
+        OnPlayerJoinRoom.AddPlayerId(builder, args.playerId.ToGuidType(builder));
+        OnPlayerJoinRoom.AddName(builder, playerName);
+
+        return Wrap(
+            builder,
+            SystemPacket.OnPlayerJoinRoom, 
+            OnPlayerJoinRoom.EndOnPlayerJoinRoom(builder).Value);
+    }
+}
+
+internal class ReqPlayerListInRoomPacketBuilder : PacketBABuilder<ReqPlayerListInRoomArgs>
+{
+    public override byte[] Build(ReqPlayerListInRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        ReqPlayerListInRoom.StartReqPlayerListInRoom(builder);
+        ReqPlayerListInRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
+        return Wrap(builder, SystemPacket.ReqPlayerListInRoom, ReqPlayerListInRoom.EndReqPlayerListInRoom(builder).Value);
+    }
+}
+
+internal class ResPlayerListInRoomPacketBuilder : PacketBABuilder<ResPlayerListInRoomArgs>
+{
+    public override byte[] Build(ResPlayerListInRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        List<Offset<PlayerInfoInRoom>> offset = new ();
+        foreach(var i in args.playerInfo)
+        {
+            StringOffset PlayerName = builder.CreateString(i.playerName);
+
+            PlayerInfoInRoom.StartPlayerInfoInRoom(builder);
+            PlayerInfoInRoom.AddPlayerName(builder, PlayerName);
+            PlayerInfoInRoom.AddPlayerId(builder, i.playerId.ToGuidType(builder));
+            offset.Add(PlayerInfoInRoom.EndPlayerInfoInRoom(builder));
+        }
+        VectorOffset members = ResPlayerListInRoom.CreateMembersVector(builder,offset.ToArray());
+
+
+        ResPlayerListInRoom.StartResPlayerListInRoom(builder);
+        ResPlayerListInRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
+        ResPlayerListInRoom.AddMembers(builder, members);
+
+        return Wrap(builder, SystemPacket.ResPlayerListInRoom, ResPlayerListInRoom.EndResPlayerListInRoom(builder).Value);
+    }
+}
+
+internal class ReqLeaveRoomPacketBuilder : PacketBABuilder<ReqLeaveRoomArgs>
+{
+    public override byte[] Build(ReqLeaveRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        ReqLeaveRoom.StartReqLeaveRoom(builder);
+        ReqLeaveRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
+        return Wrap(builder, SystemPacket.ReqLeaveRoom, ReqLeaveRoom.EndReqLeaveRoom(builder).Value);
+    }
+}
+
+internal class ResLeaveRoomPacketBuilder : PacketBABuilder<ResLeaveRoomArgs>
+{
+    public override byte[] Build(ResLeaveRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        return Wrap(
+            builder, 
+            SystemPacket.ResLeaveRoom, 
+            ResLeaveRoom.CreateResLeaveRoom(builder, args.result).Value);
+    }
+}
+
+internal class OnPlayerLeaveRoomPacketBuilder : PacketBABuilder<OnPlayerLeaveRoomArgs>
+{
+    public override byte[] Build(OnPlayerLeaveRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        StringOffset leaverName = builder.CreateString(args.playerName);
+        OnPlayerLeaveRoom.StartOnPlayerLeaveRoom(builder);
+        OnPlayerLeaveRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
+        OnPlayerLeaveRoom.AddPlayerId(builder, args.playerId.ToGuidType(builder));
+        OnPlayerLeaveRoom.AddName(builder, leaverName);
+
+        return Wrap(builder, SystemPacket.OnPlayerLeaveRoom, OnPlayerLeaveRoom.EndOnPlayerLeaveRoom(builder).Value);
+    }
+}
+
+internal class ReqBroadcastRoomPacketBuilder : PacketBABuilder<ReqBroadcastRoomArgs>
+{
+    public override byte[] Build(ReqBroadcastRoomArgs args)
+    {
+        var builder = CreateBuilder();
+
+        Offset<GuidType> roomId = args.roomId.ToGuidType(builder);
+
+        ReqBroadcastRoom.StartReqBroadcastRoom(builder);
+        ReqBroadcastRoom.AddRoomId(builder, roomId);
+        ReqBroadcastRoom.AddFrom(builder, args.from.ToGuidType(builder));
+        ReqBroadcastRoom.AddMessage(builder, builder.CreateString(args.message));
+
+        return Wrap(builder, SystemPacket.ReqBroadcastRoom, ReqBroadcastRoom.EndReqBroadcastRoom(builder).Value);
+    }
+}
+
+internal class ResBroadcastRoomPacketBuilder : PacketBABuilder<ResBroadcastRoomArgs>
+{
+    public override byte[] Build(ResBroadcastRoomArgs args)
+    {
+        var builder = CreateBuilder();
+
+        return Wrap(builder,
+            SystemPacket.ResBroadcastRoom,
+            ResBroadcastRoom.CreateResBroadcastRoom(builder, args.result).Value);
+    }
+}
+
+internal class BroadcastRoomPacketBuilder : PacketBABuilder<BroadcastRoomArgs>
+{
+    public override byte[] Build(BroadcastRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        BroadcastRoom.StartBroadcastRoom(builder);
+        BroadcastRoom.AddFrom(builder, args.from.ToGuidType(builder));
+        BroadcastRoom.AddMessage(builder, builder.CreateString(args.message));
+        return Wrap(builder, SystemPacket.BroadcastRoom, BroadcastRoom.EndBroadcastRoom(builder).Value);
     }
 }

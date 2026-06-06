@@ -9,11 +9,12 @@ using SyncnetPlatform.Authentication.GooglePlay;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using System.Net.WebSockets;
 using SyncnetPlatform.Authentication.SyncnetAuthProvider;
+using SyncnetPlatform.Utils;
 
 namespace SyncnetPlatform.Controllers;
 
 [ApiController]
-[Route("/ws")]
+//[Route("/ws")]
 public class GameSessionController : ControllerBase
 {
     private readonly ILogger<GameSessionController> _logger;
@@ -33,43 +34,9 @@ public class GameSessionController : ControllerBase
         _authenticationService = authenticationService;
     }
 
-    //[ProducesResponseType(StatusCodes.Status203NonAuthoritative)]
-    //[ProducesResponseType(StatusCodes.Status400BadRequest)]
-    //[HttpGet("alive")]
-    //public IActionResult Authenticate()
-    //{
-    //    return Ok();
-    //}
-
-    // Issuing syncnet platform's own JWT token for further usage.
-    [HttpGet("auth/token/{platformType}")]
-    public IActionResult IssueToken([FromRoute] string platformType)
-    {
-        
-        if (Enum.TryParse(platformType, out SupportedPlatformType supportedPlatformType))
-        {
-            switch (supportedPlatformType)
-            {
-                case SupportedPlatformType.googleplay:
-
-                    break;
-                case SupportedPlatformType.apple:
-                    break;
-                case SupportedPlatformType.steam:
-                    break;
-            }
-            return Ok();
-        }
-        else
-        {
-            return BadRequest($"unsupported platform type - {platformType} ");
-        }
-        
-    }
-
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [Authorize(policy: "GameSocketPolicy")]
-    [HttpGet("gamesession")]
+    [HttpGet(Constants.Endpoints.GameSessionWebSocket)]
     public async Task GameSession()
     {
         if (!HttpContext.WebSockets.IsWebSocketRequest)
@@ -105,4 +72,4 @@ public enum SupportedPlatformType
     apple,
     steam,
     guest
-}
+} 

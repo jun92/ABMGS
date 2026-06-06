@@ -5,12 +5,14 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>SyncnetPlatform</RootNamespace>
+	<UserSecretsId>941b012f-ae08-477a-9911-42fb74dff4fb</UserSecretsId>
+
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Google.FlatBuffers" Version="25.2.10" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.3" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
   </ItemGroup>
 
   <ItemGroup>

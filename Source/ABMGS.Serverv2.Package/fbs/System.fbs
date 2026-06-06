@@ -1,13 +1,33 @@
+
+
 include "Custom.fbs";
 include "Player.fbs";
+include "Playroom.fbs";
 
 namespace SyncnetPlatform.Protocols.Generated;
+
 
 union SystemPacket {
     Ping,
     Pong,
     ReqUserInfo,
     ResUserInfo,
+    ReqDirectDeliveryData,
+    ResDirectDeliveryData,
+    OnDirectDeliveryData,
+    ReqCreateRoom,
+    ResCreateRoom,
+    ReqJoinRoom,
+    ResJoinRoom,
+    OnPlayerJoinRoom,
+    ReqPlayerListInRoom,
+    ResPlayerListInRoom,
+    ReqLeaveRoom,
+    ResLeaveRoom,
+    OnPlayerLeaveRoom,
+    ReqBroadcastRoom,
+    ResBroadcastRoom,
+    BroadcastRoom,
     ReqUpdatePlayerName,
     ResUpdatePlayerName
 }

@@ -67,17 +67,33 @@ public class GuestAuthenticationService : IGuestAuthenticationService
 {
     private readonly ILogger<GuestAuthenticationService> _logger;
     private readonly IExternalIdentityRepository _externalIdentityRepository;
+    private readonly IPlayerModelRepository _playerModelRepository;
+    private Random _random = new Random();
     public GuestAuthenticationService(
         ILogger<GuestAuthenticationService> logger,
-        IExternalIdentityRepository externalIdentityRepository
+        IExternalIdentityRepository externalIdentityRepository,
+        IPlayerModelRepository playerModelRepository
         )
     {
         _logger = logger;
         _externalIdentityRepository = externalIdentityRepository;
+        _playerModelRepository = playerModelRepository;
     }
     public async Task<Guid> Auth(string identifier)
     {
-        return await _externalIdentityRepository.GetOrCreate(Databases.IdProviderType.Guest, identifier);
+        Guid retVal = await _externalIdentityRepository.GetOrCreate(Databases.IdProviderType.Guest, identifier);
+        await _playerModelRepository.GetOrCreate(retVal, "Guest" + RandomGuestId(6));
+
+        return retVal;
+    }
+
+    protected string RandomGuestId(int length)
+    {
+        return new string(
+           Enumerable
+               .Repeat("0123456789", length)
+               .Select(s => s[_random.Next(s.Length)])
+               .ToArray());
     }
 }
 

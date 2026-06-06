@@ -1,0 +1,132 @@
+using Microsoft.Extensions.Logging;
+using SyncnetPlatform.Interfaces.Actors;
+using SyncnetPlatform.Protocols.Generated;
+using System;
+using System.Collections.Generic;
+using System.Numerics;
+using System.Text;
+
+namespace SyncnetPlatform.Actors;
+
+
+
+public interface IPlayRoomActor : IGrainWithGuidKey
+{
+    Task<List<PlayRoomMember>> GetPlayersInPlayRoom();
+    Task<bool> IsValidRoomToJoin();
+    Task<PacketErrorCodes> JoinPlayer(PlayRoomMember joiner);
+    Task<PacketErrorCodes> LeavePlayer(PlayRoomMember leaver);
+    Task SetRoomInformation(string displayName, bool isPrivate, int maxCapacity, string roomPassword, PlayRoomMember owner);
+}
+
+public class PlayRoomActor : Grain, IPlayRoomActor
+{
+    private readonly ILogger<PlayRoomActor> _logger;
+
+
+    private List<PlayRoomMember> _players = new List<PlayRoomMember>();
+
+    private string _displayName = String.Empty;
+    private string _passwordForEntrance = String.Empty;
+    private int _maxPlayerCapacity = 4;
+    private bool _isPrivate = false;
+    private Guid _ownerPlayerId = Guid.Empty;
+    public PlayRoomActor(ILogger<PlayRoomActor> logger)
+    {
+        _logger = logger;
+    }
+
+    public Guid RoomId => GrainContext.GrainId.GetGuidKey();
+    /// <summary>
+    /// Create new playroom and join the room owner automatically
+    /// </summary>
+    /// <param name="displayName"></param>
+    /// <param name="isPrivate"></param>
+    /// <param name="maxCapacity"></param>
+    /// <param name="roomPassword"></param>
+    /// <param name="roomOwnerPlayerId"></param>
+    /// <returns></returns>
+    public async Task SetRoomInformation(
+        string displayName, 
+        bool isPrivate, 
+        int maxCapacity, 
+        string roomPassword, PlayRoomMember owner)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(displayName, nameof(displayName));
+
+        _displayName = displayName;
+        _passwordForEntrance = roomPassword;
+        _maxPlayerCapacity = maxCapacity;
+        _isPrivate = isPrivate;
+        _ownerPlayerId = owner.PlayerId;
+        _players.Add(owner);
+    }
+
+    public Task<bool> IsValidRoomToJoin() => Task.FromResult(_ownerPlayerId !=  Guid.Empty);
+        
+
+    public async Task<PacketErrorCodes> JoinPlayer(PlayRoomMember joiner)
+    {
+        if (_ownerPlayerId == Guid.Empty)
+        {
+            return PacketErrorCodes.RoomNotFound;
+        }
+
+        if(_players.Find(f => f.PlayerId == joiner.PlayerId) != null)
+        {
+            return PacketErrorCodes.AlreadyInRoom;
+        }
+        if(_players.Count == _maxPlayerCapacity)
+        {
+            return PacketErrorCodes.RoomFull;
+        }
+
+        foreach (var player in _players)
+        {
+            IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(player.PlayerId);
+            await p.OnUpdateForPlayRoomMembers(joiner, PlayRoomMemberUpdateReason.Join);
+        }
+
+        _players.Add(joiner);
+
+        return PacketErrorCodes.Success;
+    }
+
+    public Task<List<PlayRoomMember>> GetPlayersInPlayRoom()
+    {
+        return Task.FromResult(_players);
+    }
+
+    public async Task<PacketErrorCodes> LeavePlayer(PlayRoomMember leaver)
+    {
+        if(_ownerPlayerId == Guid.Empty)
+        {
+            return PacketErrorCodes.RoomNotFound;
+        }
+
+        _players.Remove(leaver);
+        if(_players.Count == 0 )
+        {
+            _ownerPlayerId = Guid.Empty;
+            base.DeactivateOnIdle();
+            return PacketErrorCodes.Success;
+        }
+
+        foreach(var player in _players)
+        {
+            IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(player.PlayerId);
+            await p.OnUpdateForPlayRoomMembers(leaver, PlayRoomMemberUpdateReason.Leave);
+        }
+
+        if(_ownerPlayerId == leaver.PlayerId)
+        {
+            _ownerPlayerId = _players.First().PlayerId;
+        }
+
+        return PacketErrorCodes.Success;
+    }
+    protected void Init()
+    {
+        _players.Clear();
+    }
+}

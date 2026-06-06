@@ -22,4 +22,9 @@ public class SendDataGrain : Grain, ISendDataGrain
             await _sendDataObserver.SendDataAsync(data);
         }
     }
+
+    public Task IsValid()
+    {
+        return Task.FromResult(_sendDataObserver != null);
+    }
 }

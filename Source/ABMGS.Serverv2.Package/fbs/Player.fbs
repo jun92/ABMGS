@@ -1,13 +1,11 @@
+include "Types.fbs";
+include "ErrorCodes.fbs";
 
 namespace SyncnetPlatform.Protocols.Generated;
 
-struct GuidType {
-    bytes: [ubyte:16];
-}
 
 
 table ReqUserInfo{
-
 }
 
 table ResUserInfo{
@@ -19,6 +17,22 @@ table ReqUpdatePlayerName{
     player_name: string;
 }
 table ResUpdatePlayerName{
-    result: int;
+    result: PacketErrorCodes;
+}
+
+table ReqDirectDeliveryData {
+    to_player_id: GuidType;
+    data: string;
+    data_type: DirectDeliveryDataType;
+}
+
+table ResDirectDeliveryData {
+    result: PacketErrorCodes;
     message: string;
 }
+
+table OnDirectDeliveryData {
+    from_player_id: GuidType;
+    data: string;
+    data_type: DirectDeliveryDataType;
+} 

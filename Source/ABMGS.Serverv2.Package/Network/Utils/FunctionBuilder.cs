@@ -3,7 +3,6 @@ using SyncnetPlatform.Network.Attributes;
 using Google.FlatBuffers;
 using System.Linq.Expressions;
 using System.Reflection;
-using SyncnetPlatform.Network.Handlers;
 
 namespace SyncnetPlatform.Network.Utils;
 
@@ -20,7 +19,7 @@ public static class FunctionBuilder
         return lambda.Compile();
     }
 
-    public static Action<object, PacketContext> BuildFunctionWithParameterType<HoldingClassType>(
+    public static Func<object, Task> BuildFunctionWithParameterType<HoldingClassType>(
         HoldingClassType classInstance, 
         MethodInfo method) 
     {
@@ -30,17 +29,15 @@ public static class FunctionBuilder
 
         Expression packetHandlerInstanceExpression = Expression.Constant(classInstance, classInstance.GetType());
         ParameterExpression parameter = Expression.Parameter(typeof(object));
-        ParameterExpression paramPacketContext = Expression.Parameter(typeof(PacketContext));
         var convertedParamExpression = Expression.Convert(parameter, packetHandlerAttribute.PacketType);
 
         MethodCallExpression methodCallExpression = Expression.Call(
             packetHandlerInstanceExpression,
             method,
-            convertedParamExpression,
-            paramPacketContext
+            convertedParamExpression
             );
 
-        var lambda = Expression.Lambda<Action<object, PacketContext>>(methodCallExpression, parameter, paramPacketContext);
+        var lambda = Expression.Lambda<Func<object, Task>>(methodCallExpression, parameter);
 
         return lambda.Compile();
     }

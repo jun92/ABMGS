@@ -1,41 +1,49 @@
 using Aspire.Hosting;
 using Aspire.Hosting.Orleans;
-
+using Microsoft.Extensions.Configuration;
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage(
-    "Aspire.Hosting",
-    "ASPIRECERTIFICATES001",
-    Justification = "CI environment uses plaintext Redis without TLS"
-)]
-
 var builder = DistributedApplication.CreateBuilder(args);
-#pragma warning disable ASPIRECERTIFICATES001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-var redis = builder.AddRedis("redis").WithoutHttpsCertificate();
-#pragma warning restore ASPIRECERTIFICATES001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-var postgresPassword = builder.AddParameter("postgres-password", secret: true);
-var rdbms = builder
-    .AddPostgres("npgsql", password: postgresPassword)
-    .WithDataVolume("syncnet-pg-data")
-    .AddDatabase("SyncnetPlatform");
 
+string EnvironmentName = Environment.GetEnvironmentVariable("ASPIRE_ENVIRONMENT") ?? "Development";
+
+builder.Configuration.AddCommandLine(args).SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", false, true)
+    .AddJsonFile($"appsettings.{EnvironmentName}.json", true, true)
+    .AddEnvironmentVariables();
+
+bool isGitHubActions = Environment.GetEnvironmentVariable("GITHUB_ACTIONS") == "true";
+
+IResourceBuilder<IResourceWithConnectionString> postgres;
+IResourceBuilder<IResourceWithConnectionString> redis;
+
+if (builder.Configuration.GetValue<bool>("UseCloud") && !isGitHubActions)
+{
+    postgres = builder.AddConnectionString("postgres");
+    redis = builder.AddConnectionString("redis");
+}
+else
+{
+    redis = builder.AddRedis("redis");
+    var postgresPassword = builder.AddParameter("postgres-password", secret: true);
+    postgres = builder
+        .AddPostgres("npgsql", password: postgresPassword)
+        .WithDataVolume("syncnet-pg-data")
+        .AddDatabase("postgres", databaseName: "SyncnetPlatform");
+}
 var silo = builder.AddProject<Projects.ABMGS_ServerV2_Silo>("silo")
-    .WaitFor(redis)
-    .WaitFor(rdbms)
-    .WithReference(redis)
-    .WithReference(rdbms)
-    .WithReplicas(2)
-    ;
-
-    
+      .WaitFor(redis)
+      .WaitFor(postgres)
+      .WithReference(redis)
+      .WithReference(postgres)
+      ;
 
 builder.AddProject<Projects.ABMGS_ServerV2>("orleans-frontend")
     .WaitFor(redis)
-    .WaitFor(rdbms)
+    .WaitFor(postgres)
     .WithReference(silo)
     .WithReference(redis)
-    .WithReference(rdbms)
+    .WithReference(postgres)
     ;
-
 
 builder.Build().Run();
