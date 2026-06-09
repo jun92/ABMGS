@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -63,12 +64,25 @@ public static class SyncnetPlatformBuilderExtension
         if (LoggerAction != null) builder.Services.Configure(LoggerAction);
         if (TelemetryAction != null) builder.Services.Configure(TelemetryAction);
 
-        builder.AddServiceDefaults();
+        ConfigureServiceDefault(builder);
         ConfigureGameServices(builder);
         ConfigureDatabase(builder);
 
         ConfigureLogger(builder, LoggerAction, TelemetryAction);
         ConfigureTelemetry(builder, TelemetryAction);
+    }
+
+    private static void ConfigureServiceDefault(WebApplicationBuilder builder)
+    {
+        builder.Services.AddServiceDiscovery();
+        builder.Services.ConfigureHttpClientDefaults(configure =>
+        {
+            configure.AddServiceDiscovery();
+            configure.AddStandardResilienceHandler();
+        });
+        builder.Services
+            .AddHealthChecks()
+            .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
     }
 
     private static void ConfigureGameServices(WebApplicationBuilder builder)
