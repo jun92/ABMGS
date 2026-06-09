@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ABMGS.Serverv2.Package\ABMGS.Serverv2.Package.csproj" />
-    <ProjectReference Include="..\AppServiceDefault\AppServiceDefault.csproj" />
   </ItemGroup>
 
 </Project>
