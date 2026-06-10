@@ -8,17 +8,6 @@ using System.Text;
 
 namespace SyncnetPlatform.Actors;
 
-
-
-public interface IPlayRoomActor : IGrainWithGuidKey
-{
-    Task<List<PlayRoomMember>> GetPlayersInPlayRoom();
-    Task<bool> IsValidRoomToJoin();
-    Task<PacketErrorCodes> JoinPlayer(PlayRoomMember joiner);
-    Task<PacketErrorCodes> LeavePlayer(PlayRoomMember leaver);
-    Task SetRoomInformation(string displayName, bool isPrivate, int maxCapacity, string roomPassword, PlayRoomMember owner);
-}
-
 public class PlayRoomActor : Grain, IPlayRoomActor
 {
     private readonly ILogger<PlayRoomActor> _logger;
