@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 using Xunit.Abstractions;
 using YamlDotNet.Core.Tokens;
 
-namespace ABMGS.ServerV2.AspireTest;
+namespace SyncnetPlatform.Tests;
 
 [Collection("AspireCollection")]
 public partial class ABMGS_TestMain : IAsyncLifetime

@@ -6,8 +6,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 
-namespace ABMGS.ServerV2.AspireTest;
-
+namespace SyncnetPlatform.Tests;
 public partial class ABMGS_TestMain : IAsyncLifetime
 {
 

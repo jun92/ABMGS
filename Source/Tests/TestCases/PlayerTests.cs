@@ -1,11 +1,7 @@
 using SyncnetPlatform.Extensions;
 using SyncnetPlatform.Protocols.Generated;
-using System;
-using System.Collections.Generic;
-using System.Net.WebSockets;
-using System.Text;
 
-namespace ABMGS.ServerV2.AspireTest;
+namespace SyncnetPlatform.Tests;
 
 public partial class ABMGS_TestMain : IAsyncLifetime
 {
