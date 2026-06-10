@@ -2,8 +2,7 @@ using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using System.Threading.Tasks;
 
-namespace ABMGS.ServerV2.AspireTest;
-
+namespace SyncnetPlatform.Tests;
 public class AspireAppFixture : IAsyncLifetime
 {
     public DistributedApplication? App { get; private set; }

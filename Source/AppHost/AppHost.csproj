@@ -19,8 +19,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.8" />
-    <ProjectReference Include="..\ABMGS.ServerV2.Silo\ABMGS.ServerV2.Silo.csproj" />
-    <ProjectReference Include="..\ABMGS.ServerV2\ABMGS.ServerV2.csproj" />
+    <ProjectReference Include="..\Silo\Silo.csproj" />
+    <ProjectReference Include="..\Front\Front.csproj" />
   </ItemGroup>
 
   <ItemGroup>

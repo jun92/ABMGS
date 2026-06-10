@@ -31,14 +31,14 @@ else
         .WithDataVolume("syncnet-pg-data")
         .AddDatabase("postgres", databaseName: "SyncnetPlatform");
 }
-var silo = builder.AddProject<Projects.ABMGS_ServerV2_Silo>("silo")
+var silo = builder.AddProject<Projects.Silo>("silo")
       .WaitFor(redis)
       .WaitFor(postgres)
       .WithReference(redis)
       .WithReference(postgres)
       ;
 
-builder.AddProject<Projects.ABMGS_ServerV2>("orleans-frontend")
+builder.AddProject<Projects.Front>("orleans-frontend")
     .WaitFor(redis)
     .WaitFor(postgres)
     .WithReference(silo)

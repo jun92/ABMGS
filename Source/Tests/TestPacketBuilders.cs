@@ -5,7 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ABMGS.ServerV2.AspireTest;
+
+namespace SyncnetPlatform.Tests;
 
 public partial class ABMGS_TestMain : IAsyncLifetime
 {
