@@ -1,3 +1,4 @@
+```mermaid
 sequenceDiagram
 participant Player1Client
 participant Player1Actor
