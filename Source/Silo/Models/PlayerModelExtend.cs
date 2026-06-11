@@ -1,60 +1,26 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SyncnetPlatform.Actors;
 using SyncnetPlatform.Databases;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.Serialization;
 
 
-public class SyncnetDbContextExtend : SyncnetDbContext
+public static class PlayerDataColumn
 {
-
-    public DbSet<PlayerDataModelExtend> PlayerExtend { get; set; }
-    public SyncnetDbContextExtend(DbContextOptions<SyncnetDbContextExtend> options) : base(options)
-    {
-    }
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        modelBuilder.Entity<PlayerDataModelExtend>().HasKey(p => p.Id);
-        modelBuilder.Entity<PlayerDataModelExtend>().Property(p => p.Id).ValueGeneratedOnAdd();
-        modelBuilder.Entity<PlayerDataModelExtend>()
-            .HasOne<PlayerData>()
-            .WithMany()
-            .OnDelete(DeleteBehavior.Cascade)
-            .HasForeignKey(p => p.PlayerId);
-
-        base.OnModelCreating(modelBuilder);
-    }
-
+    public const string Level = "Level";
+    public const string Title = "Title";
+    public const string PosX = "PosX";
+    public const string PosY = "PosY";
 
 }
-
-public class PlayerDataBehavior : IPlayerDataBehavior
+public class MyGamePlayerDataExtendCreater : IPlayerDataExtendCreater
 {
-    public async Task OnCreateNewPlayer(PlayerDataContext ctx)
+    public void CreateExtendColumns(EntityTypeBuilder<PlayerData> e)
     {
-        var db = ctx.Db as SyncnetDbContextExtend;
-        if (db != null)
-        {
-            await db.PlayerExtend.AddAsync(new PlayerDataModelExtend
-            {
-                PlayerId = ctx.PlayerId,
-                Level = 1,
-                Exp = 0
-            });
-        }
-        else
-        {
-            throw new InvalidDataException();
-        }
+        e.IndexerProperty<int>(PlayerDataColumn.Level).HasDefaultValue(1);
+        e.IndexerProperty<string>(PlayerDataColumn.Title).HasDefaultValue("No Title");
+        e.IndexerProperty<float>(PlayerDataColumn.PosX).HasDefaultValue(10.0f);
+        e.IndexerProperty<float>(PlayerDataColumn.PosY).HasDefaultValue(-10.0f);
     }
-}
-
-// Extend table for RPG game
-[Table("players_rpg_extend")]
-public class PlayerDataModelExtend
-{
-    public int Id { get; set; }
-    public Guid PlayerId { get; set; }
-    public int Level { get; set; }
-    public ulong Exp { get; set; }
 }

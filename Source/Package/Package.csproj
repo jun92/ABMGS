@@ -43,7 +43,6 @@
 
   <ItemGroup>
     <Folder Include="Authentication\Guest\" />
-    <Folder Include="Migrations\" />
     <Folder Include="Exceptions\" />
   </ItemGroup>
 	<Target Name="FlatcGenerate" BeforeTargets="BeforeCompile">

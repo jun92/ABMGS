@@ -9,18 +9,18 @@ using SyncnetPlatform.Databases;
 
 #nullable disable
 
-namespace SyncnetPlatform.Migrations
+namespace Silo.Migrations
 {
     [DbContext(typeof(SyncnetDbContext))]
-    [Migration("20260305034242_Init")]
-    partial class Init
+    [Migration("20260611061402_AddDefaultValues")]
+    partial class AddDefaultValues
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.3")
+                .HasAnnotation("ProductVersion", "10.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -36,12 +36,32 @@ namespace SyncnetPlatform.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("Level")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(1);
+
                     b.Property<Guid>("PlayerId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("PlayerName")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<float>("PosX")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("real")
+                        .HasDefaultValue(10f);
+
+                    b.Property<float>("PosY")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("real")
+                        .HasDefaultValue(-10f);
+
+                    b.Property<string>("Title")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("No Title");
 
                     b.HasKey("Id");
 

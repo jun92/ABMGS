@@ -5,14 +5,25 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Npgsql.EntityFrameworkCore.PostgreSQL;
 
 namespace SyncnetPlatform.Databases;
 
-public class SyncnetDbContext(DbContextOptions options) : DbContext(options)
+public interface IPlayerDataExtendCreater
+{
+    void CreateExtendColumns(EntityTypeBuilder<PlayerData> e);
+}
+
+public class SyncnetDbContext(
+    DbContextOptions options, 
+    IPlayerDataExtendCreater? playerDataExtendCreater = null
+    ) : DbContext(options)
 {
     public DbSet<PlayerData> Players { get; set; }
     public DbSet<PlayerExternalIdentities> ExternalIdentities { get; set; }
+
+    
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -30,6 +41,7 @@ public class SyncnetDbContext(DbContextOptions options) : DbContext(options)
             e.Property(p => p.Id).ValueGeneratedOnAdd();
 
             e.HasIndex(p => p.PlayerId).IsUnique();
+            playerDataExtendCreater?.CreateExtendColumns(e);
         });
 
     }
@@ -48,7 +60,6 @@ public class SyncnetDbContext(DbContextOptions options) : DbContext(options)
             e.HasIndex(p => new {p.IdProvider, p.IdExternal }).IsUnique();
         });
     }
-   
 }
 
 public enum IdProviderType
@@ -67,6 +78,14 @@ public class PlayerData
     public Guid PlayerId { get; set; }
     public string PlayerName { get; set; } = string.Empty;
     public DateTime Created { get; set; } = DateTime.UtcNow;
+
+    private readonly Dictionary<string, object> _playerDataExtend = new();
+
+    public object this[string key]
+    {
+        get => _playerDataExtend.TryGetValue(key, out var value) ? value : null;
+        set => _playerDataExtend[key] = value;
+    }
 }
 
 
@@ -80,4 +99,5 @@ public class PlayerExternalIdentities
     public DateTime Created { get; set; } = DateTime.UtcNow;
 
 }
+
 
