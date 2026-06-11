@@ -73,20 +73,23 @@ public interface IExternalIdentityRepository
 public class RdbExternalIdentityRepository : IExternalIdentityRepository
 {
     private readonly ILogger<RdbExternalIdentityRepository> _logger;
-    private readonly SyncnetDbContext _db;
+    private readonly IDbContextFactory<SyncnetDbContext> _dbContextFactory;
+
+    //private readonly SyncnetDbContext _db;
 
     public RdbExternalIdentityRepository(
         ILogger<RdbExternalIdentityRepository> logger,
-        SyncnetDbContext db
+        IDbContextFactory<SyncnetDbContext> dbContextFactory
 
         )
     {
         _logger = logger;
-        _db = db;
+        _dbContextFactory = dbContextFactory;
     }
     public async Task<Guid> GetOrCreate(IdProviderType idProviderType, string idExternal)
     {
-        PlayerExternalIdentities? entity = await _db.ExternalIdentities
+        var dbContext = _dbContextFactory.CreateDbContext();
+        PlayerExternalIdentities? entity = await dbContext.ExternalIdentities
             .SingleOrDefaultAsync(p => 
             p.IdProvider == idProviderType &&
             p.IdExternal == idExternal);
@@ -102,15 +105,15 @@ public class RdbExternalIdentityRepository : IExternalIdentityRepository
                     SyncnetId = Guid.NewGuid(),
                     Created = DateTime.UtcNow
                 };
-                await _db.ExternalIdentities.AddAsync(entity);
-                await _db.SaveChangesAsync();
+                await dbContext.ExternalIdentities.AddAsync(entity);
+                await dbContext.SaveChangesAsync();
             }
             catch(DbUpdateException ex) when (ex.InnerException is PostgresException pg)
             {
                 if(pg.SqlState == PostgresErrorCodes.UniqueViolation)
                 {
                     // Reload the entity.
-                    entity = await _db.ExternalIdentities
+                    entity = await dbContext.ExternalIdentities
                         .SingleAsync(p => 
                         p.IdProvider == idProviderType &&
                         p.IdExternal == idExternal);
@@ -128,7 +131,9 @@ public class RdbExternalIdentityRepository : IExternalIdentityRepository
 
     public async Task Remove(IdProviderType idProviderType, string idExternal)
     {
-        _ = await _db.ExternalIdentities
+        var dbContext = _dbContextFactory.CreateDbContext();
+
+        _ = await dbContext.ExternalIdentities
             .Where(w =>
                 w.IdProvider == idProviderType &&
                 w.IdExternal == idExternal)

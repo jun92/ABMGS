@@ -31,6 +31,7 @@ using SyncnetPlatform.Repositories;
 using SyncnetPlatform.Utils;
 using SyncnetPlatform.Utils.Telemetry;
 using System.Text;
+using System.Reflection;
 
 namespace SyncnetPlatform.Extensions;
 
@@ -53,9 +54,13 @@ public static class SyncnetPlatformBuilderExtension
         Action<SyncnetLoggerOption>? LoggerAction = null,
         Action<SyncnetTelemetryOption>? TelemetryAction = null)
     {
+
+        //storing calling assembly name 
+        string? hostAssemblyName = Assembly.GetCallingAssembly()!.GetName().FullName;
+
         AddSyncnetPlatformCommon(builder, LoggerAction, TelemetryAction);
         ConfigureOrleansAsSilo(builder);
-        SyncnetPlatformSiloDbContext(builder);
+        SyncnetPlatformSiloDbContext(builder, hostAssemblyName);
     }
     private static void AddSyncnetPlatformCommon(
         WebApplicationBuilder builder, 
@@ -103,13 +108,14 @@ public static class SyncnetPlatformBuilderExtension
         builder.Services.AddTransient<IPlayerModelRepository, RdbPlayerModelRepository>();
         builder.Services.AddTransient<IExternalIdentityRepository, RdbExternalIdentityRepository>();
     }
-    private static void SyncnetPlatformSiloDbContext(WebApplicationBuilder builder)
+    private static void SyncnetPlatformSiloDbContext(WebApplicationBuilder builder, string? hostAssemblyName)
     {
         builder.Services.AddDbContextFactory<SyncnetDbContext>(opt =>
         {
             opt.UseNpgsql(builder.Configuration.GetConnectionString("postgres"), optionBuilder =>
             {
-                optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
+                //optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
+                optionBuilder.MigrationsAssembly(hostAssemblyName);
             });
         });
     }

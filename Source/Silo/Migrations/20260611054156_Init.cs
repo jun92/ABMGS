@@ -4,7 +4,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace SyncnetPlatform.Migrations
+namespace Silo.Migrations
 {
     /// <inheritdoc />
     public partial class Init : Migration
@@ -20,7 +20,11 @@ namespace SyncnetPlatform.Migrations
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     PlayerId = table.Column<Guid>(type: "uuid", nullable: false),
                     PlayerName = table.Column<string>(type: "text", nullable: false),
-                    Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    Created = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Level = table.Column<int>(type: "integer", nullable: false),
+                    PosX = table.Column<float>(type: "real", nullable: false),
+                    PosY = table.Column<float>(type: "real", nullable: false),
+                    Title = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
