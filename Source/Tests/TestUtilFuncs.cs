@@ -39,20 +39,21 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Good Bye", CancellationToken.None);
     }
 
-    protected async Task<ClientWebSocket> CreateAuthoredWebSocket()
+    protected async Task<ClientWebSocket> CreateAuthoredWebSocket(string? id = null)
     {
         var wsUri = new UriBuilder(_frontendHttpClient.BaseAddress!)
         {
             Scheme = _frontendHttpClient.BaseAddress!.Scheme == "https" ? "wss" : "ws",
             Path = "/ws/gamesession"
         }.Uri;
-        var token = await GetGuestAuthToken();
+        var token = await GetGuestAuthToken(id);
         return await OpenAuthoredWebSocket(wsUri, token);
     }
 
-    protected async Task<string> GetGuestAuthToken()
+    protected async Task<string> GetGuestAuthToken(string? id = null)
     {
-        string guestId = CreateRandomString(6);
+        string guestId = id == null ? CreateRandomString(6) : id;
+
         var response = await _frontendHttpClient.PostAsync($"/api/auth/token/guest/{guestId}", null);
         response.EnsureSuccessStatusCode();
         string token = await response.Content.ReadAsStringAsync();

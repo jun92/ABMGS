@@ -29,6 +29,30 @@ public partial class ABMGS_TestMain : IAsyncLifetime
 
         await CloseAuthoredWebSocket(wsClient);
     }
+
+    [Fact]
+    public async Task PlayerNameUpdateTwice_db_backward_compatibility_test()
+    {
+        var wsClient = await CreateAuthoredWebSocket("1234567");
+        string RandomPlayerName = "Guest" + CreateRandomString(6);
+
+        var (result, packetWrapper) = await SendAndReceive(wsClient, BuildUpdatePlayerNamePacket(RandomPlayerName));
+
+        _output.WriteLine($"Count: {result.Count}");
+        Assert.True(result.EndOfMessage);
+        Assert.NotEqual(0, result.Count);
+
+        Assert.Equal(SystemPacket.ResUpdatePlayerName, packetWrapper.SystemPacketType);
+        Assert.Equal(PacketErrorCodes.Success, packetWrapper.SystemPacketAsResUpdatePlayerName().Result);
+
+        (result, packetWrapper) = await SendAndReceive(wsClient, BuildReqUserInfoPacket());
+
+        Assert.True(result.EndOfMessage);
+
+        Assert.Equal(RandomPlayerName, packetWrapper.SystemPacketAsResUserInfo().PlayerName);
+
+        await CloseAuthoredWebSocket(wsClient);
+    }
     [Fact]
     public async Task DirectDeliveryDataTest()
     {

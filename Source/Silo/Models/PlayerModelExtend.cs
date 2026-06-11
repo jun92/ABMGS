@@ -12,6 +12,7 @@ public static class PlayerDataColumn
     public const string Title = "Title";
     public const string PosX = "PosX";
     public const string PosY = "PosY";
+    public const string Exp = "Exp";
 
 }
 public class MyGamePlayerDataExtendCreater : IPlayerDataExtendCreater
@@ -22,5 +23,6 @@ public class MyGamePlayerDataExtendCreater : IPlayerDataExtendCreater
         e.IndexerProperty<string>(PlayerDataColumn.Title).HasDefaultValue("No Title");
         e.IndexerProperty<float>(PlayerDataColumn.PosX).HasDefaultValue(10.0f);
         e.IndexerProperty<float>(PlayerDataColumn.PosY).HasDefaultValue(-10.0f);
+        e.IndexerProperty<long>(PlayerDataColumn.Exp).HasDefaultValue(0);
     }
 }
