@@ -1,4 +1,3 @@
-using Polly.Telemetry;
 using Microsoft.Extensions.Configuration;
 using SyncnetPlatform.Extensions;
 using SyncnetPlatform.Extensions.Options;
@@ -33,7 +32,6 @@ Action<SyncnetTelemetryOption> telemetryConfigure = option =>
 };
 
 builder.AddSyncnetPlatformClient(TelemetryAction: IsSpecificTelemetryEndpoints ? telemetryConfigure: null);
-//builder.AddSyncnetPlatformClient();
 
 builder.Services.AddControllers();
 
