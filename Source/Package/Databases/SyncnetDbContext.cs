@@ -81,7 +81,7 @@ public class PlayerData
 
     private readonly Dictionary<string, object> _playerDataExtend = new();
 
-    public object this[string key]
+    public object? this[string key]
     {
         get => _playerDataExtend.TryGetValue(key, out var value) ? value : null;
         set => _playerDataExtend[key] = value;
