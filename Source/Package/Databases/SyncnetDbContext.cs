@@ -74,10 +74,10 @@ public enum IdProviderType
 [Table("player_data")]
 public class PlayerData
 {
-    public int Id { get; set; }
-    public Guid PlayerId { get; set; }
+    public int Id { get; init; }
+    public Guid PlayerId { get; init; }
     public string PlayerName { get; set; } = string.Empty;
-    public DateTime Created { get; set; } = DateTime.UtcNow;
+    public DateTime Created { get; init; } = DateTime.UtcNow;
 
     private readonly Dictionary<string, object?> _playerDataExtend = new();
 
