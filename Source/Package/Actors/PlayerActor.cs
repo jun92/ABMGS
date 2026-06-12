@@ -21,9 +21,10 @@ using SyncnetPlatform.Utils.Telemetry;
 
 namespace SyncnetPlatform.Actors;
 
-public interface IPlayerBehavior
+public interface IPlayerCustomBehavior
 {
-
+    public Task<bool> OnLoginAsync(PlayerData playerData, CancellationToken? cancellationToken = null);
+    public Task<bool> OnLogoutAsync(PlayerData playerData, CancellationToken? cancellationToken = null);
 }
 
 public enum PlayRoomMemberUpdateReason
@@ -87,10 +88,14 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     /// </summary>
     protected List<Guid> _joinedRoomList = new();
 
+    // Custom behavior supporting
+    private readonly IPlayerCustomBehavior? _playerCustomBehavior;
+
     public PlayerActor(
         ILogger<PlayerActor> logger,
         IPlayerModelRepository playerModelRepository,
-        IPacketRouter routeTable
+        IPacketRouter routeTable,
+        IPlayerCustomBehavior? playerCustomBehavior = null
         )
     {
         _logger = logger;
@@ -104,6 +109,8 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
             SingleWriter = true,
             AllowSynchronousContinuations = false
         });
+
+        _playerCustomBehavior = playerCustomBehavior;
     }
 
     public async Task SetOnline(bool isOnline)
@@ -136,19 +143,37 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         _routeTable.BuildParamExtractionFuncs<PacketWrapper>();
         _routeTable.BuildPacketHandlerFunctions<PlayerActor>(this);
 
+        if (_playerCustomBehavior != null)
+        {
+            var needToUpdateDb = await _playerCustomBehavior.OnLoginAsync(_playerData, cancellationToken);
+            if(needToUpdateDb)
+            {
+                await _playerModelRepository.Update(_playerData);
+            }
+        }
+
         await base.OnActivateAsync(cancellationToken);
+
+
     }
 
     public override async Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
     {
+        bool needToUpdateDb = false;
+        if (_playerCustomBehavior != null)
+        {
+            needToUpdateDb = await _playerCustomBehavior.OnLogoutAsync(_playerData, cancellationToken);
+        }
+
         _ctsForRunRoutingPackets?.Cancel();
         _receiveQueueChannel.Writer.TryComplete();
         if (_runRoutingPackets != null) await _runRoutingPackets;
 
-        if(_IsDirtyPlayerData)
+        if(_IsDirtyPlayerData || needToUpdateDb)
         {
             await _playerModelRepository.Update(_playerData);
         }
+
         await base.OnDeactivateAsync(reason, cancellationToken);
     }
 
@@ -185,7 +210,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     }
     public async Task<PacketErrorCodes> OnDirectDeliveryData(Guid fromPlayerId, string message, DirectDeliveryDataType dataType)
     {
-        if(!_IsOnline)
+        if (!_IsOnline || _sendDataGrain == null)
         {
             return PacketErrorCodes.PlayerOffline;
         }
@@ -233,7 +258,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     [OneWay]
     public async Task OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember, PlayRoomMemberUpdateReason updateReason )
     {
-        if (!_IsOnline) return;
+        if (!_IsOnline || _sendDataGrain == null) return;
         switch (updateReason)
         {
             case PlayRoomMemberUpdateReason.Join:
