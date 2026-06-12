@@ -1,4 +1,5 @@
 using OpenTelemetry.Exporter;
+using SyncnetPlatform.Actors;
 using SyncnetPlatform.Databases;
 using SyncnetPlatform.Extensions;
 using SyncnetPlatform.Extensions.Options;
@@ -17,6 +18,7 @@ builder.Configuration
 
 // Define custom player data per games.
 builder.Services.AddTransient<IPlayerDataExtendCreater, MyGamePlayerDataExtendCreater>();
+builder.Services.AddTransient<IPlayerCustomBehavior, MyPlayerBehavior>();
 
 
 var IsSpecificTelemetryEndpoints = builder.Configuration.GetSection("ConnectionStrings:telemetry").Exists();
@@ -50,5 +52,7 @@ builder.AddSyncnetPlatformSilo(TelemetryAction:  IsSpecificTelemetryEndpoints ? 
 var host = builder.Build();
 host.SyncnetDbMigrate();
 await host.RunAsync();
+
+
 
 
