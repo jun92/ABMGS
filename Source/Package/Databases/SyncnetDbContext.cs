@@ -79,7 +79,7 @@ public class PlayerData
     public string PlayerName { get; set; } = string.Empty;
     public DateTime Created { get; set; } = DateTime.UtcNow;
 
-    private readonly Dictionary<string, object> _playerDataExtend = new();
+    private readonly Dictionary<string, object?> _playerDataExtend = new();
 
     public object? this[string key]
     {
