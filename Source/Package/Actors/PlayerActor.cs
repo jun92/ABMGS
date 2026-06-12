@@ -121,6 +121,15 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
             _playerData = await _playerModelRepository.GetOrCreate(ThisPlayerId);
             _dbid = _playerData.Id;
             _IsOnline = true;
+
+            if (_playerCustomBehavior != null)
+            {
+                var needToUpdateDb = await _playerCustomBehavior.OnLoginAsync(_playerData);
+                if (needToUpdateDb)
+                {
+                    await _playerModelRepository.Update(_playerData);
+                }
+            }
         }
         else
         {
@@ -143,15 +152,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         _routeTable.BuildParamExtractionFuncs<PacketWrapper>();
         _routeTable.BuildPacketHandlerFunctions<PlayerActor>(this);
 
-        if (_playerCustomBehavior != null)
-        {
-            var needToUpdateDb = await _playerCustomBehavior.OnLoginAsync(_playerData, cancellationToken);
-            if(needToUpdateDb)
-            {
-                await _playerModelRepository.Update(_playerData);
-            }
-        }
-
+        
         await base.OnActivateAsync(cancellationToken);
 
 
