@@ -114,8 +114,10 @@ public static class SyncnetPlatformBuilderExtension
         {
             opt.UseNpgsql(builder.Configuration.GetConnectionString("postgres"), optionBuilder =>
             {
-                //optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName);
-                optionBuilder.MigrationsAssembly(hostAssemblyName);
+                if (hostAssemblyName == null)
+                    optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName); 
+                else
+                    optionBuilder.MigrationsAssembly(hostAssemblyName);
             });
         });
     }
