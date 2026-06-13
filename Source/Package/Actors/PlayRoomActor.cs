@@ -12,13 +12,12 @@ public interface IPlayRoomCustomEventHandler
 {
     public Task OnPlayRoomInitializingAsync();
     public Task OnPlayRoomDestroyingAsync();
-    public Task OnPlayerJoin();
 
 }
 
 public interface IPlayGameLogic
 {
-
+    public Task OnTimer(float delta);
 }
 
 public class PlayRoomActor : Grain, IPlayRoomActor
@@ -33,6 +32,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     private int _maxPlayerCapacity = 4;
     private bool _isPrivate = false;
     private Guid _ownerPlayerId = Guid.Empty;
+    private readonly IDisposable? _playRoomTimer;
 
 
     //Customizations
@@ -46,6 +46,19 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         _logger = logger;
         _playRoomcustomEventHandler = playRoomCustomEventHandler;
         _playGameLogic = playGameLogic;
+        if (playGameLogic is not null)
+        {
+            _playRoomTimer = this.RegisterGrainTimer(
+                callback: playGameLogic.OnTimer,
+                state: 0.0f,
+                dueTime: TimeSpan.Zero,
+                period: TimeSpan.FromSeconds(1)
+                );
+        }
+        else
+        {
+            _playRoomTimer = null;
+        }
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
@@ -62,6 +75,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         {
             await _playRoomcustomEventHandler.OnPlayRoomDestroyingAsync();
         }
+        _playRoomTimer?.Dispose();
     }
     public Guid RoomId => GrainContext.GrainId.GetGuidKey();
     /// <summary>
