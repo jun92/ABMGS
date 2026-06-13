@@ -8,6 +8,19 @@ using System.Text;
 
 namespace SyncnetPlatform.Actors;
 
+public interface IPlayRoomCustomEventHandler
+{
+    public Task OnPlayRoomInitializingAsync();
+    public Task OnPlayRoomDestroyingAsync();
+    public Task OnPlayerJoin();
+
+}
+
+public interface IPlayGameLogic
+{
+
+}
+
 public class PlayRoomActor : Grain, IPlayRoomActor
 {
     private readonly ILogger<PlayRoomActor> _logger;
@@ -20,11 +33,36 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     private int _maxPlayerCapacity = 4;
     private bool _isPrivate = false;
     private Guid _ownerPlayerId = Guid.Empty;
-    public PlayRoomActor(ILogger<PlayRoomActor> logger)
+
+
+    //Customizations
+    private readonly IPlayRoomCustomEventHandler? _playRoomcustomEventHandler;
+    private readonly IPlayGameLogic? _playGameLogic;
+    public PlayRoomActor(
+        ILogger<PlayRoomActor> logger,
+        IPlayRoomCustomEventHandler? playRoomCustomEventHandler = null,
+        IPlayGameLogic? playGameLogic = null)
     {
         _logger = logger;
+        _playRoomcustomEventHandler = playRoomCustomEventHandler;
+        _playGameLogic = playGameLogic;
     }
 
+    public override async Task OnActivateAsync(CancellationToken cancellationToken)
+    {
+        if(_playRoomcustomEventHandler is not null)
+        {
+            await _playRoomcustomEventHandler.OnPlayRoomInitializingAsync();
+        }
+    }
+
+    public override async Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
+    {
+        if(_playRoomcustomEventHandler is not null)
+        {
+            await _playRoomcustomEventHandler.OnPlayRoomDestroyingAsync();
+        }
+    }
     public Guid RoomId => GrainContext.GrainId.GetGuidKey();
     /// <summary>
     /// Create new playroom and join the room owner automatically
