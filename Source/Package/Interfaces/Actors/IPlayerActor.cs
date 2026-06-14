@@ -21,6 +21,7 @@ public interface IPlayerActor : IGrainWithGuidKey, IPacketHandlerActor
     Task SetIdProvider(SupportedPlatformType idpFrom);
     Task SetOnline(bool isOnline);
     Task UpdatePlayerName(string newName);
+    Task OnHandleCustomPacket(byte[] customPacket);
 }
 
 

@@ -293,15 +293,11 @@ internal class DeliverCustomPacketBuilder : PacketBABuilder<DeliverCustomPacketA
     public override byte[] Build(DeliverCustomPacketArgs args)
     {
         var builder = CreateBuilder();
-        builder.StartVector(1, args.CustomData.Length, 1);
-        for(int i = args.CustomData.Length -1;  i >= 0; i--)
-        {
-            builder.PutByte(args.CustomData[i]);
-        }
-        VectorOffset vectorOffset = builder.EndVector();
+        
+        VectorOffset customPacketVectorOffset = DeliverCustomPacket.CreateCustomPacketVector(builder, args.CustomData);
         DeliverCustomPacket.StartDeliverCustomPacket(builder);
         DeliverCustomPacket.AddDestination(builder, args.Dest);
-        DeliverCustomPacket.AddCustomPacket(builder, vectorOffset);
+        DeliverCustomPacket.AddCustomPacket(builder, customPacketVectorOffset);
 
         return Wrap(builder, SystemPacket.DeliverCustomPacket, DeliverCustomPacket.EndDeliverCustomPacket(builder).Value);
     }
