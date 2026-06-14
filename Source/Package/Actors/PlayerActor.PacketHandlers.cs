@@ -89,4 +89,16 @@ public partial class PlayerActor
             new ResLeaveRoomArgs(result)
             ));
     }
+    [PacketHandler(typeof(DeliverCustomPacket))]
+    public async Task HandleDeliverCustomPacket(DeliverCustomPacket request)
+    {
+        switch(request.Destination)
+        {
+            case DeliverDestination.None: break;
+            case DeliverDestination.Player:
+                await OnHandleCustomPacket(request.GetCustomPacketArray());
+                break;
+            case DeliverDestination.PlayRoom: break;
+        }
+    }
 }
