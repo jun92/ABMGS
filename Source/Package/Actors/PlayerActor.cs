@@ -359,7 +359,10 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
 
     public async Task OnHandleCustomPacket(byte[] customPacket)
     {
-        await _playerCustomBehavior.HandleCustomPacket(customPacket);
+        if(_playerCustomBehavior is not null)
+        {
+            await _playerCustomBehavior.HandleCustomPacket(customPacket);
+        }
     }
 }
 
