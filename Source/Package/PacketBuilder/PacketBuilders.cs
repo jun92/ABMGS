@@ -1,6 +1,7 @@
 using Google.FlatBuffers;
 using SyncnetPlatform.Extensions;
 using SyncnetPlatform.Protocols.Generated;
+using System.Net.Sockets;
 
 namespace SyncnetPlatform.Network.Utils;
 
@@ -285,5 +286,23 @@ internal class BroadcastRoomPacketBuilder : PacketBABuilder<BroadcastRoomArgs>
         BroadcastRoom.AddFrom(builder, args.from.ToGuidType(builder));
         BroadcastRoom.AddMessage(builder, builder.CreateString(args.message));
         return Wrap(builder, SystemPacket.BroadcastRoom, BroadcastRoom.EndBroadcastRoom(builder).Value);
+    }
+}
+internal class DeliverCustomPacketBuilder : PacketBABuilder<DeliverCustomPacketArgs>
+{
+    public override byte[] Build(DeliverCustomPacketArgs args)
+    {
+        var builder = CreateBuilder();
+        builder.StartVector(1, args.CustomData.Length, 1);
+        for(int i = args.CustomData.Length -1;  i >= 0; i--)
+        {
+            builder.PutByte(args.CustomData[i]);
+        }
+        VectorOffset vectorOffset = builder.EndVector();
+        DeliverCustomPacket.StartDeliverCustomPacket(builder);
+        DeliverCustomPacket.AddDestination(builder, args.Dest);
+        DeliverCustomPacket.AddCustomPacket(builder, vectorOffset);
+
+        return Wrap(builder, SystemPacket.DeliverCustomPacket, DeliverCustomPacket.EndDeliverCustomPacket(builder).Value);
     }
 }

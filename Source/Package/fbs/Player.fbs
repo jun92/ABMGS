@@ -36,3 +36,8 @@ table OnDirectDeliveryData {
     data: string;
     data_type: DirectDeliveryDataType;
 } 
+
+table DeliverCustomPacket {
+    destination: DeliverDestination;
+    custom_packet: [ubyte] ;
+}
