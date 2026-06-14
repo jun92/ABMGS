@@ -25,6 +25,7 @@ public interface IPlayerCustomBehavior
 {
     public Task<bool> OnLoginAsync(PlayerData playerData, CancellationToken? cancellationToken = null);
     public Task<bool> OnLogoutAsync(PlayerData playerData, CancellationToken? cancellationToken = null);
+    public Task HandleCustomPacket(byte[] customPacket);
 }
 
 public enum PlayRoomMemberUpdateReason
@@ -354,6 +355,11 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         {
             _logger.LogError(ex, "Error in RunRoutingPackets loop");
         }
+    }
+
+    public async Task OnHandleCustomPacket(byte[] customPacket)
+    {
+        await _playerCustomBehavior.HandleCustomPacket(customPacket);
     }
 }
 

@@ -3,6 +3,11 @@ using SyncnetPlatform.Databases;
 
 public class MyPlayerBehavior : IPlayerCustomBehavior
 {
+    public Task HandleCustomPacket(byte[] customPacket)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<bool> OnLoginAsync(PlayerData playerData, CancellationToken? cancellationToken = null)
     {
         Console.WriteLine(playerData[PlayerDataColumn.Title]);
