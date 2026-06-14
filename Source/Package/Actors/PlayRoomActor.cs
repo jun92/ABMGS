@@ -12,6 +12,7 @@ public interface IPlayRoomCustomEventHandler
 {
     public Task OnPlayRoomInitializingAsync();
     public Task OnPlayRoomDestroyingAsync();
+    public Task OnHandleCustomPacket(byte[] customPacket);
 
 }
 
@@ -169,5 +170,13 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     protected void Init()
     {
         _players.Clear();
+    }
+
+    public async Task HandleCustomPacket(byte[] customPacket)
+    {
+        if(_playRoomcustomEventHandler is not null)
+        {
+            await _playRoomcustomEventHandler.OnHandleCustomPacket(customPacket);
+        }
     }
 }
