@@ -16,3 +16,9 @@ table PlayerInfoInRoom {
     player_id: GuidType;
     player_name: string;
 }
+
+enum DeliverDestination: byte {
+    None = 0,
+    Player = 1,
+    PlayRoom = 2
+}

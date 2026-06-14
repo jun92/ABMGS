@@ -41,10 +41,10 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
-  <ItemGroup>
+	<!--ItemGroup>
     <Folder Include="Authentication\Guest\" />
     <Folder Include="Exceptions\" />
-  </ItemGroup>
+  </ItemGroup-->
 	<Target Name="FlatcGenerate" BeforeTargets="BeforeCompile">
 		<Message Text="Running flatc code generator" Importance="high" />
 		<RemoveDir Directories="./generated" />
