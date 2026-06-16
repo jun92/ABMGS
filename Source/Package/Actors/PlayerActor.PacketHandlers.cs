@@ -98,7 +98,8 @@ public partial class PlayerActor
             case DeliverDestination.Player:
                 await OnHandleCustomPacket(request.GetCustomPacketArray());
                 break;
-            case DeliverDestination.PlayRoom: break;
+            case DeliverDestination.PlayRoom: 
+                break;
         }
     }
 }
