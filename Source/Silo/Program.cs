@@ -45,6 +45,7 @@ Action<SyncnetTelemetryOption> telemetryConfigure = option =>
         option.Trace.Protocol = outProtocol;
     }
 };
+IsSpecificTelemetryEndpoints = false;
 builder.AddSyncnetPlatformSilo(TelemetryAction:  IsSpecificTelemetryEndpoints ? telemetryConfigure : null);
 //builder.AddSyncnetPlatformSilo();
 
