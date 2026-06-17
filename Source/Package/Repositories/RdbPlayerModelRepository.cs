@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Npgsql;
+using SyncnetPlatform.Actors;
 using SyncnetPlatform.Databases;
 using System;
 using System.Linq;
@@ -21,7 +22,7 @@ public class RdbPlayerModelRepository : IPlayerModelRepository
     }
     
 
-    public async Task<PlayerData> GetOrCreate(Guid playerId, string playerName = "")
+    public async Task<PlayerState> GetOrCreate(Guid playerId, string playerName = "")
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
         PlayerData? playerData = await dbContext.Players.Where(w => w.PlayerId == playerId).FirstOrDefaultAsync();
@@ -35,16 +36,42 @@ public class RdbPlayerModelRepository : IPlayerModelRepository
             await dbContext.Players.AddAsync(playerData);
             await dbContext.SaveChangesAsync();
         }
-        return playerData;
+
+        var state = new PlayerState
+        {
+            Id = playerData.Id,
+            PlayerId = playerData.PlayerId,
+            PlayerName = playerData.PlayerName
+        };
+        var IndexerPropertyNames = dbContext.Entry(playerData).Metadata.GetProperties().Where(p => p.IsIndexerProperty()).Select(p => p.Name);
+        foreach (var key in IndexerPropertyNames)
+        {
+            state[key] = playerData[key];
+        }
+        return state;
     }
 
-    public async Task<PlayerData> Update(PlayerData playerData)
+    public async Task<PlayerState> Update(PlayerState playerState)
     {
         await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
 
+        var playerData = await dbContext.Players.FindAsync(playerState.Id);
+        if(playerData == null)
+        {
+            throw new KeyNotFoundException(nameof(playerState));
+        }
+
+        playerData.PlayerName = playerState.PlayerName;
+        var IndexerPropertyNames = dbContext.Entry(playerData).Metadata.GetProperties().Where(p => p.IsIndexerProperty()).Select(p => p.Name);
+
+        foreach (var key in IndexerPropertyNames)
+        {
+            playerData[key] = playerState[key];
+        }
+
         dbContext.Players.Update(playerData);
         await dbContext.SaveChangesAsync();
-        return playerData;
+        return playerState;
     }
 
  
@@ -59,9 +86,9 @@ public class RdbPlayerModelRepository : IPlayerModelRepository
 
 public interface IPlayerModelRepository
 {
-    Task<PlayerData?> Get(int id);
-    Task<PlayerData> GetOrCreate(Guid playerId, string playerName = "");
-    Task<PlayerData> Update(PlayerData playerData);
+    //Task<PlayerData?> Get(int id);
+    Task<PlayerState> GetOrCreate(Guid playerId, string playerName = "");
+    Task<PlayerState> Update(PlayerState playerData);
 }
 
 public interface IExternalIdentityRepository

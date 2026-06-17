@@ -8,7 +8,7 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
         throw new NotImplementedException();
     }
 
-    public Task<bool> OnLoginAsync(PlayerData playerData, CancellationToken? cancellationToken = null)
+    public Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null)
     {
         Console.WriteLine(playerData[PlayerDataColumn.Title]);
 
@@ -18,7 +18,7 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
         return Task.FromResult<bool>(true);
     }
 
-    public Task<bool> OnLogoutAsync(PlayerData playerData, CancellationToken? cancellationToken = null)
+    public Task<bool> OnLogoutAsync(PlayerState playerData, CancellationToken? cancellationToken = null)
     {
 
         return Task.FromResult<bool>(false);

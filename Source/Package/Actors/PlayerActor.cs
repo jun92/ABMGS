@@ -18,13 +18,14 @@ using Google.FlatBuffers;
 using SyncnetPlatform.Interfaces.Network.Utils;
 using SyncnetPlatform.Utils;
 using SyncnetPlatform.Utils.Telemetry;
+using System.Runtime.InteropServices.ObjectiveC;
 
 namespace SyncnetPlatform.Actors;
 
 public interface IPlayerCustomBehavior
 {
-    public Task<bool> OnLoginAsync(PlayerData playerData, CancellationToken? cancellationToken = null);
-    public Task<bool> OnLogoutAsync(PlayerData playerData, CancellationToken? cancellationToken = null);
+    public Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null);
+    public Task<bool> OnLogoutAsync(PlayerState playerData, CancellationToken? cancellationToken = null);
     public Task HandleCustomPacket(byte[] customPacket);
 }
 
@@ -34,6 +35,22 @@ public enum PlayRoomMemberUpdateReason
     Join = 1,
     Leave = 2,
     Vanished = 3,
+}
+
+[GenerateSerializer]
+public class PlayerState
+{
+    [Id(0)] public int Id { get; set; }
+    [Id(1)] public Guid PlayerId { get; set; }
+    [Id(2)] public string PlayerName { get; set; } = String.Empty;
+
+    [Id(3)] public Dictionary<string, object?> Extension { get; set; } = new();
+
+    public object? this[string key]
+    {
+        get => Extension.TryGetValue(key, out var val) ? val : null;
+        set => Extension[key] = value;
+    }
 }
 
 [GenerateSerializer] public record PlayRoomMember(Guid RoomId, Guid PlayerId, string PlayerName);
@@ -75,7 +92,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     protected SupportedPlatformType _idpFrom;
     
 
-    protected PlayerData _playerData = new();
+    protected PlayerState _playerState = new();
 
     /// <summary>
     /// This indicates the actor has been activated from real player with corrent websocket connection.
@@ -119,16 +136,16 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         if(isOnline == true )
         {
             Guid ThisPlayerId = GrainContext.GrainId.GetGuidKey();
-            _playerData = await _playerModelRepository.GetOrCreate(ThisPlayerId);
-            _dbid = _playerData.Id;
+            _playerState = await _playerModelRepository.GetOrCreate(ThisPlayerId);
+            _dbid = _playerState.Id;
             _IsOnline = true;
 
             if (_playerCustomBehavior != null)
             {
-                var needToUpdateDb = await _playerCustomBehavior.OnLoginAsync(_playerData);
+                var needToUpdateDb = await _playerCustomBehavior.OnLoginAsync(_playerState);
                 if (needToUpdateDb)
                 {
-                    await _playerModelRepository.Update(_playerData);
+                    await _playerModelRepository.Update(_playerState);
                 }
             }
         }
@@ -164,7 +181,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         bool needToUpdateDb = false;
         if (_playerCustomBehavior != null)
         {
-            needToUpdateDb = await _playerCustomBehavior.OnLogoutAsync(_playerData, cancellationToken);
+            needToUpdateDb = await _playerCustomBehavior.OnLogoutAsync(_playerState, cancellationToken);
         }
 
         _ctsForRunRoutingPackets?.Cancel();
@@ -173,7 +190,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
 
         if(_IsDirtyPlayerData || needToUpdateDb)
         {
-            await _playerModelRepository.Update(_playerData);
+            await _playerModelRepository.Update(_playerState);
         }
 
         await base.OnDeactivateAsync(reason, cancellationToken);
@@ -195,14 +212,14 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
 
     public Task UpdatePlayerName(string newName)
     {
-        _playerData.PlayerName = newName;
+        _playerState.PlayerName = newName;
         _IsDirtyPlayerData = true;
         return Task.CompletedTask;
     }
 
     public Task<string> GetPlayerName()
     {
-        return Task.FromResult(_playerData.PlayerName); 
+        return Task.FromResult(_playerState.PlayerName); 
     }
 
     public async Task<PacketErrorCodes> SendDirectDeliverData(Guid toPlayerId, string message, DirectDeliveryDataType dataType)
@@ -249,7 +266,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         }
         return result;
     }
-    protected PlayRoomMember BuildPlayerRoomMember(Guid roomId) => new PlayRoomMember(roomId, GrainContext.GrainId.GetGuidKey(), _playerData.PlayerName);
+    protected PlayRoomMember BuildPlayerRoomMember(Guid roomId) => new PlayRoomMember(roomId, GrainContext.GrainId.GetGuidKey(), _playerState.PlayerName);
 
     /// <summary>
     /// Be called when members of a room has changed. - in and out.
