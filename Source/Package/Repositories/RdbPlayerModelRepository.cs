@@ -8,6 +8,29 @@ using System.Linq;
 
 namespace SyncnetPlatform.Repositories;
 
+public static class PlayerModelMetadataCache
+{
+    private static IReadOnlyList<string>? _indexerPropertyNames;
+    private static readonly object _lock = new();
+
+    public static IReadOnlyList<string> GetIndexerPropertyNames(SyncnetDbContext dbContext)
+    {
+        if (_indexerPropertyNames != null) return _indexerPropertyNames;
+        lock(_lock)
+        {
+            if(_indexerPropertyNames == null)
+            {
+                var entityType = dbContext.Model.FindEntityType(typeof(PlayerData));
+                _indexerPropertyNames = entityType?.GetProperties()
+                    .Where(p => p.IsIndexerProperty())
+                    .Select(p => p.Name)
+                    .ToList() ?? new List<string>();
+            }
+        }
+        return _indexerPropertyNames;
+    }
+}
+
 public class RdbPlayerModelRepository : IPlayerModelRepository
 {
     private readonly ILogger<RdbPlayerModelRepository> _logger;
@@ -43,7 +66,7 @@ public class RdbPlayerModelRepository : IPlayerModelRepository
             PlayerId = playerData.PlayerId,
             PlayerName = playerData.PlayerName
         };
-        var IndexerPropertyNames = dbContext.Entry(playerData).Metadata.GetProperties().Where(p => p.IsIndexerProperty()).Select(p => p.Name);
+        var IndexerPropertyNames = PlayerModelMetadataCache.GetIndexerPropertyNames(dbContext);
         foreach (var key in IndexerPropertyNames)
         {
             state[key] = playerData[key];
@@ -62,7 +85,7 @@ public class RdbPlayerModelRepository : IPlayerModelRepository
         }
 
         playerData.PlayerName = playerState.PlayerName;
-        var IndexerPropertyNames = dbContext.Entry(playerData).Metadata.GetProperties().Where(p => p.IsIndexerProperty()).Select(p => p.Name);
+        var IndexerPropertyNames = PlayerModelMetadataCache.GetIndexerPropertyNames(dbContext);
 
         foreach (var key in IndexerPropertyNames)
         {
@@ -72,15 +95,6 @@ public class RdbPlayerModelRepository : IPlayerModelRepository
         dbContext.Players.Update(playerData);
         await dbContext.SaveChangesAsync();
         return playerState;
-    }
-
- 
-
-    public async Task<PlayerData?> Get(int id)
-    {
-        await using var dbContext = await _dbContextFactory.CreateDbContextAsync();
-        PlayerData? playerData = await dbContext.Players.FindAsync(id);
-        return playerData;
     }
 }
 
