@@ -100,7 +100,6 @@ public class RdbPlayerModelRepository : IPlayerModelRepository
 
 public interface IPlayerModelRepository
 {
-    //Task<PlayerData?> Get(int id);
     Task<PlayerState> GetOrCreate(Guid playerId, string playerName = "");
     Task<PlayerState> Update(PlayerState playerData);
 }
