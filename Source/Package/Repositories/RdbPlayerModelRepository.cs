@@ -115,12 +115,9 @@ public class RdbExternalIdentityRepository : IExternalIdentityRepository
     private readonly ILogger<RdbExternalIdentityRepository> _logger;
     private readonly IDbContextFactory<SyncnetDbContext> _dbContextFactory;
 
-    //private readonly SyncnetDbContext _db;
-
     public RdbExternalIdentityRepository(
         ILogger<RdbExternalIdentityRepository> logger,
         IDbContextFactory<SyncnetDbContext> dbContextFactory
-
         )
     {
         _logger = logger;
