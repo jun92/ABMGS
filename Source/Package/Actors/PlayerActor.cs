@@ -18,7 +18,6 @@ using Google.FlatBuffers;
 using SyncnetPlatform.Interfaces.Network.Utils;
 using SyncnetPlatform.Utils;
 using SyncnetPlatform.Utils.Telemetry;
-using System.Runtime.InteropServices.ObjectiveC;
 
 namespace SyncnetPlatform.Actors;
 
