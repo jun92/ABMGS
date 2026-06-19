@@ -125,7 +125,7 @@ public class RdbExternalIdentityRepository : IExternalIdentityRepository
     }
     public async Task<Guid> GetOrCreate(IdProviderType idProviderType, string idExternal)
     {
-        var dbContext = _dbContextFactory.CreateDbContext();
+        using var dbContext = _dbContextFactory.CreateDbContext();
         PlayerExternalIdentities? entity = await dbContext.ExternalIdentities
             .SingleOrDefaultAsync(p => 
             p.IdProvider == idProviderType &&
@@ -168,13 +168,12 @@ public class RdbExternalIdentityRepository : IExternalIdentityRepository
 
     public async Task Remove(IdProviderType idProviderType, string idExternal)
     {
-        var dbContext = _dbContextFactory.CreateDbContext();
+        using var dbContext = _dbContextFactory.CreateDbContext();
 
         _ = await dbContext.ExternalIdentities
             .Where(w =>
                 w.IdProvider == idProviderType &&
                 w.IdExternal == idExternal)
             .ExecuteDeleteAsync();
-
     }
 }
