@@ -18,7 +18,7 @@ using Google.FlatBuffers;
 using SyncnetPlatform.Interfaces.Network.Utils;
 using SyncnetPlatform.Utils;
 using SyncnetPlatform.Utils.Telemetry;
-
+ 
 namespace SyncnetPlatform.Actors;
 
 public interface IPlayerCustomBehavior
