@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
-using SyncnetPlatform.Extensions;
 using SyncnetPlatform.Extensions.Options;
 using OpenTelemetry.Exporter;
+using SyncnetPlatform.ApplicationBuilder;
 
 
 var builder = SyncnetApplicationBuilder.CreateFrontBuilder(args);
