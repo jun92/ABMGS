@@ -21,7 +21,6 @@ public static class IHostExtension
     {
         using var scope = host.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<SyncnetDbContext>();
-        db.Database.EnsureCreated();
         db.Database.Migrate();
         return host;
     }
