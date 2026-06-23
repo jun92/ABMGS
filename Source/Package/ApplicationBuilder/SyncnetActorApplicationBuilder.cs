@@ -22,7 +22,9 @@ public class SyncnetActorApplicationBuilder : SyncnetBaseApplicationBuilder<Sync
 
     public override SyncnetActorApplication Build()
     {
-        Builder.AddSyncnetPlatformSilo(_options.LoggerConfigure, _options.TelemetryConfigure);
+        var entryAssembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
+        Builder.AddSyncnetPlatformSilo(_options.LoggerConfigure, _options.TelemetryConfigure, entryAssembly.GetName().Name);
+
         if(_options.PlayerDataExtendCreateType is Type PlayerDataExtendType )
             Builder.Services.AddTransient(typeof(IPlayerDataExtendCreater), PlayerDataExtendType);
         if (_options.PlayerCustomBehaviorType is Type PlayerCustomBehaviorType)
@@ -30,11 +32,5 @@ public class SyncnetActorApplicationBuilder : SyncnetBaseApplicationBuilder<Sync
 
         var webApp = Builder.Build();
         return new SyncnetActorApplication(webApp, _options);
-    }
-    
-    protected string? GetAssemblyNameForEfCoreMigration()
-    {
-        var entryAssembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
-        return entryAssembly.GetName().Name;
     }
 }

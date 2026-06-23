@@ -52,11 +52,12 @@ public static class SyncnetPlatformBuilderExtension
     public static void AddSyncnetPlatformSilo(
         this WebApplicationBuilder builder, 
         Action<SyncnetLoggerOption>? LoggerAction = null,
-        Action<SyncnetTelemetryOption>? TelemetryAction = null)
+        Action<SyncnetTelemetryOption>? TelemetryAction = null,
+        string? hostAseemblyName)
     {
 
         //storing calling assembly name 
-        string? hostAssemblyName = Assembly.GetCallingAssembly()!.GetName().FullName;
+        //string? hostAssemblyName = Assembly.GetCallingAssembly()!.GetName().FullName;
 
         AddSyncnetPlatformCommon(builder, LoggerAction, TelemetryAction);
         ConfigureOrleansAsSilo(builder);
