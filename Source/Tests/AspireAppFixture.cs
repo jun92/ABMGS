@@ -48,7 +48,7 @@ public class AspireAppFixture : IAsyncLifetime
             throw new InvalidOperationException("Aspire application has not been initialized.");
         }
 
-        var localHttpClient = App.CreateHttpClient(frontendName);
+        var localHttpClient = App.CreateHttpClient(frontendName, "http");
         await App.ResourceNotifications.WaitForResourceHealthyAsync(frontendName);
         return localHttpClient;
     }
