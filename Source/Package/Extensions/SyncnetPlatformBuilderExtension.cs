@@ -53,7 +53,7 @@ public static class SyncnetPlatformBuilderExtension
         this WebApplicationBuilder builder, 
         Action<SyncnetLoggerOption>? LoggerAction = null,
         Action<SyncnetTelemetryOption>? TelemetryAction = null,
-        string? hostAseemblyName)
+        string? hostAssemblyName = null)
     {
 
         //storing calling assembly name 
@@ -115,7 +115,7 @@ public static class SyncnetPlatformBuilderExtension
         {
             opt.UseNpgsql(builder.Configuration.GetConnectionString("postgres"), optionBuilder =>
             {
-                if (hostAssemblyName == null)
+                if (hostAssemblyName is null)
                     optionBuilder.MigrationsAssembly(typeof(SyncnetDbContext).Assembly.FullName); 
                 else
                     optionBuilder.MigrationsAssembly(hostAssemblyName);
@@ -321,10 +321,12 @@ public static class SyncnetPlatformBuilderExtension
 
     public static void UseFrontendSyncnetPlatform(this WebApplication app)
     {
+        app.UseRouting();
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseWebSockets();
         app.MapOrleansDashboard();
+        app.MapControllers();
     }
 }
 

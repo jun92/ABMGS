@@ -17,12 +17,7 @@ public class SyncnetFrontApplication
     public async Task RunAsync()
     {
         // Front에 필요한 기본 파이프라인 구성 자동화
-        _app.UseRouting();
-        _app.UseAuthentication();
-        _app.UseAuthorization();
         _app.UseFrontendSyncnetPlatform();
-
-        _app.MapControllers();
         await _app.RunAsync();
     }
 }
