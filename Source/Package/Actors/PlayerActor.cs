@@ -26,6 +26,7 @@ public interface IPlayerCustomBehavior
     public Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null);
     public Task<bool> OnLogoutAsync(PlayerState playerData, CancellationToken? cancellationToken = null);
     public Task HandleCustomPacket(byte[] customPacket);
+    Task<byte[]> OverrideCustomDataSerialize(PlayerState playerData, CancellationToken? cancellationToken = null);
 }
 
 public enum PlayRoomMemberUpdateReason

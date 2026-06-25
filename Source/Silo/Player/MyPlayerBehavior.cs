@@ -23,6 +23,12 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
 
         return Task.FromResult<bool>(false);
     }
+
+    public Task<byte[]> OverrideCustomDataSerialize(PlayerState playerData, CancellationToken? cancellationToken = null)
+    {
+        
+        return Task.FromResult(new byte[1]);
+    }
 };
 
 
