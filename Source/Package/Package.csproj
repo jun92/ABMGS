@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -6,10 +6,6 @@
     <Nullable>enable</Nullable>
     <RootNamespace>SyncnetPlatform</RootNamespace>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="generated\**\*.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Asp.Versioning.Mvc" Version="10.0.0" />
@@ -55,7 +51,9 @@
 		<Exec Command="flatc -n -o ./generated ./fbs/Custom.fbs" />
 		<Exec Command="flatc -n -o ./generated ./fbs/Playroom.fbs" />
 		<ItemGroup>
-			<Compile Include="./generated/**/*.cs" />
+			<NewGeneratedFiles Include="generated/**/*.cs" />
+			<NewGeneratedFiles Remove="@(Compile)" />
+			<Compile Include="@(NewGeneratedFiles)" />
 		</ItemGroup>
 	</Target>
 
