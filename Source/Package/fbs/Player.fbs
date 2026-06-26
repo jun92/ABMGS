@@ -21,6 +21,17 @@ table ResUpdatePlayerName{
     result: PacketErrorCodes;
 }
 
+table ReqUserActionForUpdatePlayerCustomData {
+    action_type: string;
+    action_parameter: [ubyte];
+}
+
+table ResUserActionForUpdatePlayerCustomData {
+    result: PacketErrorCodes;
+    message: string;
+    player_custom: [ubyte];
+}
+
 table ReqDirectDeliveryData {
     to_player_id: GuidType;
     data: string;
