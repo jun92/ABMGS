@@ -33,6 +33,11 @@ public partial class PlayerActor
         await UpdatePlayerName(request.PlayerName);
         await _sendDataGrain.Send(PacketBuilder.Build<ResUpdatePlayerNameArgs>(new ResUpdatePlayerNameArgs(PacketErrorCodes.Success)));
     }
+    [PacketHandler(typeof(ReqUserActionForUpdatePlayerCustomData))]
+    public async Task HandleReqUserActionForUpdatePlayerCustomData(ReqUserActionForUpdatePlayerCustomData request)
+    {
+
+    }
 
     [PacketHandler(typeof(ReqDirectDeliveryData))]
     public async Task HandleReqDirectDeliveryData(ReqDirectDeliveryData request)
