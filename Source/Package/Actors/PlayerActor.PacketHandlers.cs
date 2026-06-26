@@ -36,7 +36,32 @@ public partial class PlayerActor
     [PacketHandler(typeof(ReqUserActionForUpdatePlayerCustomData))]
     public async Task HandleReqUserActionForUpdatePlayerCustomData(ReqUserActionForUpdatePlayerCustomData request)
     {
-
+        if(_playerCustomBehavior is not null)
+        {
+            _playerCustomBehavior.UpdatePlayerCustomDataByUserAction(
+                request.ActionType,
+                request.GetActionParameterArray(),
+                _playerState
+                );
+            byte[] updatedCustomData = await _playerCustomBehavior.OverrideCustomDataSerialize(_playerState.Extension);
+            await _sendDataGrain.Send(
+                PacketBuilder.Build<ResUserActionForUpdatePlayerCustomDataArgs>(
+                    new ResUserActionForUpdatePlayerCustomDataArgs(
+                        PacketErrorCodes.Success,
+                        PacketErrorCodes.Success.ToString(),
+                        updatedCustomData
+                        )));
+        }
+        else
+        {
+            await _sendDataGrain.Send(
+                PacketBuilder.Build<ResUserActionForUpdatePlayerCustomDataArgs>(
+                    new ResUserActionForUpdatePlayerCustomDataArgs(
+                        PacketErrorCodes.InterfaceNotImplemented,
+                        PacketErrorCodes.InterfaceNotImplemented.ToString(),
+                        Array.Empty<byte>()
+                        )));
+        }
     }
 
     [PacketHandler(typeof(ReqDirectDeliveryData))]

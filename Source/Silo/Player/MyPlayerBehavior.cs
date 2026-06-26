@@ -28,6 +28,11 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
     {
         return Task.FromResult(new byte[1]);
     }
+
+    public void UpdatePlayerCustomDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState)
+    {
+        throw new NotImplementedException();
+    }
 };
 
 

@@ -2,8 +2,11 @@ namespace SyncnetPlatform.Protocols.Generated;
 
 enum PacketErrorCodes: int {
     Success = 0,
-    
-    //Social 
+
+    //System
+    InterfaceNotImplemented = 50,
+
+    //Social
     PlayerOffline = 100,
 
     //Play room
@@ -12,6 +15,6 @@ enum PacketErrorCodes: int {
     RoomFull = 1002,
 
 
-    // not handled error 
+    // not handled error
     UnknownError = 2147483647,
 }
