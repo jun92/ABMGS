@@ -12,6 +12,8 @@ union SystemPacket {
     Pong,
     ReqUserInfo,
     ResUserInfo,
+    ReqUserActionForUpdatePlayerCustomData,
+    ResUserActionForUpdatePlayerCustomData,
     ReqDirectDeliveryData,
     ResDirectDeliveryData,
     OnDirectDeliveryData,

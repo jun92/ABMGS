@@ -8,6 +8,13 @@ namespace SyncnetPlatform.Network.Utils;
 public abstract class PacketBABuilder<ArgsType> : IPacketByteArrayBuilder<ArgsType> where ArgsType : IPacketBuildArgs
 {
     internal FlatBufferBuilder CreateBuilder() => new (4096);
+    internal readonly FlatBufferBuilder _builder;
+
+    public PacketBABuilder()
+    {
+        _builder = CreateBuilder();
+    }
+
     public abstract byte[] Build(ArgsType args);
 
     public byte[] Wrap(FlatBufferBuilder builder, SystemPacket packetType, int offsetValue)
@@ -98,6 +105,40 @@ internal class ResUpdatePlayerNamePacketBuilder : PacketBABuilder<ResUpdatePlaye
             SystemPacket.ResUpdatePlayerName,
             ResUpdatePlayerName.CreateResUpdatePlayerName(builder, args.Result).Value
             );
+    }
+}
+
+internal class ReqUserActionForUpdatePlayerCustomDataPacketBuilder : PacketBABuilder<ReqUserActionForUpdatePlayerCustomDataArgs>
+{
+    public override byte[] Build(ReqUserActionForUpdatePlayerCustomDataArgs args)
+    {
+        StringOffset actionTypeOffset = _builder.CreateString(args.ActionType);
+        VectorOffset actionParametersOffset = ReqUserActionForUpdatePlayerCustomData.CreateActionParameterVector(_builder, args.ActionParameters);
+        ReqUserActionForUpdatePlayerCustomData.StartReqUserActionForUpdatePlayerCustomData(_builder);
+        ReqUserActionForUpdatePlayerCustomData.AddActionType(_builder, actionTypeOffset);
+        ReqUserActionForUpdatePlayerCustomData.AddActionParameter(_builder, actionParametersOffset);
+
+        return Wrap(_builder,
+            SystemPacket.ReqUserActionForUpdatePlayerCustomData,
+            ReqUserActionForUpdatePlayerCustomData.EndReqUserActionForUpdatePlayerCustomData(_builder).Value);
+    }
+}
+
+internal class ResUserActionForUpdatePlayerCustomDataPacketBuilder : PacketBABuilder<ResUserActionForUpdatePlayerCustomDataArgs>
+{
+    public override byte[] Build(ResUserActionForUpdatePlayerCustomDataArgs args)
+    {
+        StringOffset resultOffset = _builder.CreateString(args.Message);
+        VectorOffset playerCustomVectorOffset = ResUserActionForUpdatePlayerCustomData.CreatePlayerCustomVector(_builder, args.updatedPlayerCustom);
+
+        ResUserActionForUpdatePlayerCustomData.StartResUserActionForUpdatePlayerCustomData(_builder);
+        ResUserActionForUpdatePlayerCustomData.AddResult(_builder, args.Result);
+        ResUserActionForUpdatePlayerCustomData.AddMessage(_builder, resultOffset);
+        ResUserActionForUpdatePlayerCustomData.AddPlayerCustom(_builder, playerCustomVectorOffset);
+
+        return Wrap(_builder,
+            SystemPacket.ResUserActionForUpdatePlayerCustomData,
+            ResUserActionForUpdatePlayerCustomData.EndResUserActionForUpdatePlayerCustomData(_builder).Value);
     }
 }
 
