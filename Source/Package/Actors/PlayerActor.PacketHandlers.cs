@@ -23,7 +23,8 @@ public partial class PlayerActor
     public async Task HandleReqUserInfo(ReqUserInfo request)
     {
         string playerName = await GetPlayerName();
-        await _sendDataGrain.Send(PacketBuilder.Build<ResUserInfoArgs>(new ResUserInfoArgs(PlayerId, playerName)));
+        byte[] serializedCustomData = await SerializePlayerCustomData();
+        await _sendDataGrain.Send(PacketBuilder.Build<ResUserInfoArgs>(new ResUserInfoArgs(PlayerId, playerName, serializedCustomData)));
     }
 
     [PacketHandler(typeof(ReqUpdatePlayerName))]

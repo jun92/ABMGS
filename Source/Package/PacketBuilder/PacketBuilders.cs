@@ -62,12 +62,15 @@ internal class ResUserInfoPacketBuilder: PacketBABuilder<ResUserInfoArgs>
     public override byte[] Build(ResUserInfoArgs args)
     {
         var builder = CreateBuilder();
+
+        VectorOffset customData = ResUserInfo.CreatePlayerCustomVector(builder, args.PlayerCustomData);
         StringOffset playerName = builder.CreateString(args.PlayerName); /*IMPORTANT TO BE CALLED BEFORE START?? FUNCTION*/
         Offset<GuidType> playerId = args.PlayerId.ToGuidType(builder);
 
         ResUserInfo.StartResUserInfo(builder);
         ResUserInfo.AddPlayerId(builder, playerId);
         ResUserInfo.AddPlayerName(builder, playerName);
+        ResUserInfo.AddPlayerCustom(builder, customData);
         Offset<ResUserInfo> offsetUserInfo = ResUserInfo.EndResUserInfo(builder);
 
         return Wrap(builder, SystemPacket.ResUserInfo, offsetUserInfo.Value);
