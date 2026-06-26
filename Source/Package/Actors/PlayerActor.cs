@@ -26,7 +26,7 @@ public interface IPlayerCustomBehavior
     public Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null);
     public Task<bool> OnLogoutAsync(PlayerState playerData, CancellationToken? cancellationToken = null);
     public Task HandleCustomPacket(byte[] customPacket);
-    Task<byte[]> OverrideCustomDataSerialize(PlayerState playerData, CancellationToken? cancellationToken = null);
+    Task<byte[]> OverrideCustomDataSerialize(Dictionary<string, object?> playerState, CancellationToken? cancellationToken = null);
 }
 
 public enum PlayRoomMemberUpdateReason
@@ -220,6 +220,18 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     public Task<string> GetPlayerName()
     {
         return Task.FromResult(_playerState.PlayerName); 
+    }
+
+    public async Task<byte[]> SerializePlayerCustomData()
+    {
+        if(_playerCustomBehavior is not null)
+        {
+            return await _playerCustomBehavior.OverrideCustomDataSerialize(_playerState.Extension);
+        }
+        else
+        {
+            return Array.Empty<byte>();
+        }
     }
 
     public async Task<PacketErrorCodes> SendDirectDeliverData(Guid toPlayerId, string message, DirectDeliveryDataType dataType)
