@@ -31,7 +31,17 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
 
     public void UpdatePlayerCustomDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState)
     {
-        throw new NotImplementedException();
+        Action<byte[], PlayerState> handler = actionType switch
+        {
+            "gainEXP" => (actionParameters, playerState) => 
+            {
+                int gainExp = BitConverter.ToInt32(actionParameters, 0);
+                playerState[PlayerDataColumn.Exp] = (int)playerState[PlayerDataColumn.Exp] + gainExp;
+            },
+            _ => (actionParameters, playerState) => { }
+        };
+
+        handler(actionParameters, playerState);
     }
 };
 
