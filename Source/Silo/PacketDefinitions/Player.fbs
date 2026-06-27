@@ -1,0 +1,6 @@
+
+
+table PlayerCustomData{
+	custom_level: int;
+	custom_exp: long;
+}

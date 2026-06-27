@@ -80,5 +80,15 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         VerifyPacket(dataToSend, SystemPacket.ReqPlayerListInRoom);
         return dataToSend; 
     }
+
+    protected byte[] BuildReqUserActionForUpdatePlayerCustomData(string actionType, byte[] actionParameters)
+    {
+        byte[] dataToSend = SyncnetPacketBuilder.Build<ReqUserActionForUpdatePlayerCustomDataArgs>(
+            new ReqUserActionForUpdatePlayerCustomDataArgs(actionType, actionParameters)
+            );
+        PacketWrapper verifyPacket = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(dataToSend));
+        Assert.Equal(SystemPacket.ReqUserActionForUpdatePlayerCustomData, verifyPacket.SystemPacketType);
+        return dataToSend;
+    }
     
 }
