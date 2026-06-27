@@ -1,3 +1,4 @@
+using Google.FlatBuffers;
 using SyncnetPlatform.Extensions;
 using SyncnetPlatform.Protocols.Generated;
 
@@ -125,6 +126,34 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         Assert.Equal(PacketErrorCodes.PlayerOffline, resDirectDeliveryData.Result);
 
         await CloseAuthoredWebSocket(wsClient1);
+
+    }
+    [Fact]
+    public async Task PlayerCustomDataUpdate()
+    {
+        var wsClient = await CreateAuthoredWebSocket();
+
+        //Get current player custom data
+        var ReqUserInfo = BuildReqUserInfoPacket();
+        await SendDataAsync(wsClient, ReqUserInfo);
+        var (result, packetWrapper) = await ReceiveAsync(wsClient);
+        ResUserInfo UserInfoClient = packetWrapper.SystemPacketAsResUserInfo();
+
+
+        var customData = PlayerCustomData.GetRootAsPlayerCustomData(new ByteBuffer(UserInfoClient.GetPlayerCustomArray()));
+        Assert.Equal(1, customData.CustomLevel);
+        Assert.Equal(0, customData.CustomExp);
+
+
+        //const string ActionType = "gainEXP";
+        //byte[] ActionParameters = BitConverter.GetBytes(100);
+        //var reqUserActionForUpdatePlayerCustomData = BuildReqUserActionForUpdatePlayerCustomData(ActionType, ActionParameters);
+
+        //await SendDataAsync(wsClient, reqUserActionForUpdatePlayerCustomData);
+
+        //(result, packetWrapper) = await ReceiveAsync(wsClient);
+        //ResUserActionForUpdatePlayerCustomData res = packetWrapper.SystemPacketAsResUserActionForUpdatePlayerCustomData();
+        //res.GetPlayerCustomArray();
 
     }
 }

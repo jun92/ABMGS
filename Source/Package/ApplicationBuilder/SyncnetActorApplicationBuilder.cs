@@ -22,7 +22,11 @@ public class SyncnetActorApplicationBuilder : SyncnetBaseApplicationBuilder<Sync
 
     public override SyncnetActorApplication Build()
     {
-        var entryAssembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
+        var entryAssembly = Assembly.GetEntryAssembly();
+        if (entryAssembly == null || entryAssembly.GetName().Name == "ef")
+        {
+            entryAssembly = Assembly.GetCallingAssembly();
+        }
         Builder.AddSyncnetPlatformSilo(_options.LoggerConfigure, _options.TelemetryConfigure, entryAssembly.GetName().Name);
 
         if(_options.PlayerDataExtendCreateType is Type PlayerDataExtendType )

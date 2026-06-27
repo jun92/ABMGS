@@ -17,7 +17,7 @@ public abstract class PacketBABuilder<ArgsType> : IPacketByteArrayBuilder<ArgsTy
             packetType,
             offsetValue);
         builder.Finish(packetWrapperOffset.Value);
-
+        
         return builder.SizedByteArray();
     }
 }

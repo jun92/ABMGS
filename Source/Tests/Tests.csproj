@@ -9,6 +9,10 @@
 	<RootNamespace>SyncnetPlatform.Tests</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Include="..\Silo\PacketDefinitions\generated\PlayerCustomData.cs" Link="PlayerCustomData.cs" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.Testing" Version="13.4.6" />
