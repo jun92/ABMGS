@@ -142,7 +142,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
 
         var customData = PlayerCustomData.GetRootAsPlayerCustomData(new ByteBuffer(UserInfoClient.GetPlayerCustomArray()));
         Assert.Equal(1, customData.CustomLevel);
-        Assert.Equal(0, customData.CustomExp);
+        Assert.Equal(33, customData.CustomExp);
         long prevCustomExp = customData.CustomExp;
 
         const string ActionType = "gainEXP";
