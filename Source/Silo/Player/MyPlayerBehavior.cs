@@ -30,8 +30,8 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
         var builder = new FlatBufferBuilder(4096);
 
         PlayerCustomData.StartPlayerCustomData(builder);
-        PlayerCustomData.AddCustomExp(builder, (long)playerState[PlayerDataColumn.CustomExp]);
-        PlayerCustomData.AddCustomLevel(builder, (int)playerState[PlayerDataColumn.CustomLevel]);
+        PlayerCustomData.AddCustomExp(builder, playerState[PlayerDataColumn.CustomExp] as long? ?? 0);
+        PlayerCustomData.AddCustomLevel(builder, playerState[PlayerDataColumn.CustomLevel] as int? ?? 0);
         var offset = PlayerCustomData.EndPlayerCustomData(builder);
         builder.Finish(offset.Value);
         return Task.FromResult(builder.SizedByteArray());
@@ -44,7 +44,7 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
             "gainexp" => (actionParameters, playerState) => 
             {
                 int gainExp = BitConverter.ToInt32(actionParameters, 0);
-                playerState[PlayerDataColumn.CustomExp] = (long)playerState[PlayerDataColumn.CustomExp] + gainExp;
+                playerState[PlayerDataColumn.CustomExp] = playerState[PlayerDataColumn.CustomExp] as long? ?? 0 + gainExp;
             },
             _ => (actionParameters, playerState) => { }
         };
