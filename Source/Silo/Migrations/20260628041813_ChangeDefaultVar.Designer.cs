@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SyncnetPlatform.Databases;
@@ -11,9 +12,11 @@ using SyncnetPlatform.Databases;
 namespace Silo.Migrations
 {
     [DbContext(typeof(SyncnetDbContext))]
-    partial class SyncnetDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260628041813_ChangeDefaultVar")]
+    partial class ChangeDefaultVar
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
