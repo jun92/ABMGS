@@ -43,6 +43,7 @@ public partial class PlayerActor
                 request.GetActionParameterArray(),
                 _playerState
                 );
+            _IsDirtyPlayerData = true;
             byte[] updatedCustomData = await _playerCustomBehavior.OverrideCustomDataSerialize(_playerState.Extension);
             await _sendDataGrain.Send(
                 PacketBuilder.Build<ResUserActionForUpdatePlayerCustomDataArgs>(
