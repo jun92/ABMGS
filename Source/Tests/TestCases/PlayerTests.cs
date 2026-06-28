@@ -143,17 +143,20 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         var customData = PlayerCustomData.GetRootAsPlayerCustomData(new ByteBuffer(UserInfoClient.GetPlayerCustomArray()));
         Assert.Equal(1, customData.CustomLevel);
         Assert.Equal(0, customData.CustomExp);
+        long prevCustomExp = customData.CustomExp;
 
+        const string ActionType = "gainEXP";
+        byte[] ActionParameters = BitConverter.GetBytes(100);
+        var reqUserActionForUpdatePlayerCustomData = BuildReqUserActionForUpdatePlayerCustomData(ActionType, ActionParameters);
 
-        //const string ActionType = "gainEXP";
-        //byte[] ActionParameters = BitConverter.GetBytes(100);
-        //var reqUserActionForUpdatePlayerCustomData = BuildReqUserActionForUpdatePlayerCustomData(ActionType, ActionParameters);
+        await SendDataAsync(wsClient, reqUserActionForUpdatePlayerCustomData);
 
-        //await SendDataAsync(wsClient, reqUserActionForUpdatePlayerCustomData);
+        (result, packetWrapper) = await ReceiveAsync(wsClient);
+        ResUserActionForUpdatePlayerCustomData res = packetWrapper.SystemPacketAsResUserActionForUpdatePlayerCustomData();
 
-        //(result, packetWrapper) = await ReceiveAsync(wsClient);
-        //ResUserActionForUpdatePlayerCustomData res = packetWrapper.SystemPacketAsResUserActionForUpdatePlayerCustomData();
-        //res.GetPlayerCustomArray();
+        customData = PlayerCustomData.GetRootAsPlayerCustomData(new ByteBuffer(res.GetPlayerCustomArray()));
+
+        Assert.Equal(prevCustomExp + 100, customData.CustomExp);
 
     }
 }
