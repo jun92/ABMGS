@@ -19,7 +19,6 @@ public class FlatBufferPacketRouter : IPacketRouter
     private record PacketHandlerInfo(Func<object, Task> HandlerFunc, string MethodName);
     private readonly ILogger<FlatBufferPacketRouter> _logger;
     private readonly SyncnetMetricsService _metricsService;
-    //private readonly Dictionary<SystemPacket, Func<object, Task>> _packetHandlerTable = [];
     private static readonly ConcurrentDictionary<SystemPacket, string> _packetTypeNames = new();
     private readonly Dictionary<SystemPacket, PacketHandlerInfo> _packetHandlerTable = [];
     private readonly Dictionary<SystemPacket, Func<PacketWrapper, object>> _paramExtractionFuncTable = [];
@@ -59,21 +58,6 @@ public class FlatBufferPacketRouter : IPacketRouter
     {
         return Execute((PacketWrapper)packet);
     }
-
-    //public void BuildParamExtractionFuncs(PacketWrapper packetWrapper) 
-    //{
-    //    foreach (MethodInfo method in typeof(PacketWrapper).GetMethods())
-    //    {
-    //        if(method.Name.StartsWith(PacketSuffix.SystemPacket.ToString()))
-    //        {
-    //            if(Enum.TryParse(method.ReturnType.Name, out SystemPacket packetType))
-    //            {
-    //                _paramExtractionFuncTable[packetType] = FunctionBuilder.BuildFunctionWithReturnType<PacketWrapper>(method);
-    //                _logger.LogTrace($"Found and stored the function for getting type of {packetType.ToString()}");
-    //            }
-    //        }
-    //    }
-    //}
     public void BuildParamExtractionFuncs<PacketWrapperType>() where PacketWrapperType : IFlatbufferObject
     {
         foreach (MethodInfo method in typeof(PacketWrapper).GetMethods())

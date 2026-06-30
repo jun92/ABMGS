@@ -11,7 +11,6 @@ namespace SyncnetPlatform.Utils.Telemetry;
 public class SyncnetIncomingGrainCallFilter : IIncomingGrainCallFilter
 {
     private readonly ILogger<SyncnetIncomingGrainCallFilter> _logger;
-    //private static readonly ConcurrentDictionary<MethodInfo, CallMetadata> _callMetadata = new();
     private static readonly ConcurrentDictionary<(MethodInfo, Type), CallMetadata> _callMetadata = new();
     private readonly SyncnetMetricsService _metricsService;
 
