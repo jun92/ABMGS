@@ -19,13 +19,6 @@ public abstract class SyncnetBaseApplicationBuilder<TBuilder, TApp> where TBuild
     protected SyncnetBaseApplicationBuilder(string[] args)
     {
         Builder = WebApplication.CreateBuilder(args);
-        //string? environmentName = System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-        //Builder.Configuration
-        //    .AddCommandLine(args)
-        //    .SetBasePath(Directory.GetCurrentDirectory())
-        //    .AddJsonFile("appsettings.json", false, true)
-        //    .AddJsonFile($"appsettings.{environmentName}.json", true, true)
-        //    .AddEnvironmentVariables();
     }
     public abstract TApp Build();
 }

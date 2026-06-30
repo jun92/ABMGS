@@ -11,11 +11,6 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
 
     public Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null)
     {
-        //Console.WriteLine(playerData[PlayerDataColumn.Title]);
-
-        //playerData[PlayerDataColumn.Title] = "I am king";
-
-
         return Task.FromResult<bool>(false);
     }
 
