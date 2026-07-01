@@ -4,3 +4,16 @@ table PlayerCustomData{
 	custom_level: int;
 	custom_exp: long;
 }
+
+union ActionParameters {
+	ActionGainExp
+}
+
+table ActionGainExp{
+	exp: long;
+}
+
+
+table ActionParamtersPacket{
+	packet: ActionParameters;
+}

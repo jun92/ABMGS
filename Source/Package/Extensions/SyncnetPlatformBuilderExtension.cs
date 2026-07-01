@@ -104,7 +104,6 @@ public static class SyncnetPlatformBuilderExtension
         builder.Services.AddDbContextFactory<SyncnetDbContext>(opt =>
         {
             opt.UseNpgsql(builder.Configuration.GetConnectionString("postgres"));
-
         });
         builder.Services.AddTransient<IPlayerModelRepository, RdbPlayerModelRepository>();
         builder.Services.AddTransient<IExternalIdentityRepository, RdbExternalIdentityRepository>();
