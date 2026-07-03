@@ -8,12 +8,29 @@ using System.Text;
 
 namespace SyncnetPlatform.Actors;
 
+
+public interface IPlayRoomCustomMetadata
+{
+    public byte[] BuildPlayRoomCustomMetaData();
+
+}
 public interface IPlayRoomCustomEventHandler
 {
-    public Task OnPlayRoomInitializingAsync();
+    public Task OnPlayRoomInitializingAsync(byte[]? roomMetaData);
     public Task OnPlayRoomDestroyingAsync();
     public Task OnHandleCustomPacket(byte[] customPacket);
+    
 
+}
+
+public class PlayRoomState
+{
+    [Id(0)]
+    public string DisplayName { get; set; } = String.Empty;
+    [Id(1)]
+    public string PasswordForEntrace { get; set; } = String.Empty;
+    [Id(2)]
+    public object? PlayRoomMetaData { get; set; } = null;
 }
 
 public interface IPlayGameLogic
@@ -36,7 +53,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     private IDisposable? _playRoomTimer;
 
     //Customizations
-    private readonly IPlayRoomCustomEventHandler? _playRoomcustomEventHandler;
+    private readonly IPlayRoomCustomEventHandler? _playRoomCustomEventHandler;
     private readonly IPlayGameLogic? _playGameLogic;
     public PlayRoomActor(
         ILogger<PlayRoomActor> logger,
@@ -44,17 +61,13 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         IPlayGameLogic? playGameLogic = null)
     {
         _logger = logger;
-        _playRoomcustomEventHandler = playRoomCustomEventHandler;
+        _playRoomCustomEventHandler = playRoomCustomEventHandler;
         _playGameLogic = playGameLogic;
         
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        if(_playRoomcustomEventHandler is not null)
-        {
-            await _playRoomcustomEventHandler.OnPlayRoomInitializingAsync();
-        }
         if (_playGameLogic is not null)
         {
             _playRoomTimer = this.RegisterGrainTimer(
@@ -72,9 +85,9 @@ public class PlayRoomActor : Grain, IPlayRoomActor
 
     public override async Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
     {
-        if(_playRoomcustomEventHandler is not null)
+        if(_playRoomCustomEventHandler is not null)
         {
-            await _playRoomcustomEventHandler.OnPlayRoomDestroyingAsync();
+            await _playRoomCustomEventHandler.OnPlayRoomDestroyingAsync();
         }
         _playRoomTimer?.Dispose();
     }
@@ -92,7 +105,9 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         string displayName, 
         bool isPrivate, 
         int maxCapacity, 
-        string roomPassword, PlayRoomMember owner)
+        string roomPassword, 
+        byte[]? roomMetaData,
+        PlayRoomMember owner)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(displayName, nameof(displayName));
 
@@ -102,6 +117,11 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         _isPrivate = isPrivate;
         _ownerPlayerId = owner.PlayerId;
         _players.Add(owner);
+
+        if( _playRoomCustomEventHandler is not null)
+        {
+            await _playRoomCustomEventHandler.OnPlayRoomInitializingAsync(roomMetaData);
+        }
     }
 
     public Task<bool> IsValidRoomToJoin() => Task.FromResult(_ownerPlayerId !=  Guid.Empty);
@@ -174,9 +194,9 @@ public class PlayRoomActor : Grain, IPlayRoomActor
 
     public async Task HandleCustomPacket(byte[] customPacket)
     {
-        if(_playRoomcustomEventHandler is not null)
+        if(_playRoomCustomEventHandler is not null)
         {
-            await _playRoomcustomEventHandler.OnHandleCustomPacket(customPacket);
+            await _playRoomCustomEventHandler.OnHandleCustomPacket(customPacket);
         }
     }
 }

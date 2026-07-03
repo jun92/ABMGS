@@ -48,7 +48,12 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         return dataToSend;
     }
 
-    protected byte[] BuildReqCreatePlayRoomPacket(string playRoomName, bool IsPrivate = false, string password ="", int maxCount = 1)
+    protected byte[] BuildReqCreatePlayRoomPacket(
+        string playRoomName, 
+        bool IsPrivate = false, 
+        string password ="", 
+        int maxCount = 1,
+        byte[]? metaData = null)
     {
         byte[] dataToSend = SyncnetPacketBuilder.Build<ReqCreateRoomArgs>(
             new ReqCreateRoomArgs(playRoomName, IsPrivate, password, maxCount)

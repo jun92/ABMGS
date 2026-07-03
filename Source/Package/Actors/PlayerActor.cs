@@ -251,12 +251,12 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         return PacketErrorCodes.Success;
     }
 
-    public async Task<Guid> CreateAndJoinPlayRoom(string roomName, bool isPrivate, int maxCapacity, string roomPassword)
+    public async Task<Guid> CreateAndJoinPlayRoom(string roomName, bool isPrivate, int maxCapacity, string roomPassword, byte[]? roomMetaData)
     {
         Guid newPlayRoomId = Guid.NewGuid();
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(newPlayRoomId);
 
-        await playRoomActor.SetRoomInformation(roomName, isPrivate, maxCapacity, roomPassword, BuildPlayerRoomMember(newPlayRoomId));
+        await playRoomActor.SetRoomInformation(roomName, isPrivate, maxCapacity, roomPassword, roomMetaData, BuildPlayerRoomMember(newPlayRoomId));
         _joinedRoomList.Add(newPlayRoomId);
         return newPlayRoomId;
     }

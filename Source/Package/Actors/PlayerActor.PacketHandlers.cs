@@ -82,7 +82,12 @@ public partial class PlayerActor
     [PacketHandler(typeof(ReqCreateRoom))]
     public async Task HandleReqCreateroom(ReqCreateRoom request)
     {
-        Guid RoomId = await CreateAndJoinPlayRoom(request.Name, request.Private, request.MaxCount, request.Password);
+        Guid RoomId = await CreateAndJoinPlayRoom(
+            request.Name, 
+            request.Private, 
+            request.MaxCount, 
+            request.Password,
+            request.GetRoomMetadataArray());
         await _sendDataGrain.Send(PacketBuilder.Build<ResCreateRoomArgs>(new ResCreateRoomArgs(PacketErrorCodes.Success, RoomId)));
     }
 

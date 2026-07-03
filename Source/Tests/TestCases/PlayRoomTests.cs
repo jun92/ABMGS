@@ -30,6 +30,12 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         Assert.Equal(PacketErrorCodes.RoomNotFound, packetWrapper.SystemPacketAsResJoinRoom().Result);
     }
 
+    [Fact]
+    public async Task PlayroomCreationAndDestructionTestWithMetadata()
+    {
+
+    }
+
 
     [Fact]
     public async Task PlayroomNotExistingFailTest()
