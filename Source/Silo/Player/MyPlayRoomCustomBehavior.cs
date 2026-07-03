@@ -14,7 +14,7 @@ public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler
         throw new NotImplementedException();
     }
 
-    public Task OnPlayRoomInitializingAsync(byte[]? roomMetaData)
+    public Task OnPlayRoomInitializingAsync(PlayRoomState _currentRoomState, byte[]? roomMetaData)
     {
 
         throw new NotImplementedException();

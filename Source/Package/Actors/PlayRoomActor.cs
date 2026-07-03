@@ -16,7 +16,7 @@ public interface IPlayRoomCustomMetadata
 }
 public interface IPlayRoomCustomEventHandler
 {
-    public Task OnPlayRoomInitializingAsync(byte[]? roomMetaData);
+    public Task OnPlayRoomInitializingAsync(PlayRoomState _currentPlayRoomState, byte[]? roomMetaData);
     public Task OnPlayRoomDestroyingAsync();
     public Task OnHandleCustomPacket(byte[] customPacket);
     
@@ -51,6 +51,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     private bool _isPrivate = false;
     private Guid _ownerPlayerId = Guid.Empty;
     private IDisposable? _playRoomTimer;
+    private PlayRoomState _playRoomState = new();
 
     //Customizations
     private readonly IPlayRoomCustomEventHandler? _playRoomCustomEventHandler;
@@ -63,7 +64,6 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         _logger = logger;
         _playRoomCustomEventHandler = playRoomCustomEventHandler;
         _playGameLogic = playGameLogic;
-        
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
@@ -120,7 +120,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
 
         if( _playRoomCustomEventHandler is not null)
         {
-            await _playRoomCustomEventHandler.OnPlayRoomInitializingAsync(roomMetaData);
+            await _playRoomCustomEventHandler.OnPlayRoomInitializingAsync(_playRoomState, roomMetaData);
         }
     }
 
