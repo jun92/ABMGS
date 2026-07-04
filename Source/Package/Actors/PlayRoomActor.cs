@@ -14,13 +14,20 @@ public interface IPlayRoomCustomMetadata
     public byte[] BuildPlayRoomCustomMetaData();
 
 }
-public interface IPlayRoomCustomEventHandler
+
+public interface IPlayRoomMetaData
 {
-    public Task OnPlayRoomInitializingAsync(PlayRoomState _currentPlayRoomState, byte[]? roomMetaData);
+
+}
+
+public interface IPlayRoomCustomEventHandler<TPlayRoomMetaData> where TPlayRoomMetaData: IPlayRoomMetaData
+{
+    public IPlayRoomMetaData? InitializePlayRoomMetaData() => null;
+    public Task OnPlayRoomInitializingAsync(IPlayRoomMetaData? _currentPlayRoomMetaData, TPlayRoomMetaData roomMetaData);
     public Task OnPlayRoomDestroyingAsync();
     public Task OnHandleCustomPacket(byte[] customPacket);
-    
-
+    public TPlayRoomMetaData DeserializePlayRoomMetaData(byte[] roomMetaData);
+    public byte[] SerializePlayRoomMetaData(IPlayRoomMetaData playRoomMetaData);
 }
 
 public class PlayRoomState
@@ -30,7 +37,7 @@ public class PlayRoomState
     [Id(1)]
     public string PasswordForEntrace { get; set; } = String.Empty;
     [Id(2)]
-    public object? PlayRoomMetaData { get; set; } = null;
+    public IPlayRoomMetaData? PlayRoomMetaData { get; set; } = null;
 }
 
 public interface IPlayGameLogic
@@ -42,11 +49,8 @@ public class PlayRoomActor : Grain, IPlayRoomActor
 {
     private readonly ILogger<PlayRoomActor> _logger;
 
-
     private List<PlayRoomMember> _players = new List<PlayRoomMember>();
 
-    private string _displayName = String.Empty;
-    private string _passwordForEntrance = String.Empty;
     private int _maxPlayerCapacity = 4;
     private bool _isPrivate = false;
     private Guid _ownerPlayerId = Guid.Empty;
@@ -54,11 +58,11 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     private PlayRoomState _playRoomState = new();
 
     //Customizations
-    private readonly IPlayRoomCustomEventHandler? _playRoomCustomEventHandler;
+    private readonly IPlayRoomCustomEventHandler<IPlayRoomMetaData>? _playRoomCustomEventHandler;
     private readonly IPlayGameLogic? _playGameLogic;
     public PlayRoomActor(
         ILogger<PlayRoomActor> logger,
-        IPlayRoomCustomEventHandler? playRoomCustomEventHandler = null,
+        IPlayRoomCustomEventHandler<IPlayRoomMetaData>? playRoomCustomEventHandler = null,
         IPlayGameLogic? playGameLogic = null)
     {
         _logger = logger;
@@ -80,6 +84,11 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         else
         {
             _playRoomTimer = null;
+        }
+
+        if(_playRoomCustomEventHandler is not null)
+        {
+            _playRoomState.PlayRoomMetaData = _playRoomCustomEventHandler.InitializePlayRoomMetaData();
         }
     }
 
@@ -110,9 +119,8 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         PlayRoomMember owner)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(displayName, nameof(displayName));
-
-        _displayName = displayName;
-        _passwordForEntrance = roomPassword;
+        _playRoomState.DisplayName = displayName;
+        _playRoomState.PasswordForEntrace = roomPassword;
         _maxPlayerCapacity = maxCapacity;
         _isPrivate = isPrivate;
         _ownerPlayerId = owner.PlayerId;
@@ -120,25 +128,39 @@ public class PlayRoomActor : Grain, IPlayRoomActor
 
         if( _playRoomCustomEventHandler is not null)
         {
-            await _playRoomCustomEventHandler.OnPlayRoomInitializingAsync(_playRoomState, roomMetaData);
+            await _playRoomCustomEventHandler.OnPlayRoomInitializingAsync(_playRoomState.PlayRoomMetaData,
+                _playRoomCustomEventHandler.DeserializePlayRoomMetaData(roomMetaData!));
         }
     }
 
     public Task<bool> IsValidRoomToJoin() => Task.FromResult(_ownerPlayerId !=  Guid.Empty);
-        
+
 
     public async Task<PacketErrorCodes> JoinPlayer(PlayRoomMember joiner)
     {
+        //Dictionary<Predicate<PlayRoomActor>, PacketErrorCodes> earlyExitCheck = new Dictionary<Predicate<PlayRoomActor>, PacketErrorCodes>
+        //{
+        //    { r => r._ownerPlayerId == Guid.Empty, PacketErrorCodes.RoomNotFound },
+        //    { r => r._players.Exists(p => p.PlayerId == joiner.PlayerId), PacketErrorCodes.AlreadyInRoom },
+        //    { r => r._players.Count == _maxPlayerCapacity, PacketErrorCodes.RoomFull }
+        //};
+        //foreach (var item in earlyExitCheck)
+        //{
+        //    if( item.Key(this) )
+        //    {
+        //        return item.Value;
+        //    }
+        //}
         if (_ownerPlayerId == Guid.Empty)
         {
             return PacketErrorCodes.RoomNotFound;
         }
 
-        if(_players.Find(f => f.PlayerId == joiner.PlayerId) != null)
+        if (_players.Find(f => f.PlayerId == joiner.PlayerId) != null)
         {
             return PacketErrorCodes.AlreadyInRoom;
         }
-        if(_players.Count == _maxPlayerCapacity)
+        if (_players.Count == _maxPlayerCapacity)
         {
             return PacketErrorCodes.RoomFull;
         }
