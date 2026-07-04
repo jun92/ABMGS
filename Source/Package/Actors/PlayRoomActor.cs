@@ -138,32 +138,31 @@ public class PlayRoomActor : Grain, IPlayRoomActor
 
     public async Task<PacketErrorCodes> JoinPlayer(PlayRoomMember joiner)
     {
-        //Dictionary<Predicate<PlayRoomActor>, PacketErrorCodes> earlyExitCheck = new Dictionary<Predicate<PlayRoomActor>, PacketErrorCodes>
+        Dictionary<Predicate<PlayRoomActor>, PacketErrorCodes> earlyExitCheck = new Dictionary<Predicate<PlayRoomActor>, PacketErrorCodes>
+        {
+            { r => r._ownerPlayerId == Guid.Empty, PacketErrorCodes.RoomNotFound },
+            { r => r._players.Exists(p => p.PlayerId == joiner.PlayerId), PacketErrorCodes.AlreadyInRoom },
+            { r => r._players.Count == _maxPlayerCapacity, PacketErrorCodes.RoomFull }
+        };
+        if( earlyExitCheck.FirstOrDefault(f => f.Key(this)) is {  Key: not null } match)
+        {
+            return match.Value;
+        }
+        
+        
+        //if (_ownerPlayerId == Guid.Empty)
         //{
-        //    { r => r._ownerPlayerId == Guid.Empty, PacketErrorCodes.RoomNotFound },
-        //    { r => r._players.Exists(p => p.PlayerId == joiner.PlayerId), PacketErrorCodes.AlreadyInRoom },
-        //    { r => r._players.Count == _maxPlayerCapacity, PacketErrorCodes.RoomFull }
-        //};
-        //foreach (var item in earlyExitCheck)
-        //{
-        //    if( item.Key(this) )
-        //    {
-        //        return item.Value;
-        //    }
+        //    return PacketErrorCodes.RoomNotFound;
         //}
-        if (_ownerPlayerId == Guid.Empty)
-        {
-            return PacketErrorCodes.RoomNotFound;
-        }
 
-        if (_players.Find(f => f.PlayerId == joiner.PlayerId) != null)
-        {
-            return PacketErrorCodes.AlreadyInRoom;
-        }
-        if (_players.Count == _maxPlayerCapacity)
-        {
-            return PacketErrorCodes.RoomFull;
-        }
+        //if (_players.Find(f => f.PlayerId == joiner.PlayerId) != null)
+        //{
+        //    return PacketErrorCodes.AlreadyInRoom;
+        //}
+        //if (_players.Count == _maxPlayerCapacity)
+        //{
+        //    return PacketErrorCodes.RoomFull;
+        //}
 
         foreach (var player in _players)
         {
