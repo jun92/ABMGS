@@ -175,10 +175,11 @@ internal class ReqJoinRoomPacketBuilder : PacketBABuilder<ReqJoinRoomArgs>
     {
         var builder = CreateBuilder();
         StringOffset roomPassword = builder.CreateString(args.password);
-
+        VectorOffset roomMetadata = ReqJoinRoom.CreateRoomMetadataVector(builder, args.roomMetadata ?? new byte[0]);
         ReqJoinRoom.StartReqJoinRoom(builder);
         ReqJoinRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
         ReqJoinRoom.AddPassword(builder, roomPassword);
+        ReqJoinRoom.AddRoomMetadata(builder, roomMetadata);
         return Wrap(builder, SystemPacket.ReqJoinRoom, ReqJoinRoom.EndReqJoinRoom(builder).Value);
     }
 }

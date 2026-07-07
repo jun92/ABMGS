@@ -19,6 +19,7 @@ table ResCreateRoom{
 table ReqJoinRoom{
     room_id: GuidType;
     password: string;
+    room_metadata: [ubyte];
 }
 
 table ResJoinRoom{
