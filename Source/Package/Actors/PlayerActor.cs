@@ -28,6 +28,9 @@ public interface IPlayerCustomBehavior
     public Task HandleCustomPacket(byte[] customPacket);
     Task<byte[]> OverrideCustomDataSerialize(Dictionary<string, object?> playerState, CancellationToken? cancellationToken = null);
     void UpdatePlayerCustomDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState);
+
+    // When the play join a playroom
+    void OnJoinPlayRoom(PlayerState playerState, Guid playRoomId, bool isOwner, byte[]? roomMetaData = null);
 }
 
 public enum PlayRoomMemberUpdateReason
@@ -258,6 +261,10 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
 
         await playRoomActor.SetRoomInformation(roomName, isPrivate, maxCapacity, roomPassword, roomMetaData, BuildPlayerRoomMember(newPlayRoomId));
         _joinedRoomList.Add(newPlayRoomId);
+        if(_playerCustomBehavior is not null)
+        {
+            _playerCustomBehavior.OnJoinPlayRoom(_playerState, newPlayRoomId, true, roomMetaData);
+        }
         return newPlayRoomId;
     }
 

@@ -9,6 +9,11 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
         throw new NotImplementedException();
     }
 
+    public void OnJoinPlayRoom(PlayerState playerState, Guid playRoomId, bool isOwner, byte[]? roomMetaData = null)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null)
     {
         return Task.FromResult<bool>(false);
