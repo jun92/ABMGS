@@ -23,9 +23,9 @@ namespace SyncnetPlatform.Actors;
 
 public interface IPlayerCustomBehavior
 {
-    public Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null);
-    public Task<bool> OnLogoutAsync(PlayerState playerData, CancellationToken? cancellationToken = null);
-    public Task HandleCustomPacket(byte[] customPacket);
+    Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null);
+    Task<bool> OnLogoutAsync(PlayerState playerData, CancellationToken? cancellationToken = null);
+    Task HandleCustomPacket(byte[] customPacket);
     Task<byte[]> OverrideCustomDataSerialize(Dictionary<string, object?> playerState, CancellationToken? cancellationToken = null);
     void UpdatePlayerCustomDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState);
 

@@ -11,7 +11,7 @@ namespace SyncnetPlatform.Actors;
 
 public interface IPlayRoomCustomMetadata
 {
-    public byte[] BuildPlayRoomCustomMetaData();
+    byte[] BuildPlayRoomCustomMetaData();
 
 }
 
@@ -22,12 +22,12 @@ public interface IPlayRoomMetaData
 
 public interface IPlayRoomCustomEventHandler<TPlayRoomMetaData> where TPlayRoomMetaData: IPlayRoomMetaData
 {
-    public IPlayRoomMetaData? InitializePlayRoomMetaData() => null;
-    public Task OnPlayRoomInitializingAsync(IPlayRoomMetaData? _currentPlayRoomMetaData, TPlayRoomMetaData roomMetaData);
-    public Task OnPlayRoomDestroyingAsync();
-    public Task OnHandleCustomPacket(byte[] customPacket);
-    public TPlayRoomMetaData DeserializePlayRoomMetaData(byte[] roomMetaData);
-    public byte[] SerializePlayRoomMetaData(IPlayRoomMetaData playRoomMetaData);
+    IPlayRoomMetaData? InitializePlayRoomMetaData() => null;
+    Task OnPlayRoomInitializingAsync(IPlayRoomMetaData? _currentPlayRoomMetaData, TPlayRoomMetaData roomMetaData);
+    Task OnPlayRoomDestroyingAsync();
+    Task OnHandleCustomPacket(byte[] customPacket);
+    TPlayRoomMetaData DeserializePlayRoomMetaData(byte[] roomMetaData);
+    byte[] SerializePlayRoomMetaData(IPlayRoomMetaData playRoomMetaData);
 }
 
 public class PlayRoomState
@@ -42,7 +42,7 @@ public class PlayRoomState
 
 public interface IPlayGameLogic
 {
-    public Task OnTimer(float delta);
+    Task OnTimer(float delta);
 }
 
 public class PlayRoomActor : Grain, IPlayRoomActor
