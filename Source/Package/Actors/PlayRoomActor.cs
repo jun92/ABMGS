@@ -138,6 +138,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
 
     public async Task<PacketErrorCodes> JoinPlayer(PlayRoomMember joiner)
     {
+        #region Early exit check
         Dictionary<Predicate<PlayRoomActor>, PacketErrorCodes> earlyExitCheck = new Dictionary<Predicate<PlayRoomActor>, PacketErrorCodes>
         {
             { r => r._ownerPlayerId == Guid.Empty, PacketErrorCodes.RoomNotFound },
@@ -148,21 +149,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         {
             return match.Value;
         }
-        
-        
-        //if (_ownerPlayerId == Guid.Empty)
-        //{
-        //    return PacketErrorCodes.RoomNotFound;
-        //}
-
-        //if (_players.Find(f => f.PlayerId == joiner.PlayerId) != null)
-        //{
-        //    return PacketErrorCodes.AlreadyInRoom;
-        //}
-        //if (_players.Count == _maxPlayerCapacity)
-        //{
-        //    return PacketErrorCodes.RoomFull;
-        //}
+        #endregion
 
         foreach (var player in _players)
         {
