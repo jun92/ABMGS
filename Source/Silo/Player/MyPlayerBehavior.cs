@@ -11,7 +11,6 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
 
     public void OnJoinPlayRoom(PlayerState playerState, Guid playRoomId, bool isOwner, byte[]? roomMetaData = null)
     {
-        throw new NotImplementedException();
     }
 
     public Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null)
