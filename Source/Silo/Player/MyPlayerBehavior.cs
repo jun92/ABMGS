@@ -51,6 +51,11 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
 
         handler(actionParameters, playerState);
     }
+
+    byte[] IPlayerCustomBehavior.OverrideCustomDataSerialize(Dictionary<string, object?> playerState, CancellationToken? cancellationToken)
+    {
+        return Array.Empty<byte>();
+    }
 };
 
 

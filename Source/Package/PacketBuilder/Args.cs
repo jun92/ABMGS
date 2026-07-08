@@ -1,4 +1,5 @@
 using Google.FlatBuffers;
+using SyncnetPlatform.Actors;
 using SyncnetPlatform.Protocols.Generated;
 
 namespace SyncnetPlatform.Network.Utils;
@@ -24,7 +25,7 @@ namespace SyncnetPlatform.Network.Utils;
 
 [GenerateSerializer] public record ReqJoinRoomArgs(Guid roomId, string password, byte[]? roomMetadata = null) : IPacketBuildArgs;
 [GenerateSerializer] public record ResJoinRoomArgs(PacketErrorCodes result): IPacketBuildArgs;
-[GenerateSerializer] public record OnPlayerJoinRoomArgs(Guid roomId, Guid playerId, string playerName): IPacketBuildArgs;
+[GenerateSerializer] public record OnPlayerJoinRoomArgs(Guid roomId, Guid playerId, string playerName, byte[]? PlayerCustomData): IPacketBuildArgs;
 
 [GenerateSerializer] public record ReqPlayerListInRoomArgs(Guid roomId) : IPacketBuildArgs;
 [GenerateSerializer] public record ResPlayerListInRoomArgs(Guid roomId, PlayerInfoInRoomArgs[] playerInfo) : IPacketBuildArgs;

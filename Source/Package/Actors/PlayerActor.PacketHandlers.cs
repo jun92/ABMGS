@@ -23,7 +23,7 @@ public partial class PlayerActor
     public async Task HandleReqUserInfo(ReqUserInfo request)
     {
         string playerName = await GetPlayerName();
-        byte[] serializedCustomData = await SerializePlayerCustomData();
+        byte[] serializedCustomData = SerializePlayerCustomData();
         await _sendDataGrain.Send(PacketBuilder.Build<ResUserInfoArgs>(new ResUserInfoArgs(PlayerId, playerName, serializedCustomData)));
     }
 
@@ -44,13 +44,12 @@ public partial class PlayerActor
                 _playerState
                 );
             _IsDirtyPlayerData = true;
-            byte[] updatedCustomData = await _playerCustomBehavior.OverrideCustomDataSerialize(_playerState.Extension);
             await _sendDataGrain.Send(
                 PacketBuilder.Build<ResUserActionForUpdatePlayerCustomDataArgs>(
                     new ResUserActionForUpdatePlayerCustomDataArgs(
                         PacketErrorCodes.Success,
                         PacketErrorCodes.Success.ToString(),
-                        updatedCustomData
+                        SerializePlayerCustomData()
                         )));
         }
         else

@@ -29,6 +29,7 @@ table OnPlayerJoinRoom{
     room_id: GuidType;
     player_id: GuidType;
     name: string;
+    player_custom_state: [ubyte];
 }
 
 table ReqPlayerListInRoom{

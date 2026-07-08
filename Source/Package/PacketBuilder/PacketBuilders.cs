@@ -202,11 +202,13 @@ internal class OnPlayerJoinRoomPacketBuilder : PacketBABuilder<OnPlayerJoinRoomA
     {
         var builder = CreateBuilder();
         StringOffset playerName = builder.CreateString(args.playerName);
+        VectorOffset playerCustomData = OnPlayerJoinRoom.CreatePlayerCustomStateVector(builder, args.PlayerCustomData ?? new byte[0]);
         
         OnPlayerJoinRoom.StartOnPlayerJoinRoom(builder);
         OnPlayerJoinRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
         OnPlayerJoinRoom.AddPlayerId(builder, args.playerId.ToGuidType(builder));
         OnPlayerJoinRoom.AddName(builder, playerName);
+        OnPlayerJoinRoom.AddPlayerCustomState(builder, playerCustomData);
 
         return Wrap(
             builder,

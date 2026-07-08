@@ -26,7 +26,9 @@ public interface IPlayerCustomBehavior
     Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null);
     Task<bool> OnLogoutAsync(PlayerState playerData, CancellationToken? cancellationToken = null);
     Task HandleCustomPacket(byte[] customPacket);
-    Task<byte[]> OverrideCustomDataSerialize(Dictionary<string, object?> playerState, CancellationToken? cancellationToken = null);
+
+    // return Array.Empty<byte> if no available serializer or data. 
+    byte[] OverrideCustomDataSerialize(Dictionary<string, object?> playerState, CancellationToken? cancellationToken = null);
     void UpdatePlayerCustomDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState);
 
     // When the play join a playroom
@@ -57,7 +59,7 @@ public class PlayerState
     }
 }
 
-[GenerateSerializer] public record PlayRoomMember(Guid RoomId, Guid PlayerId, string PlayerName);
+[GenerateSerializer] public record PlayRoomMember(Guid RoomId, Guid PlayerId, string PlayerName, byte[]? PlayerCustomData);
 
 public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPacketHandler
 {
@@ -226,11 +228,11 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         return Task.FromResult(_playerState.PlayerName); 
     }
 
-    public async Task<byte[]> SerializePlayerCustomData()
+    protected byte[] SerializePlayerCustomData()
     {
         if(_playerCustomBehavior is not null)
         {
-            return await _playerCustomBehavior.OverrideCustomDataSerialize(_playerState.Extension);
+            return _playerCustomBehavior.OverrideCustomDataSerialize(_playerState.Extension);
         }
         else
         {
@@ -286,7 +288,8 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         }
         return result;
     }
-    protected PlayRoomMember BuildPlayerRoomMember(Guid roomId) => new PlayRoomMember(roomId, GrainContext.GrainId.GetGuidKey(), _playerState.PlayerName);
+    protected PlayRoomMember BuildPlayerRoomMember(Guid roomId) 
+        => new PlayRoomMember(roomId, GrainContext.GrainId.GetGuidKey(), _playerState.PlayerName, SerializePlayerCustomData());
 
     /// <summary>
     /// Be called when members of a room has changed. - in and out.
@@ -298,6 +301,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     public async Task OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember, PlayRoomMemberUpdateReason updateReason )
     {
         if (!_IsOnline || _sendDataGrain == null) return;
+
         switch (updateReason)
         {
             case PlayRoomMemberUpdateReason.Join:
@@ -305,7 +309,8 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
                     new OnPlayerJoinRoomArgs(
                         playRoomMember.RoomId,
                         playRoomMember.PlayerId,
-                        playRoomMember.PlayerName
+                        playRoomMember.PlayerName,
+                        playRoomMember.PlayerCustomData
                     )
                     ));
                 break;
