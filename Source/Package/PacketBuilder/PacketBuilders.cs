@@ -144,7 +144,7 @@ internal class ReqCreateRoomPacketBuilder : PacketBABuilder<ReqCreateRoomArgs>
         var builder = CreateBuilder();
         StringOffset roomName = builder.CreateString(args.name);
         StringOffset roomPassword = builder.CreateString(args.password);
-        VectorOffset roomMetaData = ReqCreateRoom.CreateRoomMetadataVector(builder, args.RoomMetadata ?? new byte[0]);
+        VectorOffset roomMetaData = ReqCreateRoom.CreateRoomMetadataVector(builder, args.RoomMetadata ?? Array.Empty<byte>());
 
         ReqCreateRoom.StartReqCreateRoom(builder);
         ReqCreateRoom.AddName(builder, roomName);
@@ -175,7 +175,7 @@ internal class ReqJoinRoomPacketBuilder : PacketBABuilder<ReqJoinRoomArgs>
     {
         var builder = CreateBuilder();
         StringOffset roomPassword = builder.CreateString(args.password);
-        VectorOffset roomMetadata = ReqJoinRoom.CreateRoomMetadataVector(builder, args.roomMetadata ?? new byte[0]);
+        VectorOffset roomMetadata = ReqJoinRoom.CreateRoomMetadataVector(builder, args.roomMetadata ?? Array.Empty<byte>());
         ReqJoinRoom.StartReqJoinRoom(builder);
         ReqJoinRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
         ReqJoinRoom.AddPassword(builder, roomPassword);
@@ -202,7 +202,7 @@ internal class OnPlayerJoinRoomPacketBuilder : PacketBABuilder<OnPlayerJoinRoomA
     {
         var builder = CreateBuilder();
         StringOffset playerName = builder.CreateString(args.playerName);
-        VectorOffset playerCustomData = OnPlayerJoinRoom.CreatePlayerCustomStateVector(builder, args.PlayerCustomData ?? new byte[0]);
+        VectorOffset playerCustomData = OnPlayerJoinRoom.CreatePlayerCustomStateVector(builder, args.PlayerCustomData ?? Array.Empty<byte>());
         
         OnPlayerJoinRoom.StartOnPlayerJoinRoom(builder);
         OnPlayerJoinRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
