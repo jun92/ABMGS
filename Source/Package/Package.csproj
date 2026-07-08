@@ -48,7 +48,6 @@
 		<Exec Command="flatc -n -o ./generated ./fbs/ErrorCodes.fbs" />
 		<Exec Command="flatc -n -o ./generated ./fbs/System.fbs" />
 		<Exec Command="flatc -n -o ./generated ./fbs/Player.fbs" />
-		<Exec Command="flatc -n -o ./generated ./fbs/Custom.fbs" />
 		<Exec Command="flatc -n -o ./generated ./fbs/Playroom.fbs" />
 		<ItemGroup>
 			<NewGeneratedFiles Include="generated/**/*.cs" />

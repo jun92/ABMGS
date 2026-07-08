@@ -1,6 +1,5 @@
 
 
-include "Custom.fbs";
 include "Player.fbs";
 include "Playroom.fbs";
 
@@ -37,7 +36,6 @@ union SystemPacket {
 
 table PacketWrapper {
     system_packet: SystemPacket;
-    custom_packet: CustomPacket;
 }
 
 
