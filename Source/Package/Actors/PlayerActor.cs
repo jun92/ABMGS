@@ -242,7 +242,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         return PacketErrorCodes.Success;
     }
 
-    public async Task<Guid> CreateAndJoinPlayRoom(string roomName, bool isPrivate, int maxCapacity, string roomPassword)
+    public async Task<(Guid, IPlayRoomMetaData?)> CreateAndJoinPlayRoom(string roomName, bool isPrivate, int maxCapacity, string roomPassword)
     {
         Guid newPlayRoomId = Guid.NewGuid();
         
@@ -260,7 +260,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
          {
             _playerCustomBehavior.OnJoinPlayRoom(_playerState, newPlayRoomId, isOwner: true, playRoomMetaData);
         }
-        return newPlayRoomId;
+        return (newPlayRoomId, playRoomMetaData);
     }
 
     public async Task<PacketErrorCodes> JoinPlayRoom(Guid roomId)
