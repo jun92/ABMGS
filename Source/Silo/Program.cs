@@ -43,6 +43,8 @@ builder.ConfigureActor(option =>
 });
 
 builder.Services.AddTransient<IPlayRoomMetaData, MyPlayRoomMetaData>();
+builder.Services.AddTransient<IPlayRoomCustomEventHandler<MyPlayRoomMetaData>, MyPlayRoomCustomBehavior>();
+
 
 
 var SyncnetActorApp = builder.Build();
