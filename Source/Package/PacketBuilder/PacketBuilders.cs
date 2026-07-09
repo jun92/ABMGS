@@ -144,14 +144,12 @@ internal class ReqCreateRoomPacketBuilder : PacketBABuilder<ReqCreateRoomArgs>
         var builder = CreateBuilder();
         StringOffset roomName = builder.CreateString(args.name);
         StringOffset roomPassword = builder.CreateString(args.password);
-        VectorOffset roomMetaData = ReqCreateRoom.CreateRoomMetadataVector(builder, args.RoomMetadata ?? Array.Empty<byte>());
 
         ReqCreateRoom.StartReqCreateRoom(builder);
         ReqCreateRoom.AddName(builder, roomName);
         ReqCreateRoom.AddPrivate(builder, args.isPrivate);
         ReqCreateRoom.AddMaxCount(builder, args.maxCount);
         ReqCreateRoom.AddPassword(builder, roomPassword);
-        ReqCreateRoom.AddRoomMetadata(builder, roomMetaData);
 
         return Wrap(builder, SystemPacket.ReqCreateRoom, ReqCreateRoom.EndReqCreateRoom(builder).Value);
     }
@@ -162,9 +160,12 @@ internal class ResCreateRoomPacketBuilder : PacketBABuilder<ResCreateRoomArgs>
     public override byte[] Build(ResCreateRoomArgs args)
     {
         var builder = CreateBuilder();
+
+        VectorOffset roomMetadata = ResCreateRoom.CreateRoomMetadataVector(builder, args.RoomMetadata ?? Array.Empty<byte>());
         ResCreateRoom.StartResCreateRoom(builder);
         ResCreateRoom.AddResult(builder, args.result);
         ResCreateRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
+        ResCreateRoom.AddRoomMetadata(builder, roomMetadata);
         return Wrap(builder, SystemPacket.ResCreateRoom, ResCreateRoom.EndResCreateRoom(builder).Value);
     }
 }

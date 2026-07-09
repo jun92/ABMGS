@@ -2,6 +2,25 @@ using Google.FlatBuffers;
 using SyncnetPlatform.Actors;
 using SyncnetPlatform.Databases;
 
+public class MyPlayRoomData : IPlayRoomMetaData
+{
+    
+
+    public int TestField01 { get; set; }
+    public float TestField02 { get; set; }
+    public string TestField03 { get; set; } = String.Empty;
+
+    public void Deserialize(byte[] serialized)
+    {
+
+    }
+
+    public byte[] Serialize()
+    {
+        return Array.Empty<byte>();
+    }
+}
+
 public class MyPlayerBehavior : IPlayerCustomBehavior
 {
     public Task HandleCustomPacket(byte[] customPacket)
@@ -9,8 +28,9 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
         throw new NotImplementedException();
     }
 
-    public void OnJoinPlayRoom(PlayerState playerState, Guid playRoomId, bool isOwner, byte[]? roomMetaData = null)
+    public void OnJoinPlayRoom<TPlayRoomMetaData>(PlayerState playerState, Guid playRoomId, bool isOwner, TPlayRoomMetaData? roomMetaData = default) where TPlayRoomMetaData : IPlayRoomMetaData
     {
+        throw new NotImplementedException();
     }
 
     public Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null)

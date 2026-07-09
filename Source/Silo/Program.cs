@@ -41,5 +41,8 @@ builder.ConfigureActor(option =>
     }
 });
 
+builder.Services.AddTransient<IPlayRoomMetaData, MyPlayRoomData>();
+
+
 var SyncnetActorApp = builder.Build();
 await SyncnetActorApp.RunAsync();

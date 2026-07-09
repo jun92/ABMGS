@@ -8,38 +8,6 @@ using System.Text;
 
 namespace SyncnetPlatform.Actors;
 
-
-public interface IPlayRoomCustomMetadata
-{
-    byte[] BuildPlayRoomCustomMetaData();
-
-}
-
-public interface IPlayRoomMetaData
-{
-
-}
-
-public interface IPlayRoomCustomEventHandler<TPlayRoomMetaData> where TPlayRoomMetaData: IPlayRoomMetaData
-{
-    IPlayRoomMetaData? InitializePlayRoomMetaData() => null;
-    Task OnPlayRoomInitializingAsync(IPlayRoomMetaData? _currentPlayRoomMetaData, TPlayRoomMetaData roomMetaData);
-    Task OnPlayRoomDestroyingAsync();
-    Task OnHandleCustomPacket(byte[] customPacket);
-    TPlayRoomMetaData DeserializePlayRoomMetaData(byte[] roomMetaData);
-    byte[] SerializePlayRoomMetaData(IPlayRoomMetaData playRoomMetaData);
-}
-
-public class PlayRoomState
-{
-    [Id(0)]
-    public string DisplayName { get; set; } = String.Empty;
-    [Id(1)]
-    public string PasswordForEntrace { get; set; } = String.Empty;
-    [Id(2)]
-    public IPlayRoomMetaData? PlayRoomMetaData { get; set; } = null;
-}
-
 public interface IPlayGameLogic
 {
     Task OnTimer(float delta);
@@ -60,14 +28,17 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     //Customizations
     private readonly IPlayRoomCustomEventHandler<IPlayRoomMetaData>? _playRoomCustomEventHandler;
     private readonly IPlayGameLogic? _playGameLogic;
+    private readonly IPlayRoomMetaData? _playRoomMetaData;
     public PlayRoomActor(
         ILogger<PlayRoomActor> logger,
         IPlayRoomCustomEventHandler<IPlayRoomMetaData>? playRoomCustomEventHandler = null,
-        IPlayGameLogic? playGameLogic = null)
+        IPlayGameLogic? playGameLogic = null,
+        IPlayRoomMetaData? playRoomMetaData = null)
     {
         _logger = logger;
         _playRoomCustomEventHandler = playRoomCustomEventHandler;
         _playGameLogic = playGameLogic;
+        _playRoomMetaData = playRoomMetaData;
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
@@ -110,12 +81,11 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     /// <param name="roomPassword"></param>
     /// <param name="roomOwnerPlayerId"></param>
     /// <returns></returns>
-    public async Task SetRoomInformation(
+    public async Task<IPlayRoomMetaData?> SetRoomInformation(
         string displayName, 
         bool isPrivate, 
         int maxCapacity, 
         string roomPassword, 
-        byte[]? roomMetaData,
         PlayRoomMember owner)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(displayName, nameof(displayName));
@@ -128,9 +98,10 @@ public class PlayRoomActor : Grain, IPlayRoomActor
 
         if( _playRoomCustomEventHandler is not null)
         {
-            await _playRoomCustomEventHandler.OnPlayRoomInitializingAsync(_playRoomState.PlayRoomMetaData,
-                _playRoomCustomEventHandler.DeserializePlayRoomMetaData(roomMetaData!));
+            _playRoomState.PlayRoomMetaData = await _playRoomCustomEventHandler.OnPlayRoomInitializingAsync();
         }
+
+        return _playRoomState.PlayRoomMetaData;
     }
 
     public Task<bool> IsValidRoomToJoin() => Task.FromResult(_ownerPlayerId !=  Guid.Empty);

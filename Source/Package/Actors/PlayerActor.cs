@@ -21,20 +21,6 @@ using SyncnetPlatform.Utils.Telemetry;
  
 namespace SyncnetPlatform.Actors;
 
-public interface IPlayerCustomBehavior
-{
-    Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null);
-    Task<bool> OnLogoutAsync(PlayerState playerData, CancellationToken? cancellationToken = null);
-    Task HandleCustomPacket(byte[] customPacket);
-
-    // return Array.Empty<byte> if no available serializer or data. 
-    byte[] OverrideCustomDataSerialize(Dictionary<string, object?> playerState, CancellationToken? cancellationToken = null);
-    void UpdatePlayerCustomDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState);
-
-    // When the play join a playroom
-    void OnJoinPlayRoom(PlayerState playerState, Guid playRoomId, bool isOwner, byte[]? roomMetaData = null);
-}
-
 public enum PlayRoomMemberUpdateReason
 {
     None = 0,
@@ -256,16 +242,23 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         return PacketErrorCodes.Success;
     }
 
-    public async Task<Guid> CreateAndJoinPlayRoom(string roomName, bool isPrivate, int maxCapacity, string roomPassword, byte[]? roomMetaData)
+    public async Task<Guid> CreateAndJoinPlayRoom(string roomName, bool isPrivate, int maxCapacity, string roomPassword)
     {
         Guid newPlayRoomId = Guid.NewGuid();
+        
+        // Grab a new PlayRoomActor.
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(newPlayRoomId);
 
-        await playRoomActor.SetRoomInformation(roomName, isPrivate, maxCapacity, roomPassword, roomMetaData, BuildPlayerRoomMember(newPlayRoomId));
+        // Supply initial data to play room.
+        IPlayRoomMetaData? playRoomMetaData = await playRoomActor.SetRoomInformation(roomName, isPrivate, maxCapacity, roomPassword, BuildPlayerRoomMember(newPlayRoomId));
+        
+        // Just remember rooms I joined.
         _joinedRoomList.Add(newPlayRoomId);
+
+        // Delegating additional process to user's handler.
         if(_playerCustomBehavior is not null)
-        {
-            _playerCustomBehavior.OnJoinPlayRoom(_playerState, newPlayRoomId, true, roomMetaData);
+         {
+            _playerCustomBehavior.OnJoinPlayRoom(_playerState, newPlayRoomId, isOwner: true, playRoomMetaData);
         }
         return newPlayRoomId;
     }

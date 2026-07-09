@@ -8,12 +8,12 @@ table ReqCreateRoom{
     private: bool = false;
     password: string;
     max_count: int;
-    room_metadata: [ubyte];
 }
 
 table ResCreateRoom{
     result: PacketErrorCodes;
     room_id: GuidType;
+    room_metadata: [ubyte];
 }
 
 table ReqJoinRoom{

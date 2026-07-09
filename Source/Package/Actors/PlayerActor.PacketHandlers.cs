@@ -85,8 +85,7 @@ public partial class PlayerActor
             request.Name, 
             request.Private, 
             request.MaxCount, 
-            request.Password,
-            request.GetRoomMetadataArray());
+            request.Password);
         await _sendDataGrain.Send(PacketBuilder.Build<ResCreateRoomArgs>(new ResCreateRoomArgs(PacketErrorCodes.Success, RoomId)));
     }
 

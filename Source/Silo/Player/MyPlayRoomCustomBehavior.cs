@@ -4,12 +4,23 @@ namespace Silo.Player;
 
 public class MyPlayRoomMetaData : IPlayRoomMetaData
 {
+    public void Deserialize(byte[] serialized)
+    {
+    }
 
-
+    public byte[] Serialize()
+    {
+        return Array.Empty<byte>();
+    }
 }
 
 public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler<MyPlayRoomMetaData>
 {
+    public MyPlayRoomMetaData DeserializePlayRoomMetaData(byte[] roomMetaData)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task OnHandleCustomPacket(byte[] customPacket)
     {
         throw new NotImplementedException();
@@ -20,16 +31,8 @@ public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler<MyPlayRoomMe
         throw new NotImplementedException();
     }
 
-    public MyPlayRoomMetaData DeserializePlayRoomMetaData(byte[] roomMetaData)
+    public Task<MyPlayRoomMetaData> OnPlayRoomInitializingAsync()
     {
-        // FlatBuffer Packet to MyPlayRoomMetaData
-
-        throw new NotImplementedException();
-    }
-
-    public Task OnPlayRoomInitializingAsync(IPlayRoomMetaData? _currentPlayRoomMetaData, MyPlayRoomMetaData roomMetaData)
-    {
-        //Build Playroom metadata at initialization step.
         throw new NotImplementedException();
     }
 
