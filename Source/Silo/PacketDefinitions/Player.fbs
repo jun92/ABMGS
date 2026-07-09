@@ -24,3 +24,4 @@ table PlayRoomCreationMetaData {
 	ext_field2: string;
 	ext_field3: bool;
 }
+

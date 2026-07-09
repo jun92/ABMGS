@@ -2,25 +2,6 @@ using Google.FlatBuffers;
 using SyncnetPlatform.Actors;
 using SyncnetPlatform.Databases;
 
-public class MyPlayRoomData : IPlayRoomMetaData
-{
-    
-
-    public int TestField01 { get; set; }
-    public float TestField02 { get; set; }
-    public string TestField03 { get; set; } = String.Empty;
-
-    public void Deserialize(byte[] serialized)
-    {
-
-    }
-
-    public byte[] Serialize()
-    {
-        return Array.Empty<byte>();
-    }
-}
-
 public class MyPlayerBehavior : IPlayerCustomBehavior
 {
     public Task HandleCustomPacket(byte[] customPacket)

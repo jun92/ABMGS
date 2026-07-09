@@ -1,4 +1,5 @@
 using OpenTelemetry.Exporter;
+using Silo.Player;
 using SyncnetPlatform.Actors;
 using SyncnetPlatform.ApplicationBuilder;
 using SyncnetPlatform.Databases;
@@ -41,7 +42,7 @@ builder.ConfigureActor(option =>
     }
 });
 
-builder.Services.AddTransient<IPlayRoomMetaData, MyPlayRoomData>();
+builder.Services.AddTransient<IPlayRoomMetaData, MyPlayRoomMetaData>();
 
 
 var SyncnetActorApp = builder.Build();
