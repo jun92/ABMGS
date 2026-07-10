@@ -29,40 +29,65 @@ public class MyPlayRoomMetaData : IPlayRoomMetaData
     }
 }
 
-public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler<MyPlayRoomMetaData>
+public class MyGameRoomLogic
 {
-    public MyPlayRoomMetaData DeserializePlayRoomMetaData(byte[] roomMetaData)
+    public void Init()
     {
-        throw new NotImplementedException();
+
+    }
+    public void Deinit()
+    {
+
+    }
+}
+
+public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler<IPlayRoomMetaData>
+{
+    private readonly MyGameRoomLogic _myGameRoomLogic;
+    private readonly IPlayRoomMetaData _playRoomMetaData;
+
+    public MyPlayRoomCustomBehavior(IPlayRoomMetaData myPlayRoomMetaData, MyGameRoomLogic gameRoomLogic)
+    {
+        _myGameRoomLogic = gameRoomLogic;
+        _playRoomMetaData = myPlayRoomMetaData;
+    }
+
+    public IPlayRoomMetaData DeserializePlayRoomMetaData(byte[] roomMetaData)
+    {
+        _playRoomMetaData.Deserialize(roomMetaData);
+        return _playRoomMetaData;
     }
 
     public IPlayRoomMetaData? InitializePlayRoomMetaData()
     {
-        return new MyPlayRoomMetaData
-        {
-            TestField01 = 15,
-            TestField02 = "MyPlayRoomMetaData2",
-            TestField03 = true
-        };
+
+        return _playRoomMetaData; 
     }
 
     public Task OnHandleCustomPacket(byte[] customPacket)
     {
-        throw new NotImplementedException();
+        return Task.CompletedTask;
+    }
+
+    public Task OnPlayerAction(string actionName, byte[] actionParameter)
+    {
+        return Task.CompletedTask;
     }
 
     public Task OnPlayRoomDestroyingAsync()
     {
-        throw new NotImplementedException();
+        return Task.CompletedTask;
     }
 
-    public Task<MyPlayRoomMetaData> OnPlayRoomInitializingAsync()
+    public Task<IPlayRoomMetaData> OnPlayRoomInitializingAsync()
     {
-        throw new NotImplementedException();
+        _myGameRoomLogic.Init();
+        return Task.FromResult(_playRoomMetaData);
     }
 
     public byte[] SerializePlayRoomMetaData(IPlayRoomMetaData playRoomMetaData)
     {
+        return _playRoomMetaData.Serialize();
         throw new NotImplementedException();
     }
 }

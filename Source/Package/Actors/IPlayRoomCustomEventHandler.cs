@@ -1,6 +1,6 @@
 namespace SyncnetPlatform.Actors;
 
-public interface IPlayRoomCustomEventHandler<TPlayRoomMetaData> where TPlayRoomMetaData: IPlayRoomMetaData
+public interface IPlayRoomCustomEventHandler<IPlayRoomMetaData>
 {
     // Fill up with initial data to PlayRoom.
     IPlayRoomMetaData? InitializePlayRoomMetaData();
@@ -10,13 +10,15 @@ public interface IPlayRoomCustomEventHandler<TPlayRoomMetaData> where TPlayRoomM
     /// </summary>
     /// <param name="_currentPlayRoomMetaData"></param>
     /// <returns></returns>
-    Task<TPlayRoomMetaData> OnPlayRoomInitializingAsync();
+    Task<IPlayRoomMetaData> OnPlayRoomInitializingAsync();
     
     Task OnPlayRoomDestroyingAsync();
     
     Task OnHandleCustomPacket(byte[] customPacket);
-    
-    TPlayRoomMetaData DeserializePlayRoomMetaData(byte[] roomMetaData);
+
+    IPlayRoomMetaData DeserializePlayRoomMetaData(byte[] roomMetaData);
     
     byte[] SerializePlayRoomMetaData(IPlayRoomMetaData playRoomMetaData);
+
+    Task OnPlayerAction(string actionName, byte[] actionParameter);
 }
