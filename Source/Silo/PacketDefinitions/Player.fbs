@@ -25,3 +25,8 @@ table PlayRoomCreationMetaData {
 	ext_field3: bool;
 }
 
+
+table PlayRoomUserActionParameters{
+
+}
+
