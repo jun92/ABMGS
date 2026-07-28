@@ -21,4 +21,6 @@ public interface IPlayRoomCustomEventHandler<IPlayRoomMetaData>
     byte[] SerializePlayRoomMetaData(IPlayRoomMetaData playRoomMetaData);
 
     Task OnPlayerAction(string actionName, byte[] actionParameter);
+
+    Task AddPlayerToPlayRoom(Guid id, byte[] playerMetadata);
 }

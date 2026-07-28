@@ -242,7 +242,12 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         return PacketErrorCodes.Success;
     }
 
-    public async Task<(Guid, IPlayRoomMetaData?)> CreateAndJoinPlayRoom(string roomName, bool isPrivate, int maxCapacity, string roomPassword)
+    public async Task<(Guid, IPlayRoomMetaData?)> CreateAndJoinPlayRoom(
+        string roomName, 
+        bool isPrivate, 
+        int maxCapacity, 
+        string roomPassword,
+        byte[] playerMetadata)
     {
         Guid newPlayRoomId = Guid.NewGuid();
         

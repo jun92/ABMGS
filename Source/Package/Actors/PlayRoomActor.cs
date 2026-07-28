@@ -72,15 +72,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         _playRoomTimer?.Dispose();
     }
     public Guid RoomId => GrainContext.GrainId.GetGuidKey();
-    /// <summary>
-    /// Create new playroom and join the room owner automatically
-    /// </summary>
-    /// <param name="displayName"></param>
-    /// <param name="isPrivate"></param>
-    /// <param name="maxCapacity"></param>
-    /// <param name="roomPassword"></param>
-    /// <param name="roomOwnerPlayerId"></param>
-    /// <returns></returns>
+    
     public async Task<IPlayRoomMetaData?> SetRoomInformation(
         string displayName, 
         bool isPrivate, 
@@ -94,6 +86,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         _maxPlayerCapacity = maxCapacity;
         _isPrivate = isPrivate;
         _ownerPlayerId = owner.PlayerId;
+
         _players.Add(owner);
 
         if( _playRoomCustomEventHandler is not null)
@@ -129,6 +122,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         }
 
         _players.Add(joiner);
+        _playRoomCustomEventHandler.AddPlayerToPlayRoom(joiner.PlayerId, )
 
         return PacketErrorCodes.Success;
     }

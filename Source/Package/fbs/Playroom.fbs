@@ -8,6 +8,7 @@ table ReqCreateRoom{
     private: bool = false;
     password: string;
     max_count: int;
+    playr_metadata: [ubyte];
 }
 
 table ResCreateRoom{

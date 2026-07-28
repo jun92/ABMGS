@@ -144,12 +144,14 @@ internal class ReqCreateRoomPacketBuilder : PacketBABuilder<ReqCreateRoomArgs>
         var builder = CreateBuilder();
         StringOffset roomName = builder.CreateString(args.name);
         StringOffset roomPassword = builder.CreateString(args.password);
+        VectorOffset playerMetadata = ReqCreateRoom.CreatePlayrMetadataVector(builder, args.PlayerMetadata ?? Array.Empty<byte>());
 
         ReqCreateRoom.StartReqCreateRoom(builder);
         ReqCreateRoom.AddName(builder, roomName);
         ReqCreateRoom.AddPrivate(builder, args.isPrivate);
         ReqCreateRoom.AddMaxCount(builder, args.maxCount);
         ReqCreateRoom.AddPassword(builder, roomPassword);
+        ReqCreateRoom.AddPlayrMetadata(builder, playerMetadata);
 
         return Wrap(builder, SystemPacket.ReqCreateRoom, ReqCreateRoom.EndReqCreateRoom(builder).Value);
     }
