@@ -21,6 +21,7 @@ table ResUpdatePlayerName{
     result: PacketErrorCodes;
 }
 
+// 사용자 액션에 의한 메타 데이타 업데이트 처리 요청 패킷 
 table ReqUserActionForUpdatePlayerCustomData {
     action_type: string;
     action_parameter: [ubyte];
@@ -28,6 +29,7 @@ table ReqUserActionForUpdatePlayerCustomData {
 
 table ResUserActionForUpdatePlayerCustomData {
     result: PacketErrorCodes;
+    appErrorCode: int; // 게임에서 정의한 에러 코드 전송 
     message: string;
     player_custom: [ubyte];
 }
