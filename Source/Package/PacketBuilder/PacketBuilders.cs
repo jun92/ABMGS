@@ -144,14 +144,14 @@ internal class ReqCreateRoomPacketBuilder : PacketBABuilder<ReqCreateRoomArgs>
         var builder = CreateBuilder();
         StringOffset roomName = builder.CreateString(args.name);
         StringOffset roomPassword = builder.CreateString(args.password);
-        VectorOffset playerMetadata = ReqCreateRoom.CreatePlayrMetadataVector(builder, args.PlayerMetadata ?? Array.Empty<byte>());
+        //VectorOffset playerMetadata = ReqCreateRoom.CreatePlayrMetadataVector(builder, args.PlayerMetadata ?? Array.Empty<byte>());
 
         ReqCreateRoom.StartReqCreateRoom(builder);
         ReqCreateRoom.AddName(builder, roomName);
         ReqCreateRoom.AddPrivate(builder, args.isPrivate);
         ReqCreateRoom.AddMaxCount(builder, args.maxCount);
         ReqCreateRoom.AddPassword(builder, roomPassword);
-        ReqCreateRoom.AddPlayrMetadata(builder, playerMetadata);
+        //ReqCreateRoom.AddPlayrMetadata(builder, playerMetadata);
 
         return Wrap(builder, SystemPacket.ReqCreateRoom, ReqCreateRoom.EndReqCreateRoom(builder).Value);
     }
@@ -178,11 +178,11 @@ internal class ReqJoinRoomPacketBuilder : PacketBABuilder<ReqJoinRoomArgs>
     {
         var builder = CreateBuilder();
         StringOffset roomPassword = builder.CreateString(args.password);
-        VectorOffset roomMetadata = ReqJoinRoom.CreateRoomMetadataVector(builder, args.roomMetadata ?? Array.Empty<byte>());
+        // VectorOffset roomMetadata = ReqJoinRoom.CreateRoomMetadataVector(builder, args.roomMetadata ?? Array.Empty<byte>());
         ReqJoinRoom.StartReqJoinRoom(builder);
         ReqJoinRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
         ReqJoinRoom.AddPassword(builder, roomPassword);
-        ReqJoinRoom.AddRoomMetadata(builder, roomMetadata);
+        // ReqJoinRoom.AddRoomMetadata(builder, roomMetadata);
         return Wrap(builder, SystemPacket.ReqJoinRoom, ReqJoinRoom.EndReqJoinRoom(builder).Value);
     }
 }

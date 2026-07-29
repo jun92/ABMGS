@@ -8,7 +8,6 @@ table ReqCreateRoom{
     private: bool = false;
     password: string;
     max_count: int;
-    playr_metadata: [ubyte];
 }
 
 table ResCreateRoom{
@@ -20,11 +19,12 @@ table ResCreateRoom{
 table ReqJoinRoom{
     room_id: GuidType;
     password: string;
-    room_metadata: [ubyte];
 }
 
 table ResJoinRoom{
     result: PacketErrorCodes;
+    app_error_code: int;
+    room_metadata: [ubyte];
 }
 table OnPlayerJoinRoom{
     room_id: GuidType;

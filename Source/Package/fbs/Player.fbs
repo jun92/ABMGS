@@ -29,7 +29,7 @@ table ReqUserActionForUpdatePlayerCustomData {
 
 table ResUserActionForUpdatePlayerCustomData {
     result: PacketErrorCodes;
-    appErrorCode: int; // 게임에서 정의한 에러 코드 전송 
+    app_error_code: int; // 게임에서 정의한 에러 코드 전송 
     message: string;
     player_custom: [ubyte];
 }

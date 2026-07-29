@@ -81,12 +81,13 @@ public partial class PlayerActor
     [PacketHandler(typeof(ReqCreateRoom))]
     public async Task HandleReqCreateroom(ReqCreateRoom request)
     {
+        
         var (RoomId, PlayRoomMetaData) = await CreateAndJoinPlayRoom(
             request.Name, 
             request.Private, 
             request.MaxCount, 
             request.Password,
-            request.GetPlayrMetadataArray());
+            SerializePlayerMetadata());
         await _sendDataGrain.Send
             (
                 PacketBuilder.Build<ResCreateRoomArgs>
