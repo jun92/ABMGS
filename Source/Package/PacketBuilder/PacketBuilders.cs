@@ -205,13 +205,13 @@ internal class OnPlayerJoinRoomPacketBuilder : PacketBABuilder<OnPlayerJoinRoomA
     {
         var builder = CreateBuilder();
         StringOffset playerName = builder.CreateString(args.playerName);
-        VectorOffset playerCustomData = OnPlayerJoinRoom.CreatePlayerCustomStateVector(builder, args.PlayerCustomData ?? Array.Empty<byte>());
+        VectorOffset playerCustomData = OnPlayerJoinRoom.CreateJoinerMetadataVector(builder, args.PlayerMetadata ?? Array.Empty<byte>());
         
         OnPlayerJoinRoom.StartOnPlayerJoinRoom(builder);
         OnPlayerJoinRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
-        OnPlayerJoinRoom.AddPlayerId(builder, args.playerId.ToGuidType(builder));
-        OnPlayerJoinRoom.AddName(builder, playerName);
-        OnPlayerJoinRoom.AddPlayerCustomState(builder, playerCustomData);
+        OnPlayerJoinRoom.AddJoinerId(builder, args.playerId.ToGuidType(builder));
+        OnPlayerJoinRoom.AddJoinerName(builder, playerName);
+        OnPlayerJoinRoom.AddJoinerMetadata(builder, playerCustomData);
 
         return Wrap(
             builder,
@@ -240,10 +240,12 @@ internal class ResPlayerListInRoomPacketBuilder : PacketBABuilder<ResPlayerListI
         foreach(var i in args.playerInfo)
         {
             StringOffset PlayerName = builder.CreateString(i.playerName);
+            VectorOffset PlayerMetadata = PlayerInfoInRoom.CreateMetadataVector(builder, i.PlayerMetadata);
 
             PlayerInfoInRoom.StartPlayerInfoInRoom(builder);
-            PlayerInfoInRoom.AddPlayerName(builder, PlayerName);
-            PlayerInfoInRoom.AddPlayerId(builder, i.playerId.ToGuidType(builder));
+            PlayerInfoInRoom.AddId(builder, i.playerId.ToGuidType(builder));
+            PlayerInfoInRoom.AddName(builder, PlayerName);
+            PlayerInfoInRoom.AddMetadata(builder, PlayerMetadata);
             offset.Add(PlayerInfoInRoom.EndPlayerInfoInRoom(builder));
         }
         VectorOffset members = ResPlayerListInRoom.CreateMembersVector(builder,offset.ToArray());

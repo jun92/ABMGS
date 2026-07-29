@@ -97,7 +97,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         Guid JoinedPlayerId = default;
 
         RecvRoomId.FromGuidType(packetWrapper.SystemPacketAsOnPlayerJoinRoom().RoomId);
-        JoinedPlayerId.FromGuidType(packetWrapper.SystemPacketAsOnPlayerJoinRoom().PlayerId);
+        JoinedPlayerId.FromGuidType(packetWrapper.SystemPacketAsOnPlayerJoinRoom().JoinerId);
 
         Assert.Equal(roomId, RecvRoomId);
         Assert.Equal(JoinerPlayerId, JoinedPlayerId);

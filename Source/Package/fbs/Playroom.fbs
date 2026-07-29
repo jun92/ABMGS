@@ -28,9 +28,9 @@ table ResJoinRoom{
 }
 table OnPlayerJoinRoom{
     room_id: GuidType;
-    player_id: GuidType;
-    name: string;
-    player_custom_state: [ubyte];
+    joiner_id: GuidType;
+    joiner_name: string;
+    joiner_metadata: [ubyte];
 }
 
 table ReqPlayerListInRoom{

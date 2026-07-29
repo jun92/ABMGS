@@ -120,7 +120,7 @@ public partial class PlayerActor
         await _sendDataGrain.Send(PacketBuilder.Build<ResPlayerListInRoomArgs>(
             new ResPlayerListInRoomArgs(
                 RoomId, 
-                [.. Players.Select(s => new PlayerInfoInRoomArgs(s.PlayerId, s.PlayerName))]
+                [.. Players.Select(s => new PlayerInfoInRoomArgs(s.PlayerId, s.PlayerName, s.PlayerMetadata ?? Array.Empty<byte>()))]
                )));
     }
 

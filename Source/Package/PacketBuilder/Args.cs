@@ -25,11 +25,11 @@ namespace SyncnetPlatform.Network.Utils;
 
 [GenerateSerializer] public record ReqJoinRoomArgs(Guid roomId, string password, byte[]? roomMetadata = null) : IPacketBuildArgs;
 [GenerateSerializer] public record ResJoinRoomArgs(PacketErrorCodes result): IPacketBuildArgs;
-[GenerateSerializer] public record OnPlayerJoinRoomArgs(Guid roomId, Guid playerId, string playerName, byte[]? PlayerCustomData): IPacketBuildArgs;
+[GenerateSerializer] public record OnPlayerJoinRoomArgs(Guid roomId, Guid playerId, string playerName, byte[]? PlayerMetadata): IPacketBuildArgs;
 
 [GenerateSerializer] public record ReqPlayerListInRoomArgs(Guid roomId) : IPacketBuildArgs;
 [GenerateSerializer] public record ResPlayerListInRoomArgs(Guid roomId, PlayerInfoInRoomArgs[] playerInfo) : IPacketBuildArgs;
-[GenerateSerializer] public record PlayerInfoInRoomArgs(Guid playerId, string playerName);
+[GenerateSerializer] public record PlayerInfoInRoomArgs(Guid playerId, string playerName, byte[] PlayerMetadata);
 
 [GenerateSerializer] public record ReqLeaveRoomArgs(Guid roomId) : IPacketBuildArgs;
 [GenerateSerializer] public record ResLeaveRoomArgs(PacketErrorCodes result) : IPacketBuildArgs;
