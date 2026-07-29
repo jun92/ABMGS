@@ -26,7 +26,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
 
         Assert.True(result.EndOfMessage);
 
-        Assert.Equal(RandomPlayerName, packetWrapper.SystemPacketAsResUserInfo().PlayerName);
+        Assert.Equal(RandomPlayerName, packetWrapper.SystemPacketAsResUserInfo().Name);
 
         await CloseAuthoredWebSocket(wsClient);
     }
@@ -50,7 +50,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
 
         Assert.True(result.EndOfMessage);
 
-        Assert.Equal(RandomPlayerName, packetWrapper.SystemPacketAsResUserInfo().PlayerName);
+        Assert.Equal(RandomPlayerName, packetWrapper.SystemPacketAsResUserInfo().Name);
 
         await CloseAuthoredWebSocket(wsClient);
     }
@@ -67,7 +67,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         var (result, packetWrapper) = await ReceiveAsync(wsClient1);
         ResUserInfo UserInfoClient1 = packetWrapper.SystemPacketAsResUserInfo();
         Guid player1Id = new();
-        player1Id.FromGuidType(UserInfoClient1.PlayerId);
+        player1Id.FromGuidType(UserInfoClient1.Id);
         Assert.NotEqual(Guid.Empty, player1Id);
 
         //Get Client2 User info
@@ -75,7 +75,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         (result, packetWrapper) = await ReceiveAsync(wsClient2);
         ResUserInfo UserInfoClient2 = packetWrapper.SystemPacketAsResUserInfo();
         Guid player2Id = new();
-        player2Id.FromGuidType(UserInfoClient2.PlayerId);
+        player2Id.FromGuidType(UserInfoClient2.Id);
         Assert.NotEqual(Guid.Empty, player2Id);
 
         // Two different accounts.
@@ -111,7 +111,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         var (result, packetWrapper) = await ReceiveAsync(wsClient1);
         ResUserInfo UserInfoClient1 = packetWrapper.SystemPacketAsResUserInfo();
         Guid player1Id = new();
-        player1Id.FromGuidType(UserInfoClient1.PlayerId);
+        player1Id.FromGuidType(UserInfoClient1.Id);
         Assert.NotEqual(Guid.Empty, player1Id);
 
         var player2Id = Guid.NewGuid();
@@ -140,7 +140,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         ResUserInfo UserInfoClient = packetWrapper.SystemPacketAsResUserInfo();
 
 
-        var customData = PlayerCustomData.GetRootAsPlayerCustomData(new ByteBuffer(UserInfoClient.GetPlayerCustomArray()));
+        var customData = PlayerCustomData.GetRootAsPlayerCustomData(new ByteBuffer(UserInfoClient.GetMetadataArray()));
         Assert.Equal(1, customData.CustomLevel);
         Assert.Equal(33, customData.CustomExp);
         long prevCustomExp = customData.CustomExp;

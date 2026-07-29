@@ -214,11 +214,11 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         return Task.FromResult(_playerState.PlayerName); 
     }
 
-    protected byte[] SerializePlayerCustomData()
+    protected byte[] SerializePlayerMetadata()
     {
         if(_playerCustomBehavior is not null)
         {
-            return _playerCustomBehavior.OverrideCustomDataSerialize(_playerState.Extension);
+            return _playerCustomBehavior.SerializePlayerMetadata(_playerState.Extension);
         }
         else
         {
@@ -287,7 +287,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         return result;
     }
     protected PlayRoomMember BuildPlayerRoomMember(Guid roomId) 
-        => new PlayRoomMember(roomId, GrainContext.GrainId.GetGuidKey(), _playerState.PlayerName, SerializePlayerCustomData());
+        => new PlayRoomMember(roomId, GrainContext.GrainId.GetGuidKey(), _playerState.PlayerName, SerializePlayerMetadata());
 
     /// <summary>
     /// Be called when members of a room has changed. - in and out.

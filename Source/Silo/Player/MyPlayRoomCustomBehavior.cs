@@ -52,6 +52,11 @@ public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler<IPlayRoomMet
         _playRoomMetaData = myPlayRoomMetaData;
     }
 
+    public Task AddPlayerToPlayRoom(Guid id, byte[] playerMetadata)
+    {
+        throw new NotImplementedException();
+    }
+
     public IPlayRoomMetaData DeserializePlayRoomMetaData(byte[] roomMetaData)
     {
         _playRoomMetaData.Deserialize(roomMetaData);

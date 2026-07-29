@@ -9,9 +9,9 @@ table ReqUserInfo{
 }
 
 table ResUserInfo{
-    player_id: GuidType;
-    player_name: string;
-    player_custom: [ubyte];
+    id: GuidType;
+    name: string;
+    metadata: [ubyte];
 }
 
 table ReqUpdatePlayerName{

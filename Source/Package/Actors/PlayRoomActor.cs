@@ -122,7 +122,6 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         }
 
         _players.Add(joiner);
-        _playRoomCustomEventHandler.AddPlayerToPlayRoom(joiner.PlayerId, )
 
         return PacketErrorCodes.Success;
     }
