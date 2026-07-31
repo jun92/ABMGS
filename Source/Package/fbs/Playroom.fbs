@@ -52,6 +52,17 @@ table OnPlayRoomUpdatePlayer {
     metadata: [ubyte];
 }
 
+table ReqPlayerActionToPlayRoom {
+    room_id: GuidType;
+    action_type: string;
+    action_parameter: [ubyte];
+}
+
+table ResPlayerActionToPlayRoom {
+    result: PacketErrorCodes;
+    app_error_code: int;
+}
+
 table ReqLeaveRoom{
     room_id: GuidType;
 }

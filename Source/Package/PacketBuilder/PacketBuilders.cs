@@ -286,6 +286,33 @@ internal class OnPlayRoomUpdatePlayerPacketBuilder : PacketBABuilder<OnPlayRoomU
     }
 }
 
+internal class ReqPlayerActionToPlayRoomPacketBuilder : PacketBABuilder<ReqPlayerActionToPlayRoomArgs>
+{
+    public override byte[] Build(ReqPlayerActionToPlayRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        VectorOffset actionParameter = ReqPlayerActionToPlayRoom.CreateActionParameterVector(builder, args.ActionParameter);
+        StringOffset actionType = builder.CreateString(args.ActionType);
+        ReqPlayerActionToPlayRoom.StartReqPlayerActionToPlayRoom(builder);
+        ReqPlayerActionToPlayRoom.AddRoomId(builder, args.RoomId.ToGuidType(builder));
+        ReqPlayerActionToPlayRoom.AddActionType(builder, actionType);
+        ReqPlayerActionToPlayRoom.AddActionParameter(builder, actionParameter);
+        return Wrap(builder, SystemPacket.ReqPlayerActionToPlayRoom, ReqPlayerActionToPlayRoom.EndReqPlayerActionToPlayRoom(builder).Value);
+    }
+}
+
+internal class ResPlayerActionToPlayRoomPacketBuilder : PacketBABuilder<ResPlayerActionToPlayRoomArgs>
+{
+    public override byte[] Build(ResPlayerActionToPlayRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        ResPlayerActionToPlayRoom.StartResPlayerActionToPlayRoom(builder);
+        ResPlayerActionToPlayRoom.AddResult(builder, args.result);
+        ResPlayerActionToPlayRoom.AddAppErrorCode(builder, args.app_error_code);
+        return Wrap(builder, SystemPacket.ResPlayerActionToPlayRoom, ResPlayerActionToPlayRoom.EndResPlayerActionToPlayRoom(builder).Value);
+    }
+}
+
 internal class ReqLeaveRoomPacketBuilder : PacketBABuilder<ReqLeaveRoomArgs>
 {
     public override byte[] Build(ReqLeaveRoomArgs args)

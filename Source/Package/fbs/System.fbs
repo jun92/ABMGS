@@ -25,6 +25,8 @@ union SystemPacket {
     ResPlayerListInRoom,
     OnPlayRoomUpdate,
     OnPlayRoomUpdatePlayer,
+    ReqPlayerActionToPlayRoom,
+    ResPlayerActionToPlayRoom,
     ReqLeaveRoom,
     ResLeaveRoom,
     OnPlayerLeaveRoom,
