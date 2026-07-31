@@ -42,6 +42,16 @@ table ResPlayerListInRoom{
     members: [PlayerInfoInRoom];
 }
 
+table OnPlayRoomUpdate  {
+    room_id: GuidType;
+    metadata: [ubyte];
+}
+
+table OnPlayRoomUpdatePlayer {
+    ids: GuidType;
+    metadata: [ubyte];
+}
+
 table ReqLeaveRoom{
     room_id: GuidType;
 }
