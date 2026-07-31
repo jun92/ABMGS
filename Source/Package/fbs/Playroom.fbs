@@ -48,7 +48,7 @@ table OnPlayRoomUpdate  {
 }
 
 table OnPlayRoomUpdatePlayer {
-    ids: GuidType;
+    id: GuidType;
     metadata: [ubyte];
 }
 

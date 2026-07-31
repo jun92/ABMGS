@@ -259,6 +259,33 @@ internal class ResPlayerListInRoomPacketBuilder : PacketBABuilder<ResPlayerListI
     }
 }
 
+internal class OnPlayRoomUpdatePacketBuilder : PacketBABuilder<OnPlayRoomUpdateArgs>
+{
+    public override byte[] Build(OnPlayRoomUpdateArgs args)
+    {
+        var builder = CreateBuilder();
+
+        VectorOffset metadataOffset = OnPlayRoomUpdate.CreateMetadataVector(builder, args.PlayRoomMetadata);
+        OnPlayRoomUpdate.StartOnPlayRoomUpdate(builder);
+        OnPlayRoomUpdate.AddRoomId(builder, args.RoomId.ToGuidType(builder));
+        OnPlayRoomUpdate.AddMetadata(builder, metadataOffset);
+        return Wrap(builder, SystemPacket.OnPlayRoomUpdate, OnPlayRoomUpdate.EndOnPlayRoomUpdate(builder).Value);
+    }
+}
+
+internal class OnPlayRoomUpdatePlayerPacketBuilder : PacketBABuilder<OnPlayRoomUpdatePlayerArgs>
+{
+    public override byte[] Build(OnPlayRoomUpdatePlayerArgs args)
+    {
+        var builder = CreateBuilder();
+        VectorOffset vectorOffset = OnPlayRoomUpdatePlayer.CreateMetadataVector(builder, args.PlayerMetadata);
+        OnPlayRoomUpdatePlayer.StartOnPlayRoomUpdatePlayer(builder);
+        OnPlayRoomUpdatePlayer.AddId(builder, args.PlayerId.ToGuidType(builder));
+        OnPlayRoomUpdatePlayer.AddMetadata(builder, vectorOffset);
+        return Wrap(builder, SystemPacket.OnPlayRoomUpdatePlayer, OnPlayRoomUpdatePlayer.EndOnPlayRoomUpdatePlayer(builder).Value);
+    }
+}
+
 internal class ReqLeaveRoomPacketBuilder : PacketBABuilder<ReqLeaveRoomArgs>
 {
     public override byte[] Build(ReqLeaveRoomArgs args)

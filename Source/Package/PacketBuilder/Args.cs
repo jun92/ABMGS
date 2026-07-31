@@ -31,6 +31,9 @@ namespace SyncnetPlatform.Network.Utils;
 [GenerateSerializer] public record ResPlayerListInRoomArgs(Guid roomId, PlayerInfoInRoomArgs[] playerInfo) : IPacketBuildArgs;
 [GenerateSerializer] public record PlayerInfoInRoomArgs(Guid playerId, string playerName, byte[] PlayerMetadata);
 
+[GenerateSerializer] public record OnPlayRoomUpdateArgs(Guid RoomId, byte[] PlayRoomMetadata) : IPacketBuildArgs;
+[GenerateSerializer] public record OnPlayRoomUpdatePlayerArgs(Guid PlayerId, byte[] PlayerMetadata) : IPacketBuildArgs;
+
 [GenerateSerializer] public record ReqLeaveRoomArgs(Guid roomId) : IPacketBuildArgs;
 [GenerateSerializer] public record ResLeaveRoomArgs(PacketErrorCodes result) : IPacketBuildArgs;
 [GenerateSerializer] public record OnPlayerLeaveRoomArgs(Guid roomId, Guid playerId, string playerName): IPacketBuildArgs;
@@ -40,5 +43,3 @@ namespace SyncnetPlatform.Network.Utils;
 [GenerateSerializer] public record BroadcastRoomArgs(Guid from, string message) : IPacketBuildArgs;
 
 [GenerateSerializer] public record DeliverCustomPacketArgs(DeliverDestination Dest, byte[] CustomData) : IPacketBuildArgs;
-
-
