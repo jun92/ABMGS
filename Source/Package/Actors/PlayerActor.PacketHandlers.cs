@@ -148,4 +148,9 @@ public partial class PlayerActor
                 break;
         }
     }
+    [PacketHandler(typeof(ReqPlayerActionToPlayRoom))]
+    public async Task HandleReqPlayerActionToPlayRoom(ReqPlayerActionToPlayRoom request)
+    {
+
+    }
 }

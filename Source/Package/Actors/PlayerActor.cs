@@ -330,6 +330,13 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         List<PlayRoomMember> Players = await playRoomActor.GetPlayersInPlayRoom();
         return Players;
     }
+    
+    public async Task PlayerActionToPlayRoom(Guid roomId, string actionType, byte[] actionParameter)
+    {
+        IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(roomId);
+
+
+    }
 
     public async Task<PacketErrorCodes> LeavePlayRoom(Guid roomId)
     {

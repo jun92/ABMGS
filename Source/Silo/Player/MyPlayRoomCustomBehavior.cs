@@ -79,6 +79,11 @@ public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler<IPlayRoomMet
         return Task.CompletedTask;
     }
 
+    public Task OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task OnPlayRoomDestroyingAsync()
     {
         return Task.CompletedTask;

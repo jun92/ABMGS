@@ -120,6 +120,10 @@ public class PlayRoomActor : Grain, IPlayRoomActor
             IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(player.PlayerId);
             await p.OnUpdateForPlayRoomMembers(joiner, PlayRoomMemberUpdateReason.Join);
         }
+        if( _playRoomCustomEventHandler is not null)
+        {
+            await _playRoomCustomEventHandler.AddPlayerToPlayRoom(joiner.PlayerId, joiner.PlayerMetadata ?? Array.Empty<byte>());
+        }
 
         _players.Add(joiner);
 
@@ -170,5 +174,10 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         {
             await _playRoomCustomEventHandler.OnHandleCustomPacket(customPacket);
         }
+    }
+
+    public async Task OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
+    {
+
     }
 }
