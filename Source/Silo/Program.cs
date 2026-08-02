@@ -14,8 +14,8 @@ builder.ConfigureActor(option =>
     option.UsePlayerCustomBehavior<MyPlayerBehavior>();
     option.UsePlayerDataExtendCreator<MyGamePlayerDataExtendCreater>();
     option.AutoMigrateDatabase = true;
-
-    if( builder.Configuration.GetSection("ConnectionStrings:telemetry").Exists())
+    if(false)
+    //if( builder.Configuration.GetSection("ConnectionStrings:telemetry").Exists())
     {
         Action<SyncnetTelemetryOption> telemetryConfigure = option =>
         {
