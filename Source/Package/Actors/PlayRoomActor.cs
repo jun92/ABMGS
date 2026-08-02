@@ -26,12 +26,12 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     private PlayRoomState _playRoomState = new();
 
     //Customizations
-    private readonly IPlayRoomCustomEventHandler<IPlayRoomMetaData>? _playRoomCustomEventHandler;
+    private readonly IPlayRoomCustomEventHandler? _playRoomCustomEventHandler;
     private readonly IPlayGameLogic? _playGameLogic;
     private readonly IPlayRoomMetaData? _playRoomMetaData;
     public PlayRoomActor(
         ILogger<PlayRoomActor> logger,
-        IPlayRoomCustomEventHandler<IPlayRoomMetaData>? playRoomCustomEventHandler = null,
+        IPlayRoomCustomEventHandler? playRoomCustomEventHandler = null,
         IPlayGameLogic? playGameLogic = null,
         IPlayRoomMetaData? playRoomMetaData = null)
     {

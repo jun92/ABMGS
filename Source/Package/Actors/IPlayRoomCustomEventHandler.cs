@@ -1,6 +1,6 @@
 namespace SyncnetPlatform.Actors;
 
-public interface IPlayRoomCustomEventHandler<IPlayRoomMetaData>
+public interface IPlayRoomCustomEventHandler
 {
     // Fill up with initial data to PlayRoom.
     IPlayRoomMetaData? InitializePlayRoomMetaData();

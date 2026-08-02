@@ -41,7 +41,7 @@ public class MyGameRoomLogic
     }
 }
 
-public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler<IPlayRoomMetaData>
+public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler
 {
     private readonly MyGameRoomLogic _myGameRoomLogic;
     private readonly IPlayRoomMetaData _playRoomMetaData;
