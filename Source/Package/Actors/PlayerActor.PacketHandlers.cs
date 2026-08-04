@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using PacketBuilder = SyncnetPlatform.Network.Utils.SyncnetPacketBuilder;
+using SyncnetPlatform.Interfaces.Actors;
 
 namespace SyncnetPlatform.Actors;
 
@@ -151,6 +152,16 @@ public partial class PlayerActor
     [PacketHandler(typeof(ReqPlayerActionToPlayRoom))]
     public async Task HandleReqPlayerActionToPlayRoom(ReqPlayerActionToPlayRoom request)
     {
+        Guid RoomId = default;
+        RoomId.FromGuidType(request.RoomId);
+
+        IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(RoomId);
+
+        
+        await playRoomActor.OnPlayerActionToPlayRoom(
+            this.GetGrainId().GetGuidKey(), 
+            request.ActionType, 
+            request.GetActionParameterArray());
 
     }
 }

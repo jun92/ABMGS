@@ -11,5 +11,6 @@ public interface IPlayRoomActor : IGrainWithGuidKey
     Task<PacketErrorCodes> LeavePlayer(PlayRoomMember leaver);
     Task<IPlayRoomMetaData?> SetRoomInformation(string displayName, bool isPrivate, int maxCapacity, string roomPassword, PlayRoomMember owner);
     Task HandleCustomPacket(byte[] customPacket);
+    Task OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter);
 }
 
