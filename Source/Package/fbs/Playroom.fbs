@@ -42,6 +42,13 @@ table ResPlayerListInRoom{
     members: [PlayerInfoInRoom];
 }
 
+// 사용자의 특정 액션이 발생했고 게임 모드 진행에 변경을 요구할 경우 전송 
+table ReqPlayerActionToPlayRoom {
+    room_id: GuidType;
+    action_type: string;
+    action_parameter: [ubyte];
+}
+
 // 게임모드 진행에 변경 사항에 생겼을 경우 전체에 브로드 캐스팅
 table OnPlayRoomUpdate  {
     room_id: GuidType;
@@ -54,12 +61,6 @@ table OnPlayRoomUpdatePlayer {
     metadata: [ubyte];
 }
 
-// 사용자의 특정 액션이 발생했고 게임 모드 진행에 변경을 요구할 경우 전송 
-table ReqPlayerActionToPlayRoom {
-    room_id: GuidType;
-    action_type: string;
-    action_parameter: [ubyte];
-}
 
 table ResPlayerActionToPlayRoom {
     result: PacketErrorCodes;
