@@ -9,7 +9,7 @@ namespace SyncnetPlatform.Network.Utils;
 [GenerateSerializer] public record PingArgs(int Seq) : IPacketBuildArgs;
 [GenerateSerializer] public record PongArgs(int Seq) : IPacketBuildArgs;
 [GenerateSerializer] public record ReqUserInfoArgs(): IPacketBuildArgs;
-[GenerateSerializer] public record ResUserInfoArgs(Guid PlayerId, string PlayerName, byte[] PlayerCustomData): IPacketBuildArgs;
+[GenerateSerializer] public record ResUserInfoArgs(Guid PlayerId, string PlayerName, byte[] PlayerExtendData): IPacketBuildArgs;
 [GenerateSerializer] public record ReqUpdatePlayerNameArgs(string PlayerName) : IPacketBuildArgs;
 [GenerateSerializer] public record ResUpdatePlayerNameArgs(PacketErrorCodes Result): IPacketBuildArgs;
 

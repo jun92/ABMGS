@@ -63,14 +63,14 @@ internal class ResUserInfoPacketBuilder: PacketBABuilder<ResUserInfoArgs>
     {
         var builder = CreateBuilder();
 
-        VectorOffset metaData = ResUserInfo.CreateMetadataVector(builder, args.PlayerCustomData);
+        VectorOffset extendData = ResUserInfo.CreateExtendDataVector(builder, args.PlayerExtendData);
         StringOffset playerName = builder.CreateString(args.PlayerName); /*IMPORTANT TO BE CALLED BEFORE START?? FUNCTION*/
         Offset<GuidType> playerId = args.PlayerId.ToGuidType(builder);
 
         ResUserInfo.StartResUserInfo(builder);
         ResUserInfo.AddId(builder, playerId);
         ResUserInfo.AddName(builder, playerName);
-        ResUserInfo.AddMetadata(builder, metaData);
+        ResUserInfo.AddExtendData(builder, extendData);
         Offset<ResUserInfo> offsetUserInfo = ResUserInfo.EndResUserInfo(builder);
 
         return Wrap(builder, SystemPacket.ResUserInfo, offsetUserInfo.Value);

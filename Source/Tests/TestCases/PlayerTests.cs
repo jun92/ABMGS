@@ -140,7 +140,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         ResUserInfo UserInfoClient = packetWrapper.SystemPacketAsResUserInfo();
 
 
-        var customData = PlayerCustomData.GetRootAsPlayerCustomData(new ByteBuffer(UserInfoClient.GetMetadataArray()));
+        var customData = PlayerCustomData.GetRootAsPlayerCustomData(new ByteBuffer(UserInfoClient.GetExtendDataArray()));
         Assert.Equal(1, customData.CustomLevel);
         Assert.Equal(33, customData.CustomExp);
         long prevCustomExp = customData.CustomExp;

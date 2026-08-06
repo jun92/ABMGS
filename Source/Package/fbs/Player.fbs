@@ -11,7 +11,7 @@ table ReqUserInfo{
 table ResUserInfo{
     id: GuidType;
     name: string;
-    metadata: [ubyte];
+    extend_data: [ubyte];
 }
 
 table ReqUpdatePlayerName{
