@@ -48,6 +48,7 @@ table ReqPlayerActionToPlayRoom {
     action_type: string;
     action_parameter: [ubyte];
 }
+
 table ResPlayerActionToPlayRoom {
     result: PacketErrorCodes;
     app_error_code: int;
@@ -60,13 +61,10 @@ table OnPlayRoomStateUpdate  {
 }
 
 // 특정 사용자의 정보가 업데이트 되었을 경우 전체에 브로드 캐스팅 
-table OnPlayRoomUpdatePlayer {
-    id: GuidType;
-    metadata: [ubyte];
+table OnPlayRoomUpdatePlayerExtendData {
+    player_id: GuidType;
+    updated_player_extend_data: [ubyte];
 }
-
-
-
 
 table ReqLeaveRoom{
     room_id: GuidType;

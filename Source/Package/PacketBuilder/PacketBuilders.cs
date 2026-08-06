@@ -273,16 +273,16 @@ internal class OnPlayRoomUpdatePacketBuilder : PacketBABuilder<OnPlayRoomStateUp
     }
 }
 
-internal class OnPlayRoomUpdatePlayerPacketBuilder : PacketBABuilder<OnPlayRoomUpdatePlayerArgs>
+internal class OnPlayRoomUpdatePlayerExtendDataPacketBuilder : PacketBABuilder<OnPlayRoomUpdatePlayerExtendDataArgs>
 {
-    public override byte[] Build(OnPlayRoomUpdatePlayerArgs args)
+    public override byte[] Build(OnPlayRoomUpdatePlayerExtendDataArgs args)
     {
         var builder = CreateBuilder();
-        VectorOffset vectorOffset = OnPlayRoomUpdatePlayer.CreateMetadataVector(builder, args.PlayerMetadata);
-        OnPlayRoomUpdatePlayer.StartOnPlayRoomUpdatePlayer(builder);
-        OnPlayRoomUpdatePlayer.AddId(builder, args.PlayerId.ToGuidType(builder));
-        OnPlayRoomUpdatePlayer.AddMetadata(builder, vectorOffset);
-        return Wrap(builder, SystemPacket.OnPlayRoomUpdatePlayer, OnPlayRoomUpdatePlayer.EndOnPlayRoomUpdatePlayer(builder).Value);
+        VectorOffset updatedPlayerExtendData = OnPlayRoomUpdatePlayerExtendData.CreateUpdatedPlayerExtendDataVectorBlock(builder, args.UpdatePlayerExtendData);
+        OnPlayRoomUpdatePlayerExtendData.StartOnPlayRoomUpdatePlayerExtendData(builder);
+        OnPlayRoomUpdatePlayerExtendData.AddPlayerId(builder, args.PlayerId.ToGuidType(builder));
+        OnPlayRoomUpdatePlayerExtendData.AddUpdatedPlayerExtendData(builder, updatedPlayerExtendData);
+        return Wrap(builder, SystemPacket.OnPlayRoomUpdatePlayerExtendData, OnPlayRoomUpdatePlayerExtendData.EndOnPlayRoomUpdatePlayerExtendData(builder).Value);
     }
 }
 
