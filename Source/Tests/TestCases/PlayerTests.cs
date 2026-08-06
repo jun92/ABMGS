@@ -152,9 +152,9 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         await SendDataAsync(wsClient, reqUserActionForUpdatePlayerCustomData);
 
         (result, packetWrapper) = await ReceiveAsync(wsClient);
-        ResUserActionForUpdatePlayerCustomData res = packetWrapper.SystemPacketAsResUserActionForUpdatePlayerCustomData();
+        ResUserActionForUpdatePlayerExtendData res = packetWrapper.SystemPacketAsResUserActionForUpdatePlayerExtendData();
 
-        customData = PlayerCustomData.GetRootAsPlayerCustomData(new ByteBuffer(res.GetPlayerCustomArray()));
+        customData = PlayerCustomData.GetRootAsPlayerCustomData(new ByteBuffer(res.GetExtendDataArray()));
 
         Assert.Equal(prevCustomExp + 100, customData.CustomExp);
 

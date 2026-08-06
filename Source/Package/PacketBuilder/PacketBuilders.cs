@@ -101,39 +101,39 @@ internal class ResUpdatePlayerNamePacketBuilder : PacketBABuilder<ResUpdatePlaye
     }
 }
 
-internal class ReqUserActionForUpdatePlayerCustomDataPacketBuilder : PacketBABuilder<ReqUserActionForUpdatePlayerCustomDataArgs>
+internal class ReqUserActionForUpdatePlayerExtendDataPacketBuilder : PacketBABuilder<ReqUserActionForUpdatePlayerExtendDataArgs>
 {
-    public override byte[] Build(ReqUserActionForUpdatePlayerCustomDataArgs args)
+    public override byte[] Build(ReqUserActionForUpdatePlayerExtendDataArgs args)
     {
         var builder = CreateBuilder();
         StringOffset actionTypeOffset = builder.CreateString(args.ActionType);
-        VectorOffset actionParametersOffset = ReqUserActionForUpdatePlayerCustomData.CreateActionParameterVector(builder, args.ActionParameters);
-        ReqUserActionForUpdatePlayerCustomData.StartReqUserActionForUpdatePlayerCustomData(builder);
-        ReqUserActionForUpdatePlayerCustomData.AddActionType(builder, actionTypeOffset);
-        ReqUserActionForUpdatePlayerCustomData.AddActionParameter(builder, actionParametersOffset);
+        VectorOffset actionParametersOffset = ReqUserActionForUpdatePlayerExtendData.CreateActionParameterVector(builder, args.ActionParameters);
+        ReqUserActionForUpdatePlayerExtendData.StartReqUserActionForUpdatePlayerExtendData(builder);
+        ReqUserActionForUpdatePlayerExtendData.AddActionType(builder, actionTypeOffset);
+        ReqUserActionForUpdatePlayerExtendData.AddActionParameter(builder, actionParametersOffset);
 
         return Wrap(builder,
-            SystemPacket.ReqUserActionForUpdatePlayerCustomData,
-            ReqUserActionForUpdatePlayerCustomData.EndReqUserActionForUpdatePlayerCustomData(builder).Value);
+            SystemPacket.ReqUserActionForUpdatePlayerExtendData,
+            ReqUserActionForUpdatePlayerExtendData.EndReqUserActionForUpdatePlayerExtendData(builder).Value);
     }
 }
 
-internal class ResUserActionForUpdatePlayerCustomDataPacketBuilder : PacketBABuilder<ResUserActionForUpdatePlayerCustomDataArgs>
+internal class ResUserActionForUpdatePlayerExtendDataPacketBuilder : PacketBABuilder<ResUserActionForUpdatePlayerExtendDataArgs>
 {
-    public override byte[] Build(ResUserActionForUpdatePlayerCustomDataArgs args)
+    public override byte[] Build(ResUserActionForUpdatePlayerExtendDataArgs args)
     {
         var builder = CreateBuilder();
         StringOffset resultOffset = builder.CreateString(args.Message);
-        VectorOffset playerCustomVectorOffset = ResUserActionForUpdatePlayerCustomData.CreatePlayerCustomVector(builder, args.updatedPlayerCustom);
+        VectorOffset playerCustomVectorOffset = ResUserActionForUpdatePlayerExtendData.CreateExtendDataVector(builder, args.updatedPlayerExtendData);
 
-        ResUserActionForUpdatePlayerCustomData.StartResUserActionForUpdatePlayerCustomData(builder);
-        ResUserActionForUpdatePlayerCustomData.AddResult(builder, args.Result);
-        ResUserActionForUpdatePlayerCustomData.AddMessage(builder, resultOffset);
-        ResUserActionForUpdatePlayerCustomData.AddPlayerCustom(builder, playerCustomVectorOffset);
+        ResUserActionForUpdatePlayerExtendData.StartResUserActionForUpdatePlayerExtendData(builder);
+        ResUserActionForUpdatePlayerExtendData.AddResult(builder, args.Result);
+        ResUserActionForUpdatePlayerExtendData.AddMessage(builder, resultOffset);
+        ResUserActionForUpdatePlayerExtendData.AddExtendData(builder, playerCustomVectorOffset);
 
         return Wrap(builder,
-            SystemPacket.ResUserActionForUpdatePlayerCustomData,
-            ResUserActionForUpdatePlayerCustomData.EndResUserActionForUpdatePlayerCustomData(builder).Value);
+            SystemPacket.ResUserActionForUpdatePlayerExtendData,
+            ResUserActionForUpdatePlayerExtendData.EndResUserActionForUpdatePlayerExtendData(builder).Value);
     }
 }
 

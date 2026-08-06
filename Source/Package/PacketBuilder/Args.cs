@@ -13,8 +13,8 @@ namespace SyncnetPlatform.Network.Utils;
 [GenerateSerializer] public record ReqUpdatePlayerNameArgs(string PlayerName) : IPacketBuildArgs;
 [GenerateSerializer] public record ResUpdatePlayerNameArgs(PacketErrorCodes Result): IPacketBuildArgs;
 
-[GenerateSerializer] public record ReqUserActionForUpdatePlayerCustomDataArgs(string ActionType, byte[] ActionParameters) : IPacketBuildArgs;
-[GenerateSerializer] public record ResUserActionForUpdatePlayerCustomDataArgs(PacketErrorCodes Result, string Message, byte[] updatedPlayerCustom) : IPacketBuildArgs;
+[GenerateSerializer] public record ReqUserActionForUpdatePlayerExtendDataArgs(string ActionType, byte[] ActionParameters) : IPacketBuildArgs;
+[GenerateSerializer] public record ResUserActionForUpdatePlayerExtendDataArgs(PacketErrorCodes Result, string Message, byte[] updatedPlayerExtendData) : IPacketBuildArgs;
 
 [GenerateSerializer] public record ReqDirectDeliveryDataArgs(Guid ToPlayerId, string Message, DirectDeliveryDataType DateType) : IPacketBuildArgs;
 [GenerateSerializer] public record ResDirectDeliveryDataArgs(PacketErrorCodes ErrorCode) : IPacketBuildArgs;

@@ -88,11 +88,11 @@ public partial class ABMGS_TestMain : IAsyncLifetime
 
     protected byte[] BuildReqUserActionForUpdatePlayerCustomData(string actionType, byte[] actionParameters)
     {
-        byte[] dataToSend = SyncnetPacketBuilder.Build<ReqUserActionForUpdatePlayerCustomDataArgs>(
-            new ReqUserActionForUpdatePlayerCustomDataArgs(actionType, actionParameters)
+        byte[] dataToSend = SyncnetPacketBuilder.Build<ReqUserActionForUpdatePlayerExtendDataArgs>(
+            new ReqUserActionForUpdatePlayerExtendDataArgs(actionType, actionParameters)
             );
         PacketWrapper verifyPacket = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(dataToSend));
-        Assert.Equal(SystemPacket.ReqUserActionForUpdatePlayerCustomData, verifyPacket.SystemPacketType);
+        Assert.Equal(SystemPacket.ReqUserActionForUpdatePlayerExtendData, verifyPacket.SystemPacketType);
         return dataToSend;
     }
     

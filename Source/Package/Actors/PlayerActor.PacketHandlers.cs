@@ -34,8 +34,8 @@ public partial class PlayerActor
         await UpdatePlayerName(request.PlayerName);
         await _sendDataGrain.Send(PacketBuilder.Build<ResUpdatePlayerNameArgs>(new ResUpdatePlayerNameArgs(PacketErrorCodes.Success)));
     }
-    [PacketHandler(typeof(ReqUserActionForUpdatePlayerCustomData))]
-    public async Task HandleReqUserActionForUpdatePlayerCustomData(ReqUserActionForUpdatePlayerCustomData request)
+    [PacketHandler(typeof(ReqUserActionForUpdatePlayerExtendData))]
+    public async Task HandleReqUserActionForUpdatePlayerCustomData(ReqUserActionForUpdatePlayerExtendData request)
     {
         if(_playerCustomBehavior is not null)
         {
@@ -46,8 +46,8 @@ public partial class PlayerActor
                 );
             _IsDirtyPlayerData = true;
             await _sendDataGrain.Send(
-                PacketBuilder.Build<ResUserActionForUpdatePlayerCustomDataArgs>(
-                    new ResUserActionForUpdatePlayerCustomDataArgs(
+                PacketBuilder.Build<ResUserActionForUpdatePlayerExtendDataArgs>(
+                    new ResUserActionForUpdatePlayerExtendDataArgs(
                         PacketErrorCodes.Success,
                         PacketErrorCodes.Success.ToString(),
                         SerializePlayerMetadata()
@@ -56,8 +56,8 @@ public partial class PlayerActor
         else
         {
             await _sendDataGrain.Send(
-                PacketBuilder.Build<ResUserActionForUpdatePlayerCustomDataArgs>(
-                    new ResUserActionForUpdatePlayerCustomDataArgs(
+                PacketBuilder.Build<ResUserActionForUpdatePlayerExtendDataArgs>(
+                    new ResUserActionForUpdatePlayerExtendDataArgs(
                         PacketErrorCodes.InterfaceNotImplemented,
                         PacketErrorCodes.InterfaceNotImplemented.ToString(),
                         Array.Empty<byte>()
