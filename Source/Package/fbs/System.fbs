@@ -23,7 +23,7 @@ union SystemPacket {
     OnPlayerJoinRoom,
     ReqPlayerListInRoom,
     ResPlayerListInRoom,
-    OnPlayRoomUpdate,
+    OnPlayRoomStateUpdate,
     OnPlayRoomUpdatePlayer,
     ReqPlayerActionToPlayRoom,
     ResPlayerActionToPlayRoom,

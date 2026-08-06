@@ -259,17 +259,17 @@ internal class ResPlayerListInRoomPacketBuilder : PacketBABuilder<ResPlayerListI
     }
 }
 
-internal class OnPlayRoomUpdatePacketBuilder : PacketBABuilder<OnPlayRoomUpdateArgs>
+internal class OnPlayRoomUpdatePacketBuilder : PacketBABuilder<OnPlayRoomStateUpdateArgs>
 {
-    public override byte[] Build(OnPlayRoomUpdateArgs args)
+    public override byte[] Build(OnPlayRoomStateUpdateArgs args)
     {
         var builder = CreateBuilder();
 
-        VectorOffset metadataOffset = OnPlayRoomUpdate.CreateMetadataVector(builder, args.PlayRoomMetadata);
-        OnPlayRoomUpdate.StartOnPlayRoomUpdate(builder);
-        OnPlayRoomUpdate.AddRoomId(builder, args.RoomId.ToGuidType(builder));
-        OnPlayRoomUpdate.AddMetadata(builder, metadataOffset);
-        return Wrap(builder, SystemPacket.OnPlayRoomUpdate, OnPlayRoomUpdate.EndOnPlayRoomUpdate(builder).Value);
+        VectorOffset updatePlayRoomState = OnPlayRoomStateUpdate.CreateUpdatedRoomStateVector(builder, args.UpdatedPlayRoomState);
+        OnPlayRoomStateUpdate.StartOnPlayRoomStateUpdate(builder);
+        OnPlayRoomStateUpdate.AddRoomId(builder, args.RoomId.ToGuidType(builder));
+        OnPlayRoomStateUpdate.AddUpdatedRoomState(builder, updatePlayRoomState);
+        return Wrap(builder, SystemPacket.OnPlayRoomStateUpdate, OnPlayRoomStateUpdate.EndOnPlayRoomStateUpdate(builder).Value);
     }
 }
 

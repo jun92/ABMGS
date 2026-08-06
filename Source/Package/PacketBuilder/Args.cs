@@ -31,7 +31,7 @@ namespace SyncnetPlatform.Network.Utils;
 [GenerateSerializer] public record ResPlayerListInRoomArgs(Guid roomId, PlayerInfoInRoomArgs[] playerInfo) : IPacketBuildArgs;
 [GenerateSerializer] public record PlayerInfoInRoomArgs(Guid playerId, string playerName, byte[] PlayerExtendData);
 
-[GenerateSerializer] public record OnPlayRoomUpdateArgs(Guid RoomId, byte[] PlayRoomMetadata) : IPacketBuildArgs;
+[GenerateSerializer] public record OnPlayRoomStateUpdateArgs(Guid RoomId, byte[] UpdatedPlayRoomState) : IPacketBuildArgs;
 [GenerateSerializer] public record OnPlayRoomUpdatePlayerArgs(Guid PlayerId, byte[] PlayerMetadata) : IPacketBuildArgs;
 
 [GenerateSerializer] public record ReqPlayerActionToPlayRoomArgs(Guid RoomId, string ActionType, byte[] ActionParameter) : IPacketBuildArgs;

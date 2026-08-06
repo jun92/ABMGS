@@ -50,9 +50,9 @@ table ReqPlayerActionToPlayRoom {
 }
 
 // 게임모드 진행에 변경 사항에 생겼을 경우 전체에 브로드 캐스팅
-table OnPlayRoomUpdate  {
+table OnPlayRoomStateUpdate  {
     room_id: GuidType;
-    metadata: [ubyte];
+    updated_room_state: [ubyte];
 }
 
 // 특정 사용자의 정보가 업데이트 되었을 경우 전체에 브로드 캐스팅 
