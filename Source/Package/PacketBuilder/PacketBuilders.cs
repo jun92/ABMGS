@@ -240,12 +240,12 @@ internal class ResPlayerListInRoomPacketBuilder : PacketBABuilder<ResPlayerListI
         foreach(var i in args.playerInfo)
         {
             StringOffset PlayerName = builder.CreateString(i.playerName);
-            VectorOffset PlayerMetadata = PlayerInfoInRoom.CreateMetadataVector(builder, i.PlayerMetadata);
+            VectorOffset PlayerExtendData = PlayerInfoInRoom.CreateExtendDataVector(builder, i.PlayerExtendData);
 
             PlayerInfoInRoom.StartPlayerInfoInRoom(builder);
             PlayerInfoInRoom.AddId(builder, i.playerId.ToGuidType(builder));
             PlayerInfoInRoom.AddName(builder, PlayerName);
-            PlayerInfoInRoom.AddMetadata(builder, PlayerMetadata);
+            PlayerInfoInRoom.AddExtendData(builder, PlayerExtendData);
             offset.Add(PlayerInfoInRoom.EndPlayerInfoInRoom(builder));
         }
         VectorOffset members = ResPlayerListInRoom.CreateMembersVector(builder,offset.ToArray());
