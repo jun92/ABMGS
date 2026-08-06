@@ -8,11 +8,11 @@ namespace SyncnetPlatform.Interfaces.Actors;
 
 public interface IPlayerActor : IGrainWithGuidKey, IPacketHandlerActor
 {
-    Task<(Guid, IPlayRoomMetaData?)> CreateAndJoinPlayRoom(string roomName, bool isPrivate, int maxCapacity, string roomPassword, byte[] playerMetadata);
+    Task<(Guid, IPlayRoomCustomState?)> CreateAndJoinPlayRoom(string roomName, bool isPrivate, int maxCapacity, string roomPassword, byte[] playerMetadata);
     public Task Echo(int seq);
     Task<List<PlayRoomMember>> GetPlayerListInPlayRoom(Guid roomId);
     Task<string> GetPlayerName();
-    Task<PacketErrorCodes> JoinPlayRoom(Guid playRoomId);
+    Task<(PacketErrorCodes, byte[])> JoinPlayRoom(Guid playRoomId);
     Task<PacketErrorCodes> LeavePlayRoom(Guid playRoomId);
     Task<PacketErrorCodes> OnDirectDeliveryData(Guid fromPlayerId, string message, DirectDeliveryDataType dataType);
     Task OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember, PlayRoomMemberUpdateReason memberStatus);

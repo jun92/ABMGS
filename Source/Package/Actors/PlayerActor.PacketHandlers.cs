@@ -106,9 +106,15 @@ public partial class PlayerActor
     {
         Guid RoomId = default;
         RoomId.FromGuidType(request.RoomId);
-        PacketErrorCodes resultCode = await JoinPlayRoom(RoomId);
+        var (resultCode, playRoomCustomState) = await JoinPlayRoom(RoomId);
 
-        await _sendDataGrain.Send(PacketBuilder.Build<ResJoinRoomArgs>(new ResJoinRoomArgs(resultCode)));
+        await _sendDataGrain.Send(PacketBuilder.Build<ResJoinRoomArgs>(
+            new ResJoinRoomArgs(
+                resultCode, 
+                0, 
+                playRoomCustomState)
+            )
+            );
     }
 
     [PacketHandler(typeof(ReqPlayerListInRoom))]

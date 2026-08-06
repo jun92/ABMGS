@@ -1,6 +1,6 @@
 namespace SyncnetPlatform.Actors;
 
-public interface IPlayRoomMetaData
+public interface IPlayRoomCustomState
 {
     byte[] Serialize();
     void Deserialize(byte[] serialized);

@@ -21,10 +21,10 @@ namespace SyncnetPlatform.Network.Utils;
 [GenerateSerializer] public record OnDirectDeliveryDataArgs(Guid FromPlayerId, string Message, DirectDeliveryDataType DataType) : IPacketBuildArgs;
 
 [GenerateSerializer] public record ReqCreateRoomArgs(string name, bool isPrivate = true, string password = "", int maxCount = 1, byte[]? PlayerMetadata = null) : IPacketBuildArgs;
-[GenerateSerializer] public record ResCreateRoomArgs(PacketErrorCodes result, Guid roomId, byte[]? RoomMetadata = null) : IPacketBuildArgs;
+[GenerateSerializer] public record ResCreateRoomArgs(PacketErrorCodes result, Guid roomId, byte[]? RoomState = null) : IPacketBuildArgs;
 
-[GenerateSerializer] public record ReqJoinRoomArgs(Guid roomId, string password, byte[]? roomMetadata = null) : IPacketBuildArgs;
-[GenerateSerializer] public record ResJoinRoomArgs(PacketErrorCodes result): IPacketBuildArgs;
+[GenerateSerializer] public record ReqJoinRoomArgs(Guid roomId, string password) : IPacketBuildArgs;
+[GenerateSerializer] public record ResJoinRoomArgs(PacketErrorCodes result, int AppErrorCode, byte[]? roomState = null): IPacketBuildArgs;
 [GenerateSerializer] public record OnPlayerJoinRoomArgs(Guid roomId, Guid playerId, string playerName, byte[]? PlayerMetadata): IPacketBuildArgs;
 
 [GenerateSerializer] public record ReqPlayerListInRoomArgs(Guid roomId) : IPacketBuildArgs;

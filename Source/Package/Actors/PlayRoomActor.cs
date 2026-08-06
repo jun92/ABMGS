@@ -26,27 +26,28 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     private PlayRoomState _playRoomState = new();
 
     //Customizations
-    private readonly IPlayRoomCustomEventHandler? _playRoomCustomEventHandler;
-    private readonly IPlayGameLogic? _playGameLogic;
-    private readonly IPlayRoomMetaData? _playRoomMetaData;
+    private readonly IPlayRoomCustomEventHandler? _playRoomCustomEventHandler = null;
+    //private readonly IPlayRoomCustomState? _playRoomMetaData;
     public PlayRoomActor(
         ILogger<PlayRoomActor> logger,
-        IPlayRoomCustomEventHandler? playRoomCustomEventHandler = null,
-        IPlayGameLogic? playGameLogic = null,
-        IPlayRoomMetaData? playRoomMetaData = null)
+        IPlayRoomCustomEventHandler? playRoomCustomEventHandler = null
+      //  IPlayRoomCustomState? playRoomMetaData = null
+        )
     {
         _logger = logger;
-        _playRoomCustomEventHandler = playRoomCustomEventHandler;
-        _playGameLogic = playGameLogic;
-        _playRoomMetaData = playRoomMetaData;
+        if( playRoomCustomEventHandler is not null)
+        {
+            _playRoomCustomEventHandler = playRoomCustomEventHandler;
+        }
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        if (_playGameLogic is not null)
+        if (_playRoomCustomEventHandler is not null)
         {
+            // Activate Timer for custom handler
             _playRoomTimer = this.RegisterGrainTimer(
-                callback: _playGameLogic.OnTimer,
+                callback: _playRoomCustomEventHandler.OnTimer,
                 state: 0.0f,
                 dueTime: TimeSpan.Zero,
                 period: TimeSpan.FromSeconds(1)
@@ -55,11 +56,6 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         else
         {
             _playRoomTimer = null;
-        }
-
-        if(_playRoomCustomEventHandler is not null)
-        {
-            _playRoomState.PlayRoomMetaData = _playRoomCustomEventHandler.InitializePlayRoomMetaData();
         }
     }
 
@@ -73,7 +69,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     }
     public Guid RoomId => GrainContext.GrainId.GetGuidKey();
     
-    public async Task<IPlayRoomMetaData?> SetRoomInformation(
+    public async Task<IPlayRoomCustomState?> SetRoomInformation(
         string displayName, 
         bool isPrivate, 
         int maxCapacity, 
@@ -91,16 +87,16 @@ public class PlayRoomActor : Grain, IPlayRoomActor
 
         if( _playRoomCustomEventHandler is not null)
         {
-            _playRoomState.PlayRoomMetaData = await _playRoomCustomEventHandler.OnPlayRoomInitializingAsync();
+            _playRoomState.PlayRoomCustomState = await _playRoomCustomEventHandler.OnPlayRoomInitializingAsync();
         }
 
-        return _playRoomState.PlayRoomMetaData;
+        return _playRoomState.PlayRoomCustomState;
     }
 
     public Task<bool> IsValidRoomToJoin() => Task.FromResult(_ownerPlayerId !=  Guid.Empty);
 
 
-    public async Task<PacketErrorCodes> JoinPlayer(PlayRoomMember joiner)
+    public async Task<(PacketErrorCodes, byte[])> JoinPlayer(PlayRoomMember joiner)
     {
         #region Early exit check
         Dictionary<Predicate<PlayRoomActor>, PacketErrorCodes> earlyExitCheck = new Dictionary<Predicate<PlayRoomActor>, PacketErrorCodes>
@@ -111,7 +107,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         };
         if( earlyExitCheck.FirstOrDefault(f => f.Key(this)) is {  Key: not null } match)
         {
-            return match.Value;
+            return (match.Value, Array.Empty<byte>());
         }
         #endregion
 
@@ -122,13 +118,16 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         }
         if( _playRoomCustomEventHandler is not null)
         {
-            await _playRoomCustomEventHandler.AddPlayerToPlayRoom(joiner.PlayerId, joiner.PlayerMetadata ?? Array.Empty<byte>());
+            await _playRoomCustomEventHandler.AddPlayerToPlayRoom(joiner.PlayerId, joiner.PlayerMetadata ?? []);
         }
 
         _players.Add(joiner);
 
-        return PacketErrorCodes.Success;
+        return (PacketErrorCodes.Success, SerializePlayRoomCustomState());
     }
+
+    protected byte[] SerializePlayRoomCustomState() =>
+        _playRoomState.PlayRoomCustomState is not null ? _playRoomState.PlayRoomCustomState.Serialize() : [];
 
     public Task<List<PlayRoomMember>> GetPlayersInPlayRoom()
     {

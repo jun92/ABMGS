@@ -163,11 +163,11 @@ internal class ResCreateRoomPacketBuilder : PacketBABuilder<ResCreateRoomArgs>
     {
         var builder = CreateBuilder();
 
-        VectorOffset roomMetadata = ResCreateRoom.CreateRoomMetadataVector(builder, args.RoomMetadata ?? Array.Empty<byte>());
+        VectorOffset roomState = ResCreateRoom.CreateRoomStateVector(builder, args.RoomState ?? Array.Empty<byte>());
         ResCreateRoom.StartResCreateRoom(builder);
         ResCreateRoom.AddResult(builder, args.result);
         ResCreateRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
-        ResCreateRoom.AddRoomMetadata(builder, roomMetadata);
+        ResCreateRoom.AddRoomState(builder, roomState);
         return Wrap(builder, SystemPacket.ResCreateRoom, ResCreateRoom.EndResCreateRoom(builder).Value);
     }
 }

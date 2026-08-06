@@ -9,7 +9,7 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
         throw new NotImplementedException();
     }
 
-    public void OnJoinPlayRoom<TPlayRoomMetaData>(PlayerState playerState, Guid playRoomId, bool isOwner, TPlayRoomMetaData? roomMetaData = default) where TPlayRoomMetaData : IPlayRoomMetaData
+    public void OnJoinPlayRoom<TPlayRoomMetaData>(PlayerState playerState, Guid playRoomId, bool isOwner, TPlayRoomMetaData? roomMetaData = default) where TPlayRoomMetaData : IPlayRoomCustomState
     {
         throw new NotImplementedException();
     }

@@ -13,7 +13,7 @@ table ReqCreateRoom{
 table ResCreateRoom{
     result: PacketErrorCodes;
     room_id: GuidType;
-    room_metadata: [ubyte];
+    room_state: [ubyte];
 }
 
 table ReqJoinRoom{
@@ -24,7 +24,7 @@ table ReqJoinRoom{
 table ResJoinRoom{
     result: PacketErrorCodes;
     app_error_code: int;
-    room_metadata: [ubyte];
+    room_state: [ubyte];
 }
 table OnPlayerJoinRoom{
     room_id: GuidType;

@@ -3,7 +3,7 @@ using SyncnetPlatform.Actors;
 
 namespace Silo.Player;
 
-public class MyPlayRoomMetaData : IPlayRoomMetaData
+public class MyPlayRoomMetaData : IPlayRoomCustomState
 {
     public int TestField01 { get; set; }
     public string TestField02 { get; set; } = String.Empty;
@@ -44,9 +44,9 @@ public class MyGameRoomLogic
 public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler
 {
     private readonly MyGameRoomLogic _myGameRoomLogic;
-    private readonly IPlayRoomMetaData _playRoomMetaData;
+    private readonly IPlayRoomCustomState _playRoomMetaData;
 
-    public MyPlayRoomCustomBehavior(IPlayRoomMetaData myPlayRoomMetaData, MyGameRoomLogic gameRoomLogic)
+    public MyPlayRoomCustomBehavior(IPlayRoomCustomState myPlayRoomMetaData, MyGameRoomLogic gameRoomLogic)
     {
         _myGameRoomLogic = gameRoomLogic;
         _playRoomMetaData = myPlayRoomMetaData;
@@ -57,13 +57,13 @@ public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler
         throw new NotImplementedException();
     }
 
-    public IPlayRoomMetaData DeserializePlayRoomMetaData(byte[] roomMetaData)
+    public IPlayRoomCustomState DeserializePlayRoomMetaData(byte[] roomMetaData)
     {
         _playRoomMetaData.Deserialize(roomMetaData);
         return _playRoomMetaData;
     }
 
-    public IPlayRoomMetaData? InitializePlayRoomMetaData()
+    public IPlayRoomCustomState? InitializePlayRoomMetaData()
     {
 
         return _playRoomMetaData; 
@@ -89,15 +89,19 @@ public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler
         return Task.CompletedTask;
     }
 
-    public Task<IPlayRoomMetaData> OnPlayRoomInitializingAsync()
+    public Task<IPlayRoomCustomState> OnPlayRoomInitializingAsync()
     {
         _myGameRoomLogic.Init();
         return Task.FromResult(_playRoomMetaData);
     }
 
-    public byte[] SerializePlayRoomMetaData(IPlayRoomMetaData playRoomMetaData)
+    public Task OnTimer(float delta)
+    {
+        throw new NotImplementedException();
+    }
+
+    public byte[] SerializePlayRoomMetaData(IPlayRoomCustomState playRoomMetaData)
     {
         return _playRoomMetaData.Serialize();
-        throw new NotImplementedException();
     }
 }

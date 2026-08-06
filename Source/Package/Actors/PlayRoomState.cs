@@ -7,5 +7,5 @@ public class PlayRoomState
     [Id(1)]
     public string PasswordForEntrace { get; set; } = String.Empty;
     [Id(2)]
-    public IPlayRoomMetaData? PlayRoomMetaData { get; set; } = null;
+    public IPlayRoomCustomState? PlayRoomCustomState { get; set; } = null;
 }

@@ -242,7 +242,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         return PacketErrorCodes.Success;
     }
 
-    public async Task<(Guid, IPlayRoomMetaData?)> CreateAndJoinPlayRoom(
+    public async Task<(Guid, IPlayRoomCustomState?)> CreateAndJoinPlayRoom(
         string roomName, 
         bool isPrivate, 
         int maxCapacity, 
@@ -255,7 +255,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(newPlayRoomId);
 
         // Supply initial data to play room.
-        IPlayRoomMetaData? playRoomMetaData = await playRoomActor.SetRoomInformation(roomName, isPrivate, maxCapacity, roomPassword, BuildPlayerRoomMember(newPlayRoomId));
+        IPlayRoomCustomState? playRoomMetaData = await playRoomActor.SetRoomInformation(roomName, isPrivate, maxCapacity, roomPassword, BuildPlayerRoomMember(newPlayRoomId));
         
         // Just remember rooms I joined.
         _joinedRoomList.Add(newPlayRoomId);
@@ -268,23 +268,23 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         return (newPlayRoomId, playRoomMetaData);
     }
 
-    public async Task<PacketErrorCodes> JoinPlayRoom(Guid roomId)
+    public async Task<(PacketErrorCodes, byte[])> JoinPlayRoom(Guid roomId)
     {
         if(!_IsOnline)
         {
-            return PacketErrorCodes.PlayerOffline;
+            return (PacketErrorCodes.PlayerOffline, Array.Empty<byte>());
         }
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(roomId);
         if(!await playRoomActor.IsValidRoomToJoin())
         {
-            return PacketErrorCodes.RoomNotFound;
+            return (PacketErrorCodes.RoomNotFound, Array.Empty<byte>());
         }
-        var result = await playRoomActor.JoinPlayer(BuildPlayerRoomMember(roomId));
+        var(result, playRoomCustomState) = await playRoomActor.JoinPlayer(BuildPlayerRoomMember(roomId));
         if(result == PacketErrorCodes.Success)
         {
             _joinedRoomList.Add(roomId);
         }
-        return result;
+        return (result, playRoomCustomState);
     }
     protected PlayRoomMember BuildPlayerRoomMember(Guid roomId) 
         => new PlayRoomMember(roomId, GrainContext.GrainId.GetGuidKey(), _playerState.PlayerName, SerializePlayerMetadata());
