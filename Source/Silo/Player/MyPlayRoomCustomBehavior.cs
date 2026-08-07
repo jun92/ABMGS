@@ -76,11 +76,6 @@ public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler
         return Task.CompletedTask;
     }
 
-    //public Task OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
-    //{
-    //    throw new NotImplementedException();
-    //}
-
     public Task OnPlayRoomDestroyingAsync()
     {
         return Task.CompletedTask;
@@ -96,7 +91,7 @@ public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler
         throw new NotImplementedException();
     }
 
-    public Task<(Dictionary<Guid, byte[]>, byte[])> OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
+    public Task<(Dictionary<Guid, byte[]>, byte[]?)> OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
     {
         throw new NotImplementedException();
     }

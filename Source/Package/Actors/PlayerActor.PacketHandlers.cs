@@ -24,7 +24,7 @@ public partial class PlayerActor
     public async Task HandleReqUserInfo(ReqUserInfo request)
     {
         string playerName = await GetPlayerName();
-        byte[] serializedCustomData = SerializePlayerMetadata();
+        byte[] serializedCustomData = SerializePlayerExtendData();
         await _sendDataGrain.Send(PacketBuilder.Build<ResUserInfoArgs>(new ResUserInfoArgs(PlayerId, playerName, serializedCustomData)));
     }
 
@@ -50,7 +50,7 @@ public partial class PlayerActor
                     new ResUserActionForUpdatePlayerExtendDataArgs(
                         PacketErrorCodes.Success,
                         PacketErrorCodes.Success.ToString(),
-                        SerializePlayerMetadata()
+                        SerializePlayerExtendData()
                         )));
         }
         else
@@ -88,7 +88,7 @@ public partial class PlayerActor
             request.Private, 
             request.MaxCount, 
             request.Password,
-            SerializePlayerMetadata());
+            SerializePlayerExtendData());
         await _sendDataGrain.Send
             (
                 PacketBuilder.Build<ResCreateRoomArgs>

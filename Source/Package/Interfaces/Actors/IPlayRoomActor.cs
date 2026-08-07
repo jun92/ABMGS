@@ -10,7 +10,6 @@ public interface IPlayRoomActor : IGrainWithGuidKey
     Task<(PacketErrorCodes, byte[])> JoinPlayer(PlayRoomMember joiner);
     Task<PacketErrorCodes> LeavePlayer(PlayRoomMember leaver);
     Task<IPlayRoomCustomState?> SetRoomInformation(string displayName, bool isPrivate, int maxCapacity, string roomPassword, PlayRoomMember owner);
-    Task HandleCustomPacket(byte[] customPacket);
     Task OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter);
 }
 

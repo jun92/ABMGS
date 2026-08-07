@@ -45,7 +45,28 @@ public class PlayerState
     }
 }
 
-[GenerateSerializer] public record PlayRoomMember(Guid RoomId, Guid PlayerId, string PlayerName, byte[]? PlayerExtendData);
+[GenerateSerializer] //public record PlayRoomMember(Guid RoomId, Guid PlayerId, string PlayerName, byte[]? PlayerExtendData);
+public class PlayRoomMember
+{
+    public PlayRoomMember(Guid roomId, Guid playerId, string playerName, byte[]? playerExtendData)
+    {
+        RoomId = roomId;
+        PlayerId = playerId;
+        PlayerName = playerName;
+        PlayerExtendData = playerExtendData;
+    }
+
+    [Id(0)]
+    public Guid RoomId { get; set; }
+    [Id(1)]
+    public Guid PlayerId { get; set; }
+    [Id(2)]
+    public string PlayerName { get; set; }
+    [Id(3)]
+    public byte[]? PlayerExtendData { get; set; }
+
+
+}
 
 public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPacketHandler
 {
@@ -214,15 +235,27 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         return Task.FromResult(_playerState.PlayerName); 
     }
 
-    protected byte[] SerializePlayerMetadata()
+    protected byte[] SerializePlayerExtendData()
     {
         if(_playerCustomBehavior is not null)
         {
-            return _playerCustomBehavior.SerializePlayerMetadata(_playerState.Extension);
+            return _playerCustomBehavior.SerializePlayerExtendData(_playerState.Extension);
         }
         else
         {
             return Array.Empty<byte>();
+        }
+    }
+
+    protected Dictionary<string, object?> DeserializePlayerExtendData(byte[] data)
+    {
+        if(_playerCustomBehavior is not null)
+        {
+            return _playerCustomBehavior.DeserializePlayerExtendData(data);
+        }
+        else
+        {
+            return new Dictionary<string, object?>(capacity: 0);
         }
     }
 
@@ -287,7 +320,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         return (result, playRoomCustomState);
     }
     protected PlayRoomMember BuildPlayerRoomMember(Guid roomId) 
-        => new PlayRoomMember(roomId, GrainContext.GrainId.GetGuidKey(), _playerState.PlayerName, SerializePlayerMetadata());
+        => new PlayRoomMember(roomId, GrainContext.GrainId.GetGuidKey(), _playerState.PlayerName, SerializePlayerExtendData());
 
     /// <summary>
     /// Be called when members of a room has changed. - in and out.
@@ -321,6 +354,14 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
                     )
                     ));
                 break;
+        }
+    }
+    [OneWay]
+    public async Task OnUpdatePlayerExtendData(byte[] extendData)
+    {
+        if(_playerCustomBehavior is not null)
+        {
+            _playerState.Extension = DeserializePlayerExtendData(extendData);
         }
     }
 

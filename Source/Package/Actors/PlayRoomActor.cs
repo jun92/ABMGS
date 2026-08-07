@@ -27,11 +27,9 @@ public class PlayRoomActor : Grain, IPlayRoomActor
 
     //Customizations
     private readonly IPlayRoomCustomEventHandler? _playRoomCustomEventHandler = null;
-    //private readonly IPlayRoomCustomState? _playRoomMetaData;
     public PlayRoomActor(
         ILogger<PlayRoomActor> logger,
         IPlayRoomCustomEventHandler? playRoomCustomEventHandler = null
-      //  IPlayRoomCustomState? playRoomMetaData = null
         )
     {
         _logger = logger;
@@ -162,26 +160,33 @@ public class PlayRoomActor : Grain, IPlayRoomActor
 
         return PacketErrorCodes.Success;
     }
+
     protected void Init()
     {
         _players.Clear();
     }
 
-    public async Task HandleCustomPacket(byte[] customPacket)
-    {
-        if(_playRoomCustomEventHandler is not null)
-        {
-            await _playRoomCustomEventHandler.OnHandleCustomPacket(customPacket);
-        }
-    }
-
     public async Task OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
     {
         Dictionary<Guid, byte[]> UpdatedPlayerExtendData = new();
-        byte[] UpdatedPlayRoomCustomState = [];
+        byte[]? UpdatedPlayRoomCustomState = null;
         if(_playRoomCustomEventHandler is not null)
         {
             (UpdatedPlayerExtendData, UpdatedPlayRoomCustomState) = await _playRoomCustomEventHandler.OnPlayerActionToPlayRoom(playerId, actionType, actionParameter);
+            if( UpdatedPlayRoomCustomState is not null)
+            {
+                //Boardcast the updated state to all players in the room.
+            }
+            foreach(var PlayerExtendData in UpdatedPlayerExtendData)
+            {
+                PlayRoomMember? who = _players.Find(f => f.PlayerId == PlayerExtendData.Key);
+                if (who != null)
+                {
+                    who.PlayerExtendData = PlayerExtendData.Value;
+                }
+                //Broadcast players extend data to all players in the room as well.
+                // Update the data structure in the PlayRoomActor first and sync them later.
+            }
         }
     }
 }

@@ -8,7 +8,8 @@ public interface IPlayerCustomBehavior
     Task HandleCustomPacket(byte[] customPacket);
 
     // return Array.Empty<byte> if no available serializer or data. 
-    byte[] SerializePlayerMetadata(Dictionary<string, object?> playerState, CancellationToken? cancellationToken = null);
+    byte[] SerializePlayerExtendData(Dictionary<string, object?> playerState, CancellationToken? cancellationToken = null);
+    Dictionary<string, object?> DeserializePlayerExtendData(byte[] data);
     void UpdatePlayerExtendDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState);
 
 
