@@ -43,7 +43,7 @@ builder.ConfigureActor(option =>
 });
 
 //Custom classes for play room supporting.
-builder.Services.AddTransient<IPlayRoomCustomState, MyPlayRoomMetaData>();
+//builder.Services.AddTransient<IPlayRoomCustomState, MyPlayRoomMetaData>();
 builder.Services.AddTransient<IPlayRoomCustomEventHandler, MyPlayRoomCustomBehavior>();
 
 

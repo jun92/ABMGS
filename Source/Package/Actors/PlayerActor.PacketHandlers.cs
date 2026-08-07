@@ -39,7 +39,7 @@ public partial class PlayerActor
     {
         if(_playerCustomBehavior is not null)
         {
-            _playerCustomBehavior.UpdatePlayerCustomDataByUserAction(
+            _playerCustomBehavior.UpdatePlayerExtendDataByUserAction(
                 request.ActionType,
                 request.GetActionParameterArray(),
                 _playerState
@@ -127,7 +127,7 @@ public partial class PlayerActor
         await _sendDataGrain.Send(PacketBuilder.Build<ResPlayerListInRoomArgs>(
             new ResPlayerListInRoomArgs(
                 RoomId, 
-                [.. Players.Select(s => new PlayerInfoInRoomArgs(s.PlayerId, s.PlayerName, s.PlayerMetadata ?? Array.Empty<byte>()))]
+                [.. Players.Select(s => new PlayerInfoInRoomArgs(s.PlayerId, s.PlayerName, s.PlayerExtendData ?? Array.Empty<byte>()))]
                )));
     }
 
@@ -162,7 +162,6 @@ public partial class PlayerActor
         RoomId.FromGuidType(request.RoomId);
 
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(RoomId);
-
         
         await playRoomActor.OnPlayerActionToPlayRoom(
             this.GetGrainId().GetGuidKey(), 

@@ -118,7 +118,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         }
         if( _playRoomCustomEventHandler is not null)
         {
-            await _playRoomCustomEventHandler.AddPlayerToPlayRoom(joiner.PlayerId, joiner.PlayerMetadata ?? []);
+            await _playRoomCustomEventHandler.AddPlayerToPlayRoom(joiner.PlayerId, joiner.PlayerExtendData ?? []);
         }
 
         _players.Add(joiner);
@@ -177,6 +177,11 @@ public class PlayRoomActor : Grain, IPlayRoomActor
 
     public async Task OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
     {
-
+        Dictionary<Guid, byte[]> UpdatedPlayerExtendData = new();
+        byte[] UpdatedPlayRoomCustomState = [];
+        if(_playRoomCustomEventHandler is not null)
+        {
+            (UpdatedPlayerExtendData, UpdatedPlayRoomCustomState) = await _playRoomCustomEventHandler.OnPlayerActionToPlayRoom(playerId, actionType, actionParameter);
+        }
     }
 }

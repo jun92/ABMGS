@@ -37,7 +37,7 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
         return Task.FromResult(builder.SizedByteArray());
     }
 
-    public void UpdatePlayerCustomDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState)
+    public void UpdatePlayerExtendDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState)
     {
         Action<byte[], PlayerState> handler = actionType.ToLower() switch
         {

@@ -3,7 +3,7 @@ using SyncnetPlatform.Actors;
 
 namespace Silo.Player;
 
-public class MyPlayRoomMetaData : IPlayRoomCustomState
+public class MyPlayRoomCustomState : IPlayRoomCustomState
 {
     public int TestField01 { get; set; }
     public string TestField02 { get; set; } = String.Empty;
@@ -43,13 +43,11 @@ public class MyGameRoomLogic
 
 public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler
 {
-    private readonly MyGameRoomLogic _myGameRoomLogic;
-    private readonly IPlayRoomCustomState _playRoomMetaData;
+    private readonly IPlayRoomCustomState _playRoomCustomState;
 
-    public MyPlayRoomCustomBehavior(IPlayRoomCustomState myPlayRoomMetaData, MyGameRoomLogic gameRoomLogic)
+    public MyPlayRoomCustomBehavior(IPlayRoomCustomState playRoomCustomState)
     {
-        _myGameRoomLogic = gameRoomLogic;
-        _playRoomMetaData = myPlayRoomMetaData;
+        _playRoomCustomState = playRoomCustomState;
     }
 
     public Task AddPlayerToPlayRoom(Guid id, byte[] playerMetadata)
@@ -59,14 +57,13 @@ public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler
 
     public IPlayRoomCustomState DeserializePlayRoomMetaData(byte[] roomMetaData)
     {
-        _playRoomMetaData.Deserialize(roomMetaData);
-        return _playRoomMetaData;
+        return _playRoomCustomState;
     }
 
     public IPlayRoomCustomState? InitializePlayRoomMetaData()
     {
-
-        return _playRoomMetaData; 
+         
+        return _playRoomCustomState; 
     }
 
     public Task OnHandleCustomPacket(byte[] customPacket)
@@ -79,10 +76,10 @@ public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler
         return Task.CompletedTask;
     }
 
-    public Task OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
-    {
-        throw new NotImplementedException();
-    }
+    //public Task OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
+    //{
+    //    throw new NotImplementedException();
+    //}
 
     public Task OnPlayRoomDestroyingAsync()
     {
@@ -91,8 +88,7 @@ public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler
 
     public Task<IPlayRoomCustomState> OnPlayRoomInitializingAsync()
     {
-        _myGameRoomLogic.Init();
-        return Task.FromResult(_playRoomMetaData);
+        return Task.FromResult(_playRoomCustomState);
     }
 
     public Task OnTimer(float delta)
@@ -100,8 +96,8 @@ public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler
         throw new NotImplementedException();
     }
 
-    public byte[] SerializePlayRoomMetaData(IPlayRoomCustomState playRoomMetaData)
+    public Task<(Dictionary<Guid, byte[]>, byte[])> OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
     {
-        return _playRoomMetaData.Serialize();
+        throw new NotImplementedException();
     }
 }

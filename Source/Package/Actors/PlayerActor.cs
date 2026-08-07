@@ -45,7 +45,7 @@ public class PlayerState
     }
 }
 
-[GenerateSerializer] public record PlayRoomMember(Guid RoomId, Guid PlayerId, string PlayerName, byte[]? PlayerMetadata);
+[GenerateSerializer] public record PlayRoomMember(Guid RoomId, Guid PlayerId, string PlayerName, byte[]? PlayerExtendData);
 
 public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPacketHandler
 {
@@ -308,7 +308,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
                         playRoomMember.RoomId,
                         playRoomMember.PlayerId,
                         playRoomMember.PlayerName,
-                        playRoomMember.PlayerMetadata
+                        playRoomMember.PlayerExtendData
                     )
                     ));
                 break;

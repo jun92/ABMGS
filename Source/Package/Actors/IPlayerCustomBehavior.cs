@@ -9,7 +9,7 @@ public interface IPlayerCustomBehavior
 
     // return Array.Empty<byte> if no available serializer or data. 
     byte[] SerializePlayerMetadata(Dictionary<string, object?> playerState, CancellationToken? cancellationToken = null);
-    void UpdatePlayerCustomDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState);
+    void UpdatePlayerExtendDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState);
 
 
     // When the play join a playroom

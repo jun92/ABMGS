@@ -9,13 +9,11 @@ public interface IPlayRoomCustomEventHandler
     Task OnHandleCustomPacket(byte[] customPacket);
 
     IPlayRoomCustomState DeserializePlayRoomMetaData(byte[] roomMetaData);
-    
-    byte[] SerializePlayRoomMetaData(IPlayRoomCustomState playRoomMetaData);
 
-    Task OnPlayerAction(string actionName, byte[] actionParameter);
+    //Task OnPlayerAction(string actionName, byte[] actionParameter);
 
     Task AddPlayerToPlayRoom(Guid id, byte[] playerMetadata);
 
-    Task OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter);
+    Task<(Dictionary<Guid, byte[]>, byte[])> OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter);
     Task OnTimer(float delta);
 }
