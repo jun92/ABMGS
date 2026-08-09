@@ -17,13 +17,13 @@ public class PlayRoomActor : Grain, IPlayRoomActor
 {
     private readonly ILogger<PlayRoomActor> _logger;
 
-    private List<PlayRoomMember> _players = new List<PlayRoomMember>();
+    private readonly List<PlayRoomMember> _players = new List<PlayRoomMember>();
 
     private int _maxPlayerCapacity = 4;
     private bool _isPrivate = false;
     private Guid _ownerPlayerId = Guid.Empty;
     private IDisposable? _playRoomTimer;
-    private PlayRoomState _playRoomState = new();
+    private readonly PlayRoomState _playRoomState = new();
 
     //Customizations
     private readonly IPlayRoomCustomEventHandler? _playRoomCustomEventHandler = null;
@@ -109,7 +109,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         }
         #endregion
 
-        foreach (var player in _players)
+        foreach (PlayRoomMember player in _players)
         {
             IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(player.PlayerId);
             await p.OnUpdateForPlayRoomMembers(joiner, PlayRoomMemberUpdateReason.Join);
@@ -168,21 +168,22 @@ public class PlayRoomActor : Grain, IPlayRoomActor
 
     public async Task OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
     {
-        Dictionary<Guid, byte[]> UpdatedPlayerExtendData = new();
-        byte[]? UpdatedPlayRoomCustomState = null;
         if(_playRoomCustomEventHandler is not null)
         {
+            Dictionary<Guid, byte[]> UpdatedPlayerExtendData = new();
+            byte[]? UpdatedPlayRoomCustomState = null;
+            
             (UpdatedPlayerExtendData, UpdatedPlayRoomCustomState) = await _playRoomCustomEventHandler.OnPlayerActionToPlayRoom(playerId, actionType, actionParameter);
             if( UpdatedPlayRoomCustomState is not null)
             {
                 //Boardcast the updated state to all players in the room.
             }
-            foreach(var PlayerExtendData in UpdatedPlayerExtendData)
+            foreach(KeyValuePair<Guid, byte[]> playerExtendData in UpdatedPlayerExtendData)
             {
-                PlayRoomMember? who = _players.Find(f => f.PlayerId == PlayerExtendData.Key);
+                PlayRoomMember? who = _players.Find(f => f.PlayerId == playerExtendData.Key);
                 if (who != null)
                 {
-                    who.PlayerExtendData = PlayerExtendData.Value;
+                    who.PlayerExtendData = playerExtendData.Value;
                 }
                 //Broadcast players extend data to all players in the room as well.
                 // Update the data structure in the PlayRoomActor first and sync them later.
