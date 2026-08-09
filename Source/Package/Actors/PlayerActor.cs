@@ -148,8 +148,8 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     {
         if(isOnline == true )
         {
-            Guid ThisPlayerId = GrainContext.GrainId.GetGuidKey();
-            _playerState = await _playerModelRepository.GetOrCreate(ThisPlayerId);
+            Guid thisPlayerId = GrainContext.GrainId.GetGuidKey();
+            _playerState = await _playerModelRepository.GetOrCreate(thisPlayerId);
             _dbid = _playerState.Id;
             _IsOnline = true;
 
@@ -294,10 +294,8 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         _joinedRoomList.Add(newPlayRoomId);
 
         // Delegating additional process to user's handler.
-        if(_playerCustomBehavior is not null)
-         {
-            _playerCustomBehavior.OnJoinPlayRoom(_playerState, newPlayRoomId, isOwner: true, playRoomMetaData);
-        }
+        _playerCustomBehavior?.OnJoinPlayRoom(_playerState, newPlayRoomId, isOwner: true, playRoomMetaData);
+        
         return (newPlayRoomId, playRoomMetaData);
     }
 
@@ -368,8 +366,8 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     public async Task<List<PlayRoomMember>> GetPlayerListInPlayRoom(Guid roomId)
     {
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(roomId);
-        List<PlayRoomMember> Players = await playRoomActor.GetPlayersInPlayRoom();
-        return Players;
+        List<PlayRoomMember> players = await playRoomActor.GetPlayersInPlayRoom();
+        return players;
     }
     
     public async Task PlayerActionToPlayRoom(Guid roomId, string actionType, byte[] actionParameter)

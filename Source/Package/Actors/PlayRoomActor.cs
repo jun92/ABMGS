@@ -1,10 +1,6 @@
 using Microsoft.Extensions.Logging;
 using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Protocols.Generated;
-using System;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Text;
 
 namespace SyncnetPlatform.Actors;
 
@@ -170,22 +166,19 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     {
         if(_playRoomCustomEventHandler is not null)
         {
-            Dictionary<Guid, byte[]> UpdatedPlayerExtendData = new();
-            byte[]? UpdatedPlayRoomCustomState = null;
-            
-            (UpdatedPlayerExtendData, UpdatedPlayRoomCustomState) = await _playRoomCustomEventHandler.OnPlayerActionToPlayRoom(playerId, actionType, actionParameter);
-            if( UpdatedPlayRoomCustomState is not null)
+            (Dictionary<Guid,byte[]> updatedPlayerExtendData, byte[]? updatedPlayRoomCustomState) = await _playRoomCustomEventHandler.OnPlayerActionToPlayRoom(playerId, actionType, actionParameter);
+            if( updatedPlayRoomCustomState is not null)
             {
                 //Boardcast the updated state to all players in the room.
             }
-            foreach(KeyValuePair<Guid, byte[]> playerExtendData in UpdatedPlayerExtendData)
+            foreach(KeyValuePair<Guid, byte[]> playerExtendData in updatedPlayerExtendData)
             {
                 PlayRoomMember? who = _players.Find(f => f.PlayerId == playerExtendData.Key);
                 if (who != null)
                 {
                     who.PlayerExtendData = playerExtendData.Value;
                 }
-                //Broadcast players extend data to all players in the room as well.
+                // Broadcast players extend data to all players in the room as well.
                 // Update the data structure in the PlayRoomActor first and sync them later.
             }
         }
