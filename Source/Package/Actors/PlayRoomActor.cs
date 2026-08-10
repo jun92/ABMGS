@@ -4,11 +4,6 @@ using SyncnetPlatform.Protocols.Generated;
 
 namespace SyncnetPlatform.Actors;
 
-public interface IPlayGameLogic
-{
-    Task OnTimer(float delta);
-}
-
 public class PlayRoomActor : Grain, IPlayRoomActor
 {
     private readonly ILogger<PlayRoomActor> _logger;
@@ -177,6 +172,8 @@ public class PlayRoomActor : Grain, IPlayRoomActor
                 if (who != null)
                 {
                     who.PlayerExtendData = playerExtendData.Value;
+                    IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(who.PlayerId);
+                    await p.OnUpdatePlayerExtendData(playerExtendData.Value);
                 }
                 // Broadcast players extend data to all players in the room as well.
                 // Update the data structure in the PlayRoomActor first and sync them later.
