@@ -9,7 +9,7 @@ namespace SyncnetPlatform.ApplicationBuilder;
 
 public class SyncnetActorApplicationBuilder : SyncnetBaseApplicationBuilder<SyncnetActorApplicationBuilder, SyncnetActorApplication>
 {
-    public readonly SyncnetBuilderOptions _options = new();
+    private readonly SyncnetBuilderOptions _options = new();
     public SyncnetActorApplicationBuilder(string[] args) : base(args)
     {
     }
