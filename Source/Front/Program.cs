@@ -8,8 +8,8 @@ var builder = SyncnetApplicationBuilder.CreateFrontBuilder(args);
 
 builder.ConfigureFront(options =>
 {
-    //if (builder.Configuration.GetSection("ConnectionStrings:telemetry").Exists())
-    if(false)
+    if (builder.Configuration.GetSection("ConnectionStrings:telemetry").Exists())
+    // if(false)
     {
         Action<SyncnetTelemetryOption> telemetryConfigure = option =>
         {
