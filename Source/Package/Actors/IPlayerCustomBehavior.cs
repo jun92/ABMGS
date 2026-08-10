@@ -11,8 +11,6 @@ public interface IPlayerCustomBehavior
     byte[] SerializePlayerExtendData(Dictionary<string, object?> playerState, CancellationToken? cancellationToken = null);
     Dictionary<string, object?> DeserializePlayerExtendData(byte[] data);
     void UpdatePlayerExtendDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState);
-
-
     // When the play join a playroom
     void OnJoinPlayRoom<TPlayRoomMetaData>(PlayerState playerState, Guid playRoomId, bool isOwner, TPlayRoomMetaData? roomMetaData = default) where TPlayRoomMetaData : IPlayRoomCustomState;
 }

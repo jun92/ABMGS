@@ -395,53 +395,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     public Guid PlayerId => GrainContext.GrainId.GetGuidKey();
 
 
-    public async Task InvokeHandler(byte[] data)
-    {
-        await _routeTable.Execute(
-            PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data)));
-    }
-
-    public async Task PushRecievedData(byte[] Data)
-    {
-        var currentActivity = Activity.Current;
-        Activity.Current = null;
-        try
-        {
-            var queueActivity = SyncnetTelemetry.Trace.StartActivity("InReceiveQueue", ActivityKind.Internal);
-            await _receiveQueueChannel.Writer.WriteAsync(new PendingPacket(Data, queueActivity));
-        }
-        finally
-        {
-            Activity.Current = currentActivity;
-        }
-    }
-
-    public async Task RunRoutingPackets(CancellationToken shutdownToken)
-    {
-        try
-        {
-            await foreach (var pending in _receiveQueueChannel.Reader.ReadAllAsync(shutdownToken))
-            {
-                ActivityContext parentContext = pending.QueueActivity?.Context ?? default;
-                pending.QueueActivity?.Dispose();
-
-                using var handleActivity = SyncnetTelemetry.Trace.StartActivity(
-                    "HandlePacketLogic", 
-                    ActivityKind.Internal,
-                    parentContext: parentContext
-                    );
-                await InvokeHandler(pending.Data);
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            // Normal shutdown
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error in RunRoutingPackets loop");
-        }
-    }
+    
 
     public async Task OnHandleCustomPacket(byte[] customPacket)
     {
