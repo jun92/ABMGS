@@ -86,7 +86,7 @@ public partial class PlayerActor
     public async Task HandleReqCreateroom(ReqCreateRoom request)
     {
         
-        var (RoomId, PlayRoomMetaData) = await CreateAndJoinPlayRoom(
+        var (roomId, playRoomCustomState) = await CreateAndJoinPlayRoom(
             request.Name, 
             request.Private, 
             request.MaxCount, 
@@ -98,8 +98,8 @@ public partial class PlayerActor
                 (
                     new ResCreateRoomArgs(
                         PacketErrorCodes.Success, 
-                        RoomId, 
-                        PlayRoomMetaData is not null ? PlayRoomMetaData.Serialize() : Array.Empty<byte>())
+                        roomId, 
+                        playRoomCustomState is not null ? playRoomCustomState.Serialize() : Array.Empty<byte>())
                 )
             );
     }

@@ -130,7 +130,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
             return PacketErrorCodes.RoomNotFound;
         }
 
-        _players.Remove(leaver);
+        _players.RemoveAll(r => r.PlayerId == leaver.PlayerId);
         if(_players.Count == 0 )
         {
             _ownerPlayerId = Guid.Empty;

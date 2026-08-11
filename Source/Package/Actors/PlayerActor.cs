@@ -288,15 +288,15 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(newPlayRoomId);
 
         // Supply initial data to play room.
-        IPlayRoomCustomState? playRoomMetaData = await playRoomActor.SetRoomInformation(roomName, isPrivate, maxCapacity, roomPassword, BuildPlayerRoomMember(newPlayRoomId));
+        IPlayRoomCustomState? playRoomCustomState = await playRoomActor.SetRoomInformation(roomName, isPrivate, maxCapacity, roomPassword, BuildPlayerRoomMember(newPlayRoomId));
         
         // Just remember rooms I joined.
         _joinedRoomList.Add(newPlayRoomId);
 
         // Delegating additional process to user's handler.
-        _playerCustomBehavior?.OnJoinPlayRoom(_playerState, newPlayRoomId, isOwner: true, playRoomMetaData);
+        _playerCustomBehavior?.OnJoinPlayRoom(_playerState, newPlayRoomId, isOwner: true, playRoomCustomState);
         
-        return (newPlayRoomId, playRoomMetaData);
+        return (newPlayRoomId, playRoomCustomState);
     }
 
     public async Task<(PacketErrorCodes, byte[])> JoinPlayRoom(Guid roomId)
@@ -326,7 +326,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     /// <param name="playRoomMember"></param>
     /// <param name="updateReason"></param>
     /// <returns></returns>
-    [OneWay]
+    [OneWay] 
     public async Task OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember, PlayRoomMemberUpdateReason updateReason )
     {
         if (!_IsOnline || _sendDataGrain == null) return;
