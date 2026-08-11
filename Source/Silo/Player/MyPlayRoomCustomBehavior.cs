@@ -3,10 +3,14 @@ using SyncnetPlatform.Actors;
 
 namespace Silo.Player;
 
+[GenerateSerializer]
 public class MyPlayRoomCustomState : IPlayRoomCustomState
 {
+    [Id(0)]
     public int TestField01 { get; set; }
+    [Id(1)]
     public string TestField02 { get; set; } = String.Empty;
+    [Id(2)]
     public bool TestField03 { get; set; }
     public void Deserialize(byte[] serialized)
     {
@@ -52,7 +56,7 @@ public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler
 
     public Task AddPlayerToPlayRoom(Guid id, byte[] playerMetadata)
     {
-        throw new NotImplementedException();
+        return Task.CompletedTask;
     }
 
     public IPlayRoomCustomState DeserializePlayRoomMetaData(byte[] roomMetaData)
@@ -62,7 +66,6 @@ public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler
 
     public IPlayRoomCustomState? InitializePlayRoomMetaData()
     {
-         
         return _playRoomCustomState; 
     }
 
@@ -88,11 +91,11 @@ public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler
 
     public Task OnTimer(float delta)
     {
-        throw new NotImplementedException();
+        return Task.CompletedTask;
     }
 
     public Task<(Dictionary<Guid, byte[]>, byte[]?)> OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
     {
-        throw new NotImplementedException();
+        return Task.FromResult((new Dictionary<Guid, byte[]>(capacity:0), Array.Empty<byte>()));
     }
 }

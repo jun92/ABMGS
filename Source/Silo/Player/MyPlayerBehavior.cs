@@ -6,12 +6,11 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
 {
     public Task HandleCustomPacket(byte[] customPacket)
     {
-        throw new NotImplementedException();
+        return Task.CompletedTask;
     }
 
     public void OnJoinPlayRoom<TPlayRoomMetaData>(PlayerState playerState, Guid playRoomId, bool isOwner, TPlayRoomMetaData? roomMetaData = default) where TPlayRoomMetaData : IPlayRoomCustomState
     {
-        throw new NotImplementedException();
     }
 
     public Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null)

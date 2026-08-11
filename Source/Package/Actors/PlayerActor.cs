@@ -357,7 +357,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     [OneWay]
     public async Task OnUpdatePlayerExtendData(byte[] extendData)
     {
-        if( _IsOnline || _sendDataGrain == null) return; 
+        if( !_IsOnline || _sendDataGrain == null) return; 
         
         if(_playerCustomBehavior is not null)
         {

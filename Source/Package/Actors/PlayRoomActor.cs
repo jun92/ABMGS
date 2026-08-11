@@ -134,6 +134,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         if(_players.Count == 0 )
         {
             _ownerPlayerId = Guid.Empty;
+            _logger.LogInformation("All players are left");
             base.DeactivateOnIdle();
             return PacketErrorCodes.Success;
         }
