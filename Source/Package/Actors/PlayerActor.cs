@@ -357,9 +357,20 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     [OneWay]
     public async Task OnUpdatePlayerExtendData(byte[] extendData)
     {
+        if( _IsOnline || _sendDataGrain == null) return; 
+        
         if(_playerCustomBehavior is not null)
         {
             _playerState.Extension = DeserializePlayerExtendData(extendData);
+        }
+    }
+
+    [OneWay]
+    public async Task OnUpatePlayRoomCustomState(Guid roomId, byte[] customState)
+    {
+        if (_IsOnline && _sendDataGrain != null)
+        {
+            await _sendDataGrain.Send(PacketBuilder.Build(new OnPlayRoomStateUpdateArgs(roomId, customState)));
         }
     }
 

@@ -28,6 +28,7 @@ public interface IPlayerActor : IGrainWithGuidKey, IPacketHandlerActor
     Task SetOnline(bool isOnline);
     Task UpdatePlayerName(string newName);
     Task OnHandleCustomPacket(byte[] customPacket);
+    Task OnUpatePlayRoomCustomState(Guid roomId, byte[] customState);
 }
 
 

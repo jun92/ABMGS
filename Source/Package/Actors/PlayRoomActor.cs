@@ -161,22 +161,27 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     {
         if(_playRoomCustomEventHandler is not null)
         {
+            // Custom processing 
             (Dictionary<Guid,byte[]> updatedPlayerExtendData, byte[]? updatedPlayRoomCustomState) = await _playRoomCustomEventHandler.OnPlayerActionToPlayRoom(playerId, actionType, actionParameter);
+            
+            
+            // Broadcasting to all players
             if( updatedPlayRoomCustomState is not null)
             {
-                //Boardcast the updated state to all players in the room.
+                foreach (PlayRoomMember member in _players)
+                {
+                    IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(member.PlayerId);
+                    await p.OnUpatePlayRoomCustomState(RoomId, updatedPlayRoomCustomState);
+                }
             }
+            
             foreach(KeyValuePair<Guid, byte[]> playerExtendData in updatedPlayerExtendData)
             {
-                PlayRoomMember? who = _players.Find(f => f.PlayerId == playerExtendData.Key);
-                if (who != null)
+                foreach (PlayRoomMember member in _players)
                 {
-                    who.PlayerExtendData = playerExtendData.Value;
-                    IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(who.PlayerId);
+                    IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(member.PlayerId);
                     await p.OnUpdatePlayerExtendData(playerExtendData.Value);
                 }
-                // Broadcast players extend data to all players in the room as well.
-                // Update the data structure in the PlayRoomActor first and sync them later.
             }
         }
     }
