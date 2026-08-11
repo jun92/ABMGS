@@ -59,7 +59,7 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
 
     public Dictionary<string, object?> DeserializePlayerExtendData(byte[] data)
     {
-        throw new NotImplementedException();
+        return new Dictionary<string, object?>(capacity: 0);
     }
 };
 
