@@ -10,7 +10,7 @@ public class SyncnetPacketBuilder
     {
         try
         {
-            if (!_cache.TryGetValue(args.GetType(), out var builder))
+            if (!_cache.TryGetValue(args.GetType(), out object? builder))
             {
                 var type = Assembly.GetExecutingAssembly().GetTypes().FirstOrDefault(
                         t =>

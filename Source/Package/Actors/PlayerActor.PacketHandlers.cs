@@ -161,10 +161,10 @@ public partial class PlayerActor
     [PacketHandler(typeof(ReqPlayerActionToPlayRoom))]
     public async Task HandleReqPlayerActionToPlayRoom(ReqPlayerActionToPlayRoom request)
     {
-        Guid RoomId = default;
-        RoomId.FromGuidType(request.RoomId);
+        Guid roomId = Guid.Empty;
+        roomId.FromGuidType(request.RoomId);
 
-        IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(RoomId);
+        IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(roomId);
         
         await playRoomActor.OnPlayerActionToPlayRoom(
             this.GetGrainId().GetGuidKey(), 

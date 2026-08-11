@@ -96,7 +96,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     /// <summary>
     /// Primary key for the player data table
     /// </summary>
-    protected int _dbid;
+    protected int Dbid;
     protected string _name = String.Empty;
 
     /// <summary>
@@ -150,7 +150,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         {
             Guid thisPlayerId = GrainContext.GrainId.GetGuidKey();
             _playerState = await _playerModelRepository.GetOrCreate(thisPlayerId);
-            _dbid = _playerState.Id;
+            Dbid = _playerState.Id;
             _IsOnline = true;
 
             if (_playerCustomBehavior != null)
