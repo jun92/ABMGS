@@ -54,12 +54,24 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
 
     public byte[] SerializePlayerExtendData(Dictionary<string, object?> playerState, CancellationToken? cancellationToken = null)
     {
-        return Array.Empty<byte>();
+        // Your serializer goes here. I used FlatBuffer.
+        FlatBufferBuilder builder = new(4096);
+        PlayerCustomData.StartPlayerCustomData(builder);
+        PlayerCustomData.AddCustomExp(builder, playerState[PlayerDataColumn.CustomExp] as long? ?? 0);
+        PlayerCustomData.AddCustomLevel(builder, playerState[PlayerDataColumn.CustomLevel] as int? ?? 1);
+        builder.Finish(PlayerCustomData.EndPlayerCustomData(builder).Value);
+        return builder.SizedByteArray(); 
     }
 
     public Dictionary<string, object?> DeserializePlayerExtendData(byte[] data)
     {
-        return new Dictionary<string, object?>(capacity: 0);
+        PlayerCustomData playerCustomData = PlayerCustomData.GetRootAsPlayerCustomData(new ByteBuffer(data));
+
+        return new Dictionary<string, object?>
+        {
+            { PlayerDataColumn.CustomExp, playerCustomData.CustomExp },
+            { PlayerDataColumn.CustomLevel, playerCustomData.CustomLevel }
+        };
     }
 };
 

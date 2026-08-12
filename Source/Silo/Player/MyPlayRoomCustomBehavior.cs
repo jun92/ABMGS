@@ -33,17 +33,6 @@ public class MyPlayRoomCustomState : IPlayRoomCustomState
     }
 }
 
-public class MyGameRoomLogic
-{
-    public void Init()
-    {
-
-    }
-    public void Deinit()
-    {
-
-    }
-}
 
 public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler
 {
