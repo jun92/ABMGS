@@ -192,10 +192,16 @@ internal class ResJoinRoomPacketBuilder : PacketBABuilder<ResJoinRoomArgs>
     public override byte[] Build(ResJoinRoomArgs args)
     {
         var builder = CreateBuilder();
+        VectorOffset roomStateOffset = ResJoinRoom.CreateRoomStateVector(builder, args.roomState);
+        ResJoinRoom.StartResJoinRoom(builder);
+        ResJoinRoom.AddResult(builder, args.result);
+        ResJoinRoom.AddAppErrorCode(builder, args.AppErrorCode);
+        ResJoinRoom.AddRoomState(builder, roomStateOffset);
+        
         return Wrap(
             builder, 
             SystemPacket.ResJoinRoom, 
-            ResJoinRoom.CreateResJoinRoom(builder, args.result).Value);
+            ResJoinRoom.EndResJoinRoom(builder).Value);
     }
 }
 
