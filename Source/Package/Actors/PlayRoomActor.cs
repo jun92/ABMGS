@@ -178,9 +178,10 @@ public class PlayRoomActor : Grain, IPlayRoomActor
             
             foreach(KeyValuePair<Guid, byte[]> playerExtendData in updatedPlayerExtendData)
             {
-                foreach (PlayRoomMember member in _players)
+                PlayRoomMember? updatedMember = _players.Find(p => p.PlayerId == playerExtendData.Key);
+                if (updatedMember is not null)
                 {
-                    IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(member.PlayerId);
+                    IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(updatedMember.PlayerId);
                     await p.OnUpdatePlayerExtendData(playerExtendData.Value);
                 }
             }
