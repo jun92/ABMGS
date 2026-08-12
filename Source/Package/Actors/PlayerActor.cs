@@ -362,6 +362,13 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         if(_playerCustomBehavior is not null)
         {
             _playerState.Extension = DeserializePlayerExtendData(extendData);
+            await _sendDataGrain.Send
+            (
+                PacketBuilder.Build
+                (
+                    new OnPlayRoomUpdatePlayerExtendDataArgs(PlayerId, SerializePlayerExtendData())
+                )
+            );
         }
     }
 
