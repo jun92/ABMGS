@@ -275,10 +275,9 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         return PacketErrorCodes.Success;
     }
 
-    public async Task<(Guid, IPlayRoomCustomState?)> CreateAndJoinPlayRoom(
-        string roomName, 
-        bool isPrivate, 
-        int maxCapacity, 
+    public async ValueTask<(PacketErrorCodes ,Guid, byte[]?)> CreateAndJoinPlayRoom(string roomName,
+        bool isPrivate,
+        int maxCapacity,
         string roomPassword,
         byte[] playerMetadata)
     {
@@ -288,15 +287,15 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(newPlayRoomId);
 
         // Supply initial data to play room.
-        IPlayRoomCustomState? playRoomCustomState = await playRoomActor.SetRoomInformation(roomName, isPrivate, maxCapacity, roomPassword, BuildPlayerRoomMember(newPlayRoomId));
+        (PacketErrorCodes errorCode, byte[]? serializedPlayRoomState) = await playRoomActor.SetRoomInformation(roomName, isPrivate, maxCapacity, roomPassword, BuildPlayerRoomMember(newPlayRoomId));
         
         // Just remember rooms I joined.
         _joinedRoomList.Add(newPlayRoomId);
 
         // Delegating additional process to user's handler.
-        _playerCustomBehavior?.OnJoinPlayRoom(_playerState, newPlayRoomId, isOwner: true, playRoomCustomState);
+        _playerCustomBehavior?.OnJoinPlayRoom(_playerState, newPlayRoomId, isOwner: true, serializedPlayRoomState);
         
-        return (newPlayRoomId, playRoomCustomState);
+        return (errorCode, newPlayRoomId, serializedPlayRoomState);
     }
 
     public async Task<(PacketErrorCodes, byte[])> JoinPlayRoom(Guid roomId)

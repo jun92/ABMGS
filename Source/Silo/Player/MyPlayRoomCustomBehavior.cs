@@ -48,9 +48,14 @@ public class MyPlayRoomCustomBehavior : IPlayRoomCustomEventHandler
         return Task.CompletedTask;
     }
 
-    public IPlayRoomCustomState DeserializePlayRoomMetaData(byte[] roomMetaData)
+    public IPlayRoomCustomState DeserializePlayRoomState(byte[] roomMetaData)
     {
         return _playRoomCustomState;
+    }
+
+    public byte[] SerializePlayRoomState(IPlayRoomCustomState playRoomCustomState)
+    {
+        return Array.Empty<byte>();
     }
 
     public IPlayRoomCustomState? InitializePlayRoomMetaData()

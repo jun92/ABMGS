@@ -58,11 +58,10 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     }
     public Guid RoomId => GrainContext.GrainId.GetGuidKey();
     
-    public async Task<IPlayRoomCustomState?> SetRoomInformation(
-        string displayName, 
-        bool isPrivate, 
-        int maxCapacity, 
-        string roomPassword, 
+    public async Task<(PacketErrorCodes, byte[]?)> SetRoomInformation(string displayName,
+        bool isPrivate,
+        int maxCapacity,
+        string roomPassword,
         PlayRoomMember owner)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(displayName, nameof(displayName));
@@ -78,8 +77,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         {
             _playRoomState.PlayRoomCustomState = await _playRoomCustomEventHandler.OnPlayRoomInitializingAsync();
         }
-
-        return _playRoomState.PlayRoomCustomState;
+        return (PacketErrorCodes.Success, SerializePlayRoomCustomState());
     }
 
     public Task<bool> IsValidRoomToJoin() => Task.FromResult(_ownerPlayerId !=  Guid.Empty);

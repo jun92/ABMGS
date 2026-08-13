@@ -12,7 +12,7 @@ public interface IPlayerCustomBehavior
     Dictionary<string, object?> DeserializePlayerExtendData(byte[] data);
     void UpdatePlayerExtendDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState);
     // When the play join a playroom
-    void OnJoinPlayRoom<TPlayRoomCustomState>(PlayerState playerState, Guid playRoomId, bool isOwner, TPlayRoomCustomState? roomMetaData = default) where TPlayRoomCustomState : IPlayRoomCustomState;
+    void OnJoinPlayRoom(PlayerState playerState, Guid playRoomId, bool isOwner, byte[] roomState);
 }
 
 

@@ -83,23 +83,24 @@ public partial class PlayerActor
     }
 
     [PacketHandler(typeof(ReqCreateRoom))]
-    public async Task HandleReqCreateroom(ReqCreateRoom request)
+    public async Task HandleReqCreateRoom(ReqCreateRoom request)
     {
         
-        var (roomId, playRoomCustomState) = await CreateAndJoinPlayRoom(
+        (PacketErrorCodes errorCode, Guid roomId, byte[]? playRoomCustomState) = await CreateAndJoinPlayRoom(
             request.Name, 
             request.Private, 
             request.MaxCount, 
             request.Password,
             SerializePlayerExtendData());
+        
         await _sendDataGrain.Send
             (
                 PacketBuilder.Build<ResCreateRoomArgs>
                 (
                     new ResCreateRoomArgs(
-                        PacketErrorCodes.Success, 
+                        errorCode, 
                         roomId, 
-                        playRoomCustomState is not null ? playRoomCustomState.Serialize() : Array.Empty<byte>())
+                        playRoomCustomState ?? [])
                 )
             );
     }

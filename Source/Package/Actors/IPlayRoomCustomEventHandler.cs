@@ -8,7 +8,8 @@ public interface IPlayRoomCustomEventHandler
     
     Task OnHandleCustomPacket(byte[] customPacket);
 
-    IPlayRoomCustomState DeserializePlayRoomMetaData(byte[] roomMetaData);
+    IPlayRoomCustomState DeserializePlayRoomState(byte[] roomMetaData);
+    byte[]  SerializePlayRoomState(IPlayRoomCustomState playRoomCustomState);
 
     Task AddPlayerToPlayRoom(Guid id, byte[] playerMetadata);
 

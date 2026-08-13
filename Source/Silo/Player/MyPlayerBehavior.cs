@@ -9,7 +9,7 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
         return Task.CompletedTask;
     }
 
-    public void OnJoinPlayRoom<TPlayRoomMetaData>(PlayerState playerState, Guid playRoomId, bool isOwner, TPlayRoomMetaData? roomMetaData = default) where TPlayRoomMetaData : IPlayRoomCustomState
+    public void OnJoinPlayRoom(PlayerState playerState, Guid playRoomId, bool isOwner, byte[] roomMetaData)
     {
     }
 
