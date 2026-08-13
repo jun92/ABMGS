@@ -326,7 +326,8 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     /// <param name="updateReason"></param>
     /// <returns></returns>
     [OneWay] 
-    public async Task OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember, PlayRoomMemberUpdateReason updateReason )
+    public async ValueTask OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember,
+        PlayRoomMemberUpdateReason updateReason)
     {
         if (!_IsOnline || _sendDataGrain == null) return;
 
@@ -354,7 +355,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         }
     }
     [OneWay]
-    public async Task OnUpdatePlayerExtendData(byte[] extendData)
+    public async ValueTask OnUpdatePlayerExtendData(byte[] extendData)
     {
         if( !_IsOnline || _sendDataGrain == null) return; 
         
@@ -372,7 +373,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     }
 
     [OneWay]
-    public async Task OnUpdatePlayRoomCustomState(Guid roomId, byte[] customState)
+    public async ValueTask OnUpdatePlayRoomCustomState(Guid roomId, byte[] customState)
     {
         if (_IsOnline && _sendDataGrain != null)
         {
