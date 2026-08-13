@@ -175,7 +175,10 @@ internal class ReqJoinRoomPacketBuilder : PacketBABuilder<ReqJoinRoomArgs>
     public override byte[] Build(ReqJoinRoomArgs args)
     {
         var builder = CreateBuilder();
+        
         StringOffset roomPassword = builder.CreateString(args.password);
+        
+        ReqJoinRoom.StartReqJoinRoom(builder);
         ReqJoinRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
         ReqJoinRoom.AddPassword(builder, roomPassword);
         return Wrap(builder, SystemPacket.ReqJoinRoom, ReqJoinRoom.EndReqJoinRoom(builder).Value);
