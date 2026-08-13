@@ -17,11 +17,7 @@ public interface IPlayerActor : IGrainWithGuidKey, IPacketHandlerActor
     Task<PacketErrorCodes> LeavePlayRoom(Guid playRoomId);
     Task<PacketErrorCodes> OnDirectDeliveryData(Guid fromPlayerId, string message, DirectDeliveryDataType dataType);
     Task OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember, PlayRoomMemberUpdateReason memberStatus);
-    /// <summary>
-    /// Let PlayerActor know that player extend data should be updated. 
-    /// </summary>
-    /// <param name="extendData"></param>
-    /// <returns></returns>
+    
     Task OnUpdatePlayerExtendData(byte[] extendData);
     Task PingPong(int seq);
     Task<PacketErrorCodes> SendDirectDeliverData(Guid toPlayerId, string message, DirectDeliveryDataType dataType);
@@ -29,7 +25,7 @@ public interface IPlayerActor : IGrainWithGuidKey, IPacketHandlerActor
     Task SetOnline(bool isOnline);
     Task UpdatePlayerName(string newName);
     Task OnHandleCustomPacket(byte[] customPacket);
-    Task OnUpatePlayRoomCustomState(Guid roomId, byte[] customState);
+    Task OnUpdatePlayRoomCustomState(Guid roomId, byte[] customState);
 }
 
 

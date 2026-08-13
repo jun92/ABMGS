@@ -9,7 +9,7 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
         return Task.CompletedTask;
     }
 
-    public void OnJoinPlayRoom(PlayerState playerState, Guid playRoomId, bool isOwner, byte[] roomMetaData)
+    public void OnJoinPlayRoom(PlayerState playerState, Guid playRoomId, bool isOwner, byte[]? roomMetaData)
     {
     }
 

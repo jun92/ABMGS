@@ -372,7 +372,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     }
 
     [OneWay]
-    public async Task OnUpatePlayRoomCustomState(Guid roomId, byte[] customState)
+    public async Task OnUpdatePlayRoomCustomState(Guid roomId, byte[] customState)
     {
         if (_IsOnline && _sendDataGrain != null)
         {
