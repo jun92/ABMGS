@@ -16,16 +16,16 @@ public interface IPlayerActor : IGrainWithGuidKey, IPacketHandlerActor
     Task<(PacketErrorCodes, byte[])> JoinPlayRoom(Guid playRoomId);
     Task<PacketErrorCodes> LeavePlayRoom(Guid playRoomId);
     Task<PacketErrorCodes> OnDirectDeliveryData(Guid fromPlayerId, string message, DirectDeliveryDataType dataType);
-    Task OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember, PlayRoomMemberUpdateReason memberStatus);
+    ValueTask OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember, PlayRoomMemberUpdateReason memberStatus);
     
-    Task OnUpdatePlayerExtendData(byte[] extendData);
+    ValueTask OnUpdatePlayerExtendData(byte[] extendData);
     Task PingPong(int seq);
     Task<PacketErrorCodes> SendDirectDeliverData(Guid toPlayerId, string message, DirectDeliveryDataType dataType);
     Task SetIdProvider(SupportedPlatformType idpFrom);
     Task SetOnline(bool isOnline);
     Task UpdatePlayerName(string newName);
     Task OnHandleCustomPacket(byte[] customPacket);
-    Task OnUpdatePlayRoomCustomState(Guid roomId, byte[] customState);
+    ValueTask OnUpdatePlayRoomCustomState(Guid roomId, byte[] customState);
 }
 
 
