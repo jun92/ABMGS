@@ -144,7 +144,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         _playerCustomBehavior = playerCustomBehavior;
     }
 
-    public async Task SetOnline(bool isOnline)
+    public async ValueTask SetOnline(bool isOnline)
     {
         if(isOnline == true )
         {
