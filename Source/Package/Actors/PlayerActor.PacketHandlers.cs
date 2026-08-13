@@ -182,13 +182,13 @@ public partial class PlayerActor
 
     }
     
-    public async Task InvokeHandler(byte[] data)
+    public async ValueTask InvokeHandler(byte[] data)
     {
         await _routeTable.Execute(
             PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data)));
     }
 
-    public async Task PushRecievedData(byte[] Data)
+    public async ValueTask PushRecievedData(byte[] Data)
     {
         var currentActivity = Activity.Current;
         Activity.Current = null;
