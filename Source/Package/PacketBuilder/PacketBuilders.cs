@@ -144,14 +144,12 @@ internal class ReqCreateRoomPacketBuilder : PacketBABuilder<ReqCreateRoomArgs>
         var builder = CreateBuilder();
         StringOffset roomName = builder.CreateString(args.name);
         StringOffset roomPassword = builder.CreateString(args.password);
-        //VectorOffset playerMetadata = ReqCreateRoom.CreatePlayrMetadataVector(builder, args.PlayerMetadata ?? Array.Empty<byte>());
 
         ReqCreateRoom.StartReqCreateRoom(builder);
         ReqCreateRoom.AddName(builder, roomName);
         ReqCreateRoom.AddPrivate(builder, args.isPrivate);
         ReqCreateRoom.AddMaxCount(builder, args.maxCount);
         ReqCreateRoom.AddPassword(builder, roomPassword);
-        //ReqCreateRoom.AddPlayrMetadata(builder, playerMetadata);
 
         return Wrap(builder, SystemPacket.ReqCreateRoom, ReqCreateRoom.EndReqCreateRoom(builder).Value);
     }
@@ -178,11 +176,8 @@ internal class ReqJoinRoomPacketBuilder : PacketBABuilder<ReqJoinRoomArgs>
     {
         var builder = CreateBuilder();
         StringOffset roomPassword = builder.CreateString(args.password);
-        // VectorOffset roomMetadata = ReqJoinRoom.CreateRoomMetadataVector(builder, args.roomMetadata ?? Array.Empty<byte>());
-        ReqJoinRoom.StartReqJoinRoom(builder);
         ReqJoinRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
         ReqJoinRoom.AddPassword(builder, roomPassword);
-        // ReqJoinRoom.AddRoomMetadata(builder, roomMetadata);
         return Wrap(builder, SystemPacket.ReqJoinRoom, ReqJoinRoom.EndReqJoinRoom(builder).Value);
     }
 }
@@ -271,7 +266,7 @@ internal class OnPlayRoomUpdatePacketBuilder : PacketBABuilder<OnPlayRoomStateUp
     {
         var builder = CreateBuilder();
 
-        VectorOffset updatePlayRoomState = OnPlayRoomStateUpdate.CreateUpdatedRoomStateVector(builder, args.UpdatedPlayRoomState);
+        VectorOffset updatePlayRoomState = OnPlayRoomStateUpdate.CreateUpdatedRoomStateVector(builder, args.UpdatedPlayRoomState??[]);
         OnPlayRoomStateUpdate.StartOnPlayRoomStateUpdate(builder);
         OnPlayRoomStateUpdate.AddRoomId(builder, args.RoomId.ToGuidType(builder));
         OnPlayRoomStateUpdate.AddUpdatedRoomState(builder, updatePlayRoomState);
@@ -284,7 +279,7 @@ internal class OnPlayRoomUpdatePlayerExtendDataPacketBuilder : PacketBABuilder<O
     public override byte[] Build(OnPlayRoomUpdatePlayerExtendDataArgs args)
     {
         var builder = CreateBuilder();
-        VectorOffset updatedPlayerExtendData = OnPlayRoomUpdatePlayerExtendData.CreateUpdatedPlayerExtendDataVectorBlock(builder, args.UpdatePlayerExtendData);
+        VectorOffset updatedPlayerExtendData = OnPlayRoomUpdatePlayerExtendData.CreateUpdatedPlayerExtendDataVectorBlock(builder, args.UpdatePlayerExtendData??[]);
         OnPlayRoomUpdatePlayerExtendData.StartOnPlayRoomUpdatePlayerExtendData(builder);
         OnPlayRoomUpdatePlayerExtendData.AddPlayerId(builder, args.PlayerId.ToGuidType(builder));
         OnPlayRoomUpdatePlayerExtendData.AddUpdatedPlayerExtendData(builder, updatedPlayerExtendData);
@@ -297,7 +292,7 @@ internal class ReqPlayerActionToPlayRoomPacketBuilder : PacketBABuilder<ReqPlaye
     public override byte[] Build(ReqPlayerActionToPlayRoomArgs args)
     {
         var builder = CreateBuilder();
-        VectorOffset actionParameter = ReqPlayerActionToPlayRoom.CreateActionParameterVector(builder, args.ActionParameter);
+        VectorOffset actionParameter = ReqPlayerActionToPlayRoom.CreateActionParameterVector(builder, args.ActionParameter??[]);
         StringOffset actionType = builder.CreateString(args.ActionType);
         ReqPlayerActionToPlayRoom.StartReqPlayerActionToPlayRoom(builder);
         ReqPlayerActionToPlayRoom.AddRoomId(builder, args.RoomId.ToGuidType(builder));

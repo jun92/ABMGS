@@ -13,6 +13,7 @@ enum PacketErrorCodes: int {
     RoomNotFound = 1000,
     AlreadyInRoom = 1001,
     RoomFull = 1002,
+    YoureNotInTheRoom = 1003,
 
 
     // not handled error
