@@ -1,3 +1,4 @@
+using Google.FlatBuffers;
 using Microsoft.Extensions.Logging;
 using SyncnetPlatform.Network.Attributes;
 using SyncnetPlatform.Protocols.Generated;
@@ -8,6 +9,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using PacketBuilder = SyncnetPlatform.Network.Utils.SyncnetPacketBuilder;
+using SyncnetPlatform.Interfaces.Actors;
+using SyncnetPlatform.Utils.Telemetry;
+using System.Diagnostics;
 
 namespace SyncnetPlatform.Actors;
 
@@ -23,7 +27,7 @@ public partial class PlayerActor
     public async Task HandleReqUserInfo(ReqUserInfo request)
     {
         string playerName = await GetPlayerName();
-        byte[] serializedCustomData = await SerializePlayerCustomData();
+        byte[] serializedCustomData = SerializePlayerExtendData();
         await _sendDataGrain.Send(PacketBuilder.Build<ResUserInfoArgs>(new ResUserInfoArgs(PlayerId, playerName, serializedCustomData)));
     }
 
@@ -33,31 +37,30 @@ public partial class PlayerActor
         await UpdatePlayerName(request.PlayerName);
         await _sendDataGrain.Send(PacketBuilder.Build<ResUpdatePlayerNameArgs>(new ResUpdatePlayerNameArgs(PacketErrorCodes.Success)));
     }
-    [PacketHandler(typeof(ReqUserActionForUpdatePlayerCustomData))]
-    public async Task HandleReqUserActionForUpdatePlayerCustomData(ReqUserActionForUpdatePlayerCustomData request)
+    [PacketHandler(typeof(ReqUserActionForUpdatePlayerExtendData))]
+    public async Task HandleReqUserActionForUpdatePlayerCustomData(ReqUserActionForUpdatePlayerExtendData request)
     {
         if(_playerCustomBehavior is not null)
         {
-            _playerCustomBehavior.UpdatePlayerCustomDataByUserAction(
+            _playerCustomBehavior.UpdatePlayerExtendDataByUserAction(
                 request.ActionType,
                 request.GetActionParameterArray(),
                 _playerState
                 );
             _IsDirtyPlayerData = true;
-            byte[] updatedCustomData = await _playerCustomBehavior.OverrideCustomDataSerialize(_playerState.Extension);
             await _sendDataGrain.Send(
-                PacketBuilder.Build<ResUserActionForUpdatePlayerCustomDataArgs>(
-                    new ResUserActionForUpdatePlayerCustomDataArgs(
+                PacketBuilder.Build<ResUserActionForUpdatePlayerExtendDataArgs>(
+                    new ResUserActionForUpdatePlayerExtendDataArgs(
                         PacketErrorCodes.Success,
                         PacketErrorCodes.Success.ToString(),
-                        updatedCustomData
+                        SerializePlayerExtendData()
                         )));
         }
         else
         {
             await _sendDataGrain.Send(
-                PacketBuilder.Build<ResUserActionForUpdatePlayerCustomDataArgs>(
-                    new ResUserActionForUpdatePlayerCustomDataArgs(
+                PacketBuilder.Build<ResUserActionForUpdatePlayerExtendDataArgs>(
+                    new ResUserActionForUpdatePlayerExtendDataArgs(
                         PacketErrorCodes.InterfaceNotImplemented,
                         PacketErrorCodes.InterfaceNotImplemented.ToString(),
                         Array.Empty<byte>()
@@ -80,10 +83,26 @@ public partial class PlayerActor
     }
 
     [PacketHandler(typeof(ReqCreateRoom))]
-    public async Task HandleReqCreateroom(ReqCreateRoom request)
+    public async Task HandleReqCreateRoom(ReqCreateRoom request)
     {
-        Guid RoomId = await CreateAndJoinPlayRoom(request.Name, request.Private, request.MaxCount, request.Password);
-        await _sendDataGrain.Send(PacketBuilder.Build<ResCreateRoomArgs>(new ResCreateRoomArgs(PacketErrorCodes.Success, RoomId)));
+        
+        (PacketErrorCodes errorCode, Guid roomId, byte[]? playRoomCustomState) = await CreateAndJoinPlayRoom(
+            request.Name, 
+            request.Private, 
+            request.MaxCount, 
+            request.Password,
+            SerializePlayerExtendData());
+        
+        await _sendDataGrain.Send
+            (
+                PacketBuilder.Build<ResCreateRoomArgs>
+                (
+                    new ResCreateRoomArgs(
+                        errorCode, 
+                        roomId, 
+                        playRoomCustomState ?? [])
+                )
+            );
     }
 
     [PacketHandler(typeof(ReqJoinRoom))]
@@ -91,9 +110,15 @@ public partial class PlayerActor
     {
         Guid RoomId = default;
         RoomId.FromGuidType(request.RoomId);
-        PacketErrorCodes resultCode = await JoinPlayRoom(RoomId);
+        var (resultCode, playRoomCustomState) = await JoinPlayRoom(RoomId);
 
-        await _sendDataGrain.Send(PacketBuilder.Build<ResJoinRoomArgs>(new ResJoinRoomArgs(resultCode)));
+        await _sendDataGrain.Send(PacketBuilder.Build<ResJoinRoomArgs>(
+            new ResJoinRoomArgs(
+                resultCode, 
+                0, 
+                playRoomCustomState)
+            )
+            );
     }
 
     [PacketHandler(typeof(ReqPlayerListInRoom))]
@@ -106,7 +131,7 @@ public partial class PlayerActor
         await _sendDataGrain.Send(PacketBuilder.Build<ResPlayerListInRoomArgs>(
             new ResPlayerListInRoomArgs(
                 RoomId, 
-                [.. Players.Select(s => new PlayerInfoInRoomArgs(s.PlayerId, s.PlayerName))]
+                [.. Players.Select(s => new PlayerInfoInRoomArgs(s.PlayerId, s.PlayerName, s.PlayerExtendData ?? Array.Empty<byte>()))]
                )));
     }
 
@@ -132,6 +157,76 @@ public partial class PlayerActor
                 break;
             case DeliverDestination.PlayRoom: 
                 break;
+        }
+    }
+    [PacketHandler(typeof(ReqPlayerActionToPlayRoom))]
+    public async Task HandleReqPlayerActionToPlayRoom(ReqPlayerActionToPlayRoom request)
+    {
+        Guid roomId = Guid.Empty;
+        roomId.FromGuidType(request.RoomId);
+
+        if (!_joinedRoomList.Contains(roomId))
+        {
+            ResPlayerActionToPlayRoomArgs packetArgs = new (PacketErrorCodes.YoureNotInTheRoom, 0);
+            byte[] sendData = PacketBuilder.Build(packetArgs);
+            await _sendDataGrain.Send(sendData);
+            return;
+        }
+
+        IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(roomId);
+        
+        await playRoomActor.OnPlayerActionToPlayRoom(
+            this.GetGrainId().GetGuidKey(), 
+            request.ActionType, 
+            request.GetActionParameterArray());
+
+    }
+    
+    public async Task InvokeHandler(byte[] data)
+    {
+        await _routeTable.Execute(
+            PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data)));
+    }
+
+    public async Task PushRecievedData(byte[] Data)
+    {
+        var currentActivity = Activity.Current;
+        Activity.Current = null;
+        try
+        {
+            var queueActivity = SyncnetTelemetry.Trace.StartActivity("InReceiveQueue", ActivityKind.Internal);
+            await _receiveQueueChannel.Writer.WriteAsync(new PendingPacket(Data, queueActivity));
+        }
+        finally
+        {
+            Activity.Current = currentActivity;
+        }
+    }
+
+    public async Task RunRoutingPackets(CancellationToken shutdownToken)
+    {
+        try
+        {
+            await foreach (var pending in _receiveQueueChannel.Reader.ReadAllAsync(shutdownToken))
+            {
+                ActivityContext parentContext = pending.QueueActivity?.Context ?? default;
+                pending.QueueActivity?.Dispose();
+
+                using var handleActivity = SyncnetTelemetry.Trace.StartActivity(
+                    "HandlePacketLogic", 
+                    ActivityKind.Internal,
+                    parentContext: parentContext
+                );
+                await InvokeHandler(pending.Data);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Normal shutdown
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in RunRoutingPackets loop");
         }
     }
 }

@@ -9,9 +9,9 @@ table ReqUserInfo{
 }
 
 table ResUserInfo{
-    player_id: GuidType;
-    player_name: string;
-    player_custom: [ubyte];
+    id: GuidType;
+    name: string;
+    extend_data: [ubyte];
 }
 
 table ReqUpdatePlayerName{
@@ -21,15 +21,17 @@ table ResUpdatePlayerName{
     result: PacketErrorCodes;
 }
 
-table ReqUserActionForUpdatePlayerCustomData {
+// 사용자 액션에 의한 메타 데이타 업데이트 처리 요청 패킷 
+table ReqUserActionForUpdatePlayerExtendData {
     action_type: string;
     action_parameter: [ubyte];
 }
 
-table ResUserActionForUpdatePlayerCustomData {
+table ResUserActionForUpdatePlayerExtendData {
     result: PacketErrorCodes;
+    app_error_code: int; // 게임에서 정의한 에러 코드 전송 
     message: string;
-    player_custom: [ubyte];
+    extend_data: [ubyte];
 }
 
 table ReqDirectDeliveryData {

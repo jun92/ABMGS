@@ -13,8 +13,9 @@ enum DirectDeliveryDataType: byte {
 }
 
 table PlayerInfoInRoom {
-    player_id: GuidType;
-    player_name: string;
+    id: GuidType;
+    name: string;
+    extend_data: [ubyte];
 }
 
 enum DeliverDestination: byte {

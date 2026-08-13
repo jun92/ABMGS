@@ -1,4 +1,5 @@
 using OpenTelemetry.Exporter;
+using Silo.Player;
 using SyncnetPlatform.Actors;
 using SyncnetPlatform.ApplicationBuilder;
 using SyncnetPlatform.Databases;
@@ -13,8 +14,8 @@ builder.ConfigureActor(option =>
     option.UsePlayerCustomBehavior<MyPlayerBehavior>();
     option.UsePlayerDataExtendCreator<MyGamePlayerDataExtendCreater>();
     option.AutoMigrateDatabase = true;
-
-    if( builder.Configuration.GetSection("ConnectionStrings:telemetry").Exists())
+    if(false)
+    //if( builder.Configuration.GetSection("ConnectionStrings:telemetry").Exists())
     {
         Action<SyncnetTelemetryOption> telemetryConfigure = option =>
         {
@@ -40,6 +41,12 @@ builder.ConfigureActor(option =>
         option.TelemetryConfigure = telemetryConfigure;
     }
 });
+
+//Custom classes for play room supporting.
+builder.Services.AddTransient<IPlayRoomCustomState, MyPlayRoomCustomState>();
+builder.Services.AddTransient<IPlayRoomCustomEventHandler, MyPlayRoomCustomBehavior>();
+
+
 
 var SyncnetActorApp = builder.Build();
 await SyncnetActorApp.RunAsync();

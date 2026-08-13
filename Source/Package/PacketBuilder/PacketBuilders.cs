@@ -63,14 +63,14 @@ internal class ResUserInfoPacketBuilder: PacketBABuilder<ResUserInfoArgs>
     {
         var builder = CreateBuilder();
 
-        VectorOffset customData = ResUserInfo.CreatePlayerCustomVector(builder, args.PlayerCustomData);
+        VectorOffset extendData = ResUserInfo.CreateExtendDataVector(builder, args.PlayerExtendData);
         StringOffset playerName = builder.CreateString(args.PlayerName); /*IMPORTANT TO BE CALLED BEFORE START?? FUNCTION*/
         Offset<GuidType> playerId = args.PlayerId.ToGuidType(builder);
 
         ResUserInfo.StartResUserInfo(builder);
-        ResUserInfo.AddPlayerId(builder, playerId);
-        ResUserInfo.AddPlayerName(builder, playerName);
-        ResUserInfo.AddPlayerCustom(builder, customData);
+        ResUserInfo.AddId(builder, playerId);
+        ResUserInfo.AddName(builder, playerName);
+        ResUserInfo.AddExtendData(builder, extendData);
         Offset<ResUserInfo> offsetUserInfo = ResUserInfo.EndResUserInfo(builder);
 
         return Wrap(builder, SystemPacket.ResUserInfo, offsetUserInfo.Value);
@@ -101,39 +101,39 @@ internal class ResUpdatePlayerNamePacketBuilder : PacketBABuilder<ResUpdatePlaye
     }
 }
 
-internal class ReqUserActionForUpdatePlayerCustomDataPacketBuilder : PacketBABuilder<ReqUserActionForUpdatePlayerCustomDataArgs>
+internal class ReqUserActionForUpdatePlayerExtendDataPacketBuilder : PacketBABuilder<ReqUserActionForUpdatePlayerExtendDataArgs>
 {
-    public override byte[] Build(ReqUserActionForUpdatePlayerCustomDataArgs args)
+    public override byte[] Build(ReqUserActionForUpdatePlayerExtendDataArgs args)
     {
         var builder = CreateBuilder();
         StringOffset actionTypeOffset = builder.CreateString(args.ActionType);
-        VectorOffset actionParametersOffset = ReqUserActionForUpdatePlayerCustomData.CreateActionParameterVector(builder, args.ActionParameters);
-        ReqUserActionForUpdatePlayerCustomData.StartReqUserActionForUpdatePlayerCustomData(builder);
-        ReqUserActionForUpdatePlayerCustomData.AddActionType(builder, actionTypeOffset);
-        ReqUserActionForUpdatePlayerCustomData.AddActionParameter(builder, actionParametersOffset);
+        VectorOffset actionParametersOffset = ReqUserActionForUpdatePlayerExtendData.CreateActionParameterVector(builder, args.ActionParameters);
+        ReqUserActionForUpdatePlayerExtendData.StartReqUserActionForUpdatePlayerExtendData(builder);
+        ReqUserActionForUpdatePlayerExtendData.AddActionType(builder, actionTypeOffset);
+        ReqUserActionForUpdatePlayerExtendData.AddActionParameter(builder, actionParametersOffset);
 
         return Wrap(builder,
-            SystemPacket.ReqUserActionForUpdatePlayerCustomData,
-            ReqUserActionForUpdatePlayerCustomData.EndReqUserActionForUpdatePlayerCustomData(builder).Value);
+            SystemPacket.ReqUserActionForUpdatePlayerExtendData,
+            ReqUserActionForUpdatePlayerExtendData.EndReqUserActionForUpdatePlayerExtendData(builder).Value);
     }
 }
 
-internal class ResUserActionForUpdatePlayerCustomDataPacketBuilder : PacketBABuilder<ResUserActionForUpdatePlayerCustomDataArgs>
+internal class ResUserActionForUpdatePlayerExtendDataPacketBuilder : PacketBABuilder<ResUserActionForUpdatePlayerExtendDataArgs>
 {
-    public override byte[] Build(ResUserActionForUpdatePlayerCustomDataArgs args)
+    public override byte[] Build(ResUserActionForUpdatePlayerExtendDataArgs args)
     {
         var builder = CreateBuilder();
         StringOffset resultOffset = builder.CreateString(args.Message);
-        VectorOffset playerCustomVectorOffset = ResUserActionForUpdatePlayerCustomData.CreatePlayerCustomVector(builder, args.updatedPlayerCustom);
+        VectorOffset playerCustomVectorOffset = ResUserActionForUpdatePlayerExtendData.CreateExtendDataVector(builder, args.updatedPlayerExtendData);
 
-        ResUserActionForUpdatePlayerCustomData.StartResUserActionForUpdatePlayerCustomData(builder);
-        ResUserActionForUpdatePlayerCustomData.AddResult(builder, args.Result);
-        ResUserActionForUpdatePlayerCustomData.AddMessage(builder, resultOffset);
-        ResUserActionForUpdatePlayerCustomData.AddPlayerCustom(builder, playerCustomVectorOffset);
+        ResUserActionForUpdatePlayerExtendData.StartResUserActionForUpdatePlayerExtendData(builder);
+        ResUserActionForUpdatePlayerExtendData.AddResult(builder, args.Result);
+        ResUserActionForUpdatePlayerExtendData.AddMessage(builder, resultOffset);
+        ResUserActionForUpdatePlayerExtendData.AddExtendData(builder, playerCustomVectorOffset);
 
         return Wrap(builder,
-            SystemPacket.ResUserActionForUpdatePlayerCustomData,
-            ResUserActionForUpdatePlayerCustomData.EndResUserActionForUpdatePlayerCustomData(builder).Value);
+            SystemPacket.ResUserActionForUpdatePlayerExtendData,
+            ResUserActionForUpdatePlayerExtendData.EndResUserActionForUpdatePlayerExtendData(builder).Value);
     }
 }
 
@@ -160,9 +160,12 @@ internal class ResCreateRoomPacketBuilder : PacketBABuilder<ResCreateRoomArgs>
     public override byte[] Build(ResCreateRoomArgs args)
     {
         var builder = CreateBuilder();
+
+        VectorOffset roomState = ResCreateRoom.CreateRoomStateVector(builder, args.RoomState ?? Array.Empty<byte>());
         ResCreateRoom.StartResCreateRoom(builder);
         ResCreateRoom.AddResult(builder, args.result);
         ResCreateRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
+        ResCreateRoom.AddRoomState(builder, roomState);
         return Wrap(builder, SystemPacket.ResCreateRoom, ResCreateRoom.EndResCreateRoom(builder).Value);
     }
 }
@@ -172,8 +175,9 @@ internal class ReqJoinRoomPacketBuilder : PacketBABuilder<ReqJoinRoomArgs>
     public override byte[] Build(ReqJoinRoomArgs args)
     {
         var builder = CreateBuilder();
+        
         StringOffset roomPassword = builder.CreateString(args.password);
-
+        
         ReqJoinRoom.StartReqJoinRoom(builder);
         ReqJoinRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
         ReqJoinRoom.AddPassword(builder, roomPassword);
@@ -186,10 +190,16 @@ internal class ResJoinRoomPacketBuilder : PacketBABuilder<ResJoinRoomArgs>
     public override byte[] Build(ResJoinRoomArgs args)
     {
         var builder = CreateBuilder();
+        VectorOffset roomStateOffset = ResJoinRoom.CreateRoomStateVector(builder, args.roomState);
+        ResJoinRoom.StartResJoinRoom(builder);
+        ResJoinRoom.AddResult(builder, args.result);
+        ResJoinRoom.AddAppErrorCode(builder, args.AppErrorCode);
+        ResJoinRoom.AddRoomState(builder, roomStateOffset);
+        
         return Wrap(
             builder, 
             SystemPacket.ResJoinRoom, 
-            ResJoinRoom.CreateResJoinRoom(builder, args.result).Value);
+            ResJoinRoom.EndResJoinRoom(builder).Value);
     }
 }
 
@@ -199,11 +209,13 @@ internal class OnPlayerJoinRoomPacketBuilder : PacketBABuilder<OnPlayerJoinRoomA
     {
         var builder = CreateBuilder();
         StringOffset playerName = builder.CreateString(args.playerName);
+        VectorOffset playerCustomData = OnPlayerJoinRoom.CreateJoinerMetadataVector(builder, args.PlayerMetadata ?? Array.Empty<byte>());
         
         OnPlayerJoinRoom.StartOnPlayerJoinRoom(builder);
         OnPlayerJoinRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
-        OnPlayerJoinRoom.AddPlayerId(builder, args.playerId.ToGuidType(builder));
-        OnPlayerJoinRoom.AddName(builder, playerName);
+        OnPlayerJoinRoom.AddJoinerId(builder, args.playerId.ToGuidType(builder));
+        OnPlayerJoinRoom.AddJoinerName(builder, playerName);
+        OnPlayerJoinRoom.AddJoinerMetadata(builder, playerCustomData);
 
         return Wrap(
             builder,
@@ -232,10 +244,12 @@ internal class ResPlayerListInRoomPacketBuilder : PacketBABuilder<ResPlayerListI
         foreach(var i in args.playerInfo)
         {
             StringOffset PlayerName = builder.CreateString(i.playerName);
+            VectorOffset PlayerExtendData = PlayerInfoInRoom.CreateExtendDataVector(builder, i.PlayerExtendData);
 
             PlayerInfoInRoom.StartPlayerInfoInRoom(builder);
-            PlayerInfoInRoom.AddPlayerName(builder, PlayerName);
-            PlayerInfoInRoom.AddPlayerId(builder, i.playerId.ToGuidType(builder));
+            PlayerInfoInRoom.AddId(builder, i.playerId.ToGuidType(builder));
+            PlayerInfoInRoom.AddName(builder, PlayerName);
+            PlayerInfoInRoom.AddExtendData(builder, PlayerExtendData);
             offset.Add(PlayerInfoInRoom.EndPlayerInfoInRoom(builder));
         }
         VectorOffset members = ResPlayerListInRoom.CreateMembersVector(builder,offset.ToArray());
@@ -246,6 +260,60 @@ internal class ResPlayerListInRoomPacketBuilder : PacketBABuilder<ResPlayerListI
         ResPlayerListInRoom.AddMembers(builder, members);
 
         return Wrap(builder, SystemPacket.ResPlayerListInRoom, ResPlayerListInRoom.EndResPlayerListInRoom(builder).Value);
+    }
+}
+
+internal class OnPlayRoomUpdatePacketBuilder : PacketBABuilder<OnPlayRoomStateUpdateArgs>
+{
+    public override byte[] Build(OnPlayRoomStateUpdateArgs args)
+    {
+        var builder = CreateBuilder();
+
+        VectorOffset updatePlayRoomState = OnPlayRoomStateUpdate.CreateUpdatedRoomStateVector(builder, args.UpdatedPlayRoomState??[]);
+        OnPlayRoomStateUpdate.StartOnPlayRoomStateUpdate(builder);
+        OnPlayRoomStateUpdate.AddRoomId(builder, args.RoomId.ToGuidType(builder));
+        OnPlayRoomStateUpdate.AddUpdatedRoomState(builder, updatePlayRoomState);
+        return Wrap(builder, SystemPacket.OnPlayRoomStateUpdate, OnPlayRoomStateUpdate.EndOnPlayRoomStateUpdate(builder).Value);
+    }
+}
+
+internal class OnPlayRoomUpdatePlayerExtendDataPacketBuilder : PacketBABuilder<OnPlayRoomUpdatePlayerExtendDataArgs>
+{
+    public override byte[] Build(OnPlayRoomUpdatePlayerExtendDataArgs args)
+    {
+        var builder = CreateBuilder();
+        VectorOffset updatedPlayerExtendData = OnPlayRoomUpdatePlayerExtendData.CreateUpdatedPlayerExtendDataVectorBlock(builder, args.UpdatePlayerExtendData??[]);
+        OnPlayRoomUpdatePlayerExtendData.StartOnPlayRoomUpdatePlayerExtendData(builder);
+        OnPlayRoomUpdatePlayerExtendData.AddPlayerId(builder, args.PlayerId.ToGuidType(builder));
+        OnPlayRoomUpdatePlayerExtendData.AddUpdatedPlayerExtendData(builder, updatedPlayerExtendData);
+        return Wrap(builder, SystemPacket.OnPlayRoomUpdatePlayerExtendData, OnPlayRoomUpdatePlayerExtendData.EndOnPlayRoomUpdatePlayerExtendData(builder).Value);
+    }
+}
+
+internal class ReqPlayerActionToPlayRoomPacketBuilder : PacketBABuilder<ReqPlayerActionToPlayRoomArgs>
+{
+    public override byte[] Build(ReqPlayerActionToPlayRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        VectorOffset actionParameter = ReqPlayerActionToPlayRoom.CreateActionParameterVector(builder, args.ActionParameter??[]);
+        StringOffset actionType = builder.CreateString(args.ActionType);
+        ReqPlayerActionToPlayRoom.StartReqPlayerActionToPlayRoom(builder);
+        ReqPlayerActionToPlayRoom.AddRoomId(builder, args.RoomId.ToGuidType(builder));
+        ReqPlayerActionToPlayRoom.AddActionType(builder, actionType);
+        ReqPlayerActionToPlayRoom.AddActionParameter(builder, actionParameter);
+        return Wrap(builder, SystemPacket.ReqPlayerActionToPlayRoom, ReqPlayerActionToPlayRoom.EndReqPlayerActionToPlayRoom(builder).Value);
+    }
+}
+
+internal class ResPlayerActionToPlayRoomPacketBuilder : PacketBABuilder<ResPlayerActionToPlayRoomArgs>
+{
+    public override byte[] Build(ResPlayerActionToPlayRoomArgs args)
+    {
+        var builder = CreateBuilder();
+        ResPlayerActionToPlayRoom.StartResPlayerActionToPlayRoom(builder);
+        ResPlayerActionToPlayRoom.AddResult(builder, args.result);
+        ResPlayerActionToPlayRoom.AddAppErrorCode(builder, args.app_error_code);
+        return Wrap(builder, SystemPacket.ResPlayerActionToPlayRoom, ResPlayerActionToPlayRoom.EndResPlayerActionToPlayRoom(builder).Value);
     }
 }
 

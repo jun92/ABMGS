@@ -1,6 +1,5 @@
 
 
-include "Custom.fbs";
 include "Player.fbs";
 include "Playroom.fbs";
 
@@ -12,8 +11,8 @@ union SystemPacket {
     Pong,
     ReqUserInfo,
     ResUserInfo,
-    ReqUserActionForUpdatePlayerCustomData,
-    ResUserActionForUpdatePlayerCustomData,
+    ReqUserActionForUpdatePlayerExtendData,
+    ResUserActionForUpdatePlayerExtendData,
     ReqDirectDeliveryData,
     ResDirectDeliveryData,
     OnDirectDeliveryData,
@@ -24,6 +23,10 @@ union SystemPacket {
     OnPlayerJoinRoom,
     ReqPlayerListInRoom,
     ResPlayerListInRoom,
+    OnPlayRoomStateUpdate,
+    OnPlayRoomUpdatePlayerExtendData,
+    ReqPlayerActionToPlayRoom,
+    ResPlayerActionToPlayRoom,
     ReqLeaveRoom,
     ResLeaveRoom,
     OnPlayerLeaveRoom,
@@ -37,7 +40,6 @@ union SystemPacket {
 
 table PacketWrapper {
     system_packet: SystemPacket;
-    custom_packet: CustomPacket;
 }
 
 

@@ -17,3 +17,16 @@ table ActionGainExp{
 table ActionParamtersPacket{
 	packet: ActionParameters;
 }
+
+
+table PlayRoomCreationMetaData {
+	ext_field1: int;
+	ext_field2: string;
+	ext_field3: bool;
+}
+
+
+table PlayRoomUserActionParameters{
+
+}
+

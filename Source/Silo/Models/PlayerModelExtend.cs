@@ -14,9 +14,13 @@ public static class PlayerDataColumn
 }
 public class MyGamePlayerDataExtendCreater : IPlayerDataExtendCreater
 {
-    public void CreateExtendColumns(EntityTypeBuilder<PlayerData> e)
+    public IReadOnlyList<(Type, string, object)> RegisterPlayerCustomData()
     {
-        e.IndexerProperty<int>(PlayerDataColumn.CustomLevel).HasDefaultValue(1);
-        e.IndexerProperty<long>(PlayerDataColumn.CustomExp).HasDefaultValue(33);
+        return new List<(Type, string, object)>
+        {
+            (typeof(int),PlayerDataColumn.CustomLevel, 1 ),
+            (typeof(long), PlayerDataColumn.CustomExp, 33)
+        };
     }
 }
+ 

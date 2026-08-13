@@ -6,7 +6,11 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
 {
     public Task HandleCustomPacket(byte[] customPacket)
     {
-        throw new NotImplementedException();
+        return Task.CompletedTask;
+    }
+
+    public void OnJoinPlayRoom(PlayerState playerState, Guid playRoomId, bool isOwner, byte[]? roomMetaData)
+    {
     }
 
     public Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null)
@@ -32,7 +36,7 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
         return Task.FromResult(builder.SizedByteArray());
     }
 
-    public void UpdatePlayerCustomDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState)
+    public void UpdatePlayerExtendDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState)
     {
         Action<byte[], PlayerState> handler = actionType.ToLower() switch
         {
@@ -47,8 +51,29 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
 
         handler(actionParameters, playerState);
     }
-};
 
+    public byte[] SerializePlayerExtendData(Dictionary<string, object?> playerState, CancellationToken? cancellationToken = null)
+    {
+        // Your serializer goes here. I used FlatBuffer.
+        FlatBufferBuilder builder = new(4096);
+        PlayerCustomData.StartPlayerCustomData(builder);
+        PlayerCustomData.AddCustomExp(builder, playerState[PlayerDataColumn.CustomExp] as long? ?? 0);
+        PlayerCustomData.AddCustomLevel(builder, playerState[PlayerDataColumn.CustomLevel] as int? ?? 1);
+        builder.Finish(PlayerCustomData.EndPlayerCustomData(builder).Value);
+        return builder.SizedByteArray(); 
+    }
+
+    public Dictionary<string, object?> DeserializePlayerExtendData(byte[] data)
+    {
+        PlayerCustomData playerCustomData = PlayerCustomData.GetRootAsPlayerCustomData(new ByteBuffer(data));
+
+        return new Dictionary<string, object?>
+        {
+            { PlayerDataColumn.CustomExp, playerCustomData.CustomExp },
+            { PlayerDataColumn.CustomLevel, playerCustomData.CustomLevel }
+        };
+    }
+};
 
 
 

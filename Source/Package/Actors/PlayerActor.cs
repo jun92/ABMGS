@@ -21,15 +21,6 @@ using SyncnetPlatform.Utils.Telemetry;
  
 namespace SyncnetPlatform.Actors;
 
-public interface IPlayerCustomBehavior
-{
-    public Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null);
-    public Task<bool> OnLogoutAsync(PlayerState playerData, CancellationToken? cancellationToken = null);
-    public Task HandleCustomPacket(byte[] customPacket);
-    Task<byte[]> OverrideCustomDataSerialize(Dictionary<string, object?> playerState, CancellationToken? cancellationToken = null);
-    void UpdatePlayerCustomDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState);
-}
-
 public enum PlayRoomMemberUpdateReason
 {
     None = 0,
@@ -54,7 +45,28 @@ public class PlayerState
     }
 }
 
-[GenerateSerializer] public record PlayRoomMember(Guid RoomId, Guid PlayerId, string PlayerName);
+[GenerateSerializer] //public record PlayRoomMember(Guid RoomId, Guid PlayerId, string PlayerName, byte[]? PlayerExtendData);
+public class PlayRoomMember
+{
+    public PlayRoomMember(Guid roomId, Guid playerId, string playerName, byte[]? playerExtendData)
+    {
+        RoomId = roomId;
+        PlayerId = playerId;
+        PlayerName = playerName;
+        PlayerExtendData = playerExtendData;
+    }
+
+    [Id(0)]
+    public Guid RoomId { get; set; }
+    [Id(1)]
+    public Guid PlayerId { get; set; }
+    [Id(2)]
+    public string PlayerName { get; set; }
+    [Id(3)]
+    public byte[]? PlayerExtendData { get; set; }
+
+
+}
 
 public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPacketHandler
 {
@@ -84,7 +96,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     /// <summary>
     /// Primary key for the player data table
     /// </summary>
-    protected int _dbid;
+    protected int Dbid;
     protected string _name = String.Empty;
 
     /// <summary>
@@ -136,9 +148,9 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     {
         if(isOnline == true )
         {
-            Guid ThisPlayerId = GrainContext.GrainId.GetGuidKey();
-            _playerState = await _playerModelRepository.GetOrCreate(ThisPlayerId);
-            _dbid = _playerState.Id;
+            Guid thisPlayerId = GrainContext.GrainId.GetGuidKey();
+            _playerState = await _playerModelRepository.GetOrCreate(thisPlayerId);
+            Dbid = _playerState.Id;
             _IsOnline = true;
 
             if (_playerCustomBehavior != null)
@@ -223,15 +235,27 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         return Task.FromResult(_playerState.PlayerName); 
     }
 
-    public async Task<byte[]> SerializePlayerCustomData()
+    protected byte[] SerializePlayerExtendData()
     {
         if(_playerCustomBehavior is not null)
         {
-            return await _playerCustomBehavior.OverrideCustomDataSerialize(_playerState.Extension);
+            return _playerCustomBehavior.SerializePlayerExtendData(_playerState.Extension);
         }
         else
         {
             return Array.Empty<byte>();
+        }
+    }
+
+    protected Dictionary<string, object?> DeserializePlayerExtendData(byte[] data)
+    {
+        if(_playerCustomBehavior is not null)
+        {
+            return _playerCustomBehavior.DeserializePlayerExtendData(data);
+        }
+        else
+        {
+            return new Dictionary<string, object?>(capacity: 0);
         }
     }
 
@@ -251,35 +275,49 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         return PacketErrorCodes.Success;
     }
 
-    public async Task<Guid> CreateAndJoinPlayRoom(string roomName, bool isPrivate, int maxCapacity, string roomPassword)
+    public async ValueTask<(PacketErrorCodes ,Guid, byte[]?)> CreateAndJoinPlayRoom(string roomName,
+        bool isPrivate,
+        int maxCapacity,
+        string roomPassword,
+        byte[] playerMetadata)
     {
         Guid newPlayRoomId = Guid.NewGuid();
+        
+        // Grab a new PlayRoomActor.
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(newPlayRoomId);
 
-        await playRoomActor.SetRoomInformation(roomName, isPrivate, maxCapacity, roomPassword, BuildPlayerRoomMember(newPlayRoomId));
+        // Supply initial data to play room.
+        (PacketErrorCodes errorCode, byte[]? serializedPlayRoomState) = await playRoomActor.SetRoomInformation(roomName, isPrivate, maxCapacity, roomPassword, BuildPlayerRoomMember(newPlayRoomId));
+        
+        // Just remember rooms I joined.
         _joinedRoomList.Add(newPlayRoomId);
-        return newPlayRoomId;
+
+        // Delegating additional process to user's handler.
+        _playerCustomBehavior?.OnJoinPlayRoom(_playerState, newPlayRoomId, isOwner: true, serializedPlayRoomState);
+        
+        return (errorCode, newPlayRoomId, serializedPlayRoomState);
     }
 
-    public async Task<PacketErrorCodes> JoinPlayRoom(Guid roomId)
+    public async Task<(PacketErrorCodes, byte[])> JoinPlayRoom(Guid roomId)
     {
         if(!_IsOnline)
         {
-            return PacketErrorCodes.PlayerOffline;
+            return (PacketErrorCodes.PlayerOffline, Array.Empty<byte>());
         }
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(roomId);
         if(!await playRoomActor.IsValidRoomToJoin())
         {
-            return PacketErrorCodes.RoomNotFound;
+            return (PacketErrorCodes.RoomNotFound, Array.Empty<byte>());
         }
-        var result = await playRoomActor.JoinPlayer(BuildPlayerRoomMember(roomId));
+        var(result, playRoomCustomState) = await playRoomActor.JoinPlayer(BuildPlayerRoomMember(roomId));
         if(result == PacketErrorCodes.Success)
         {
             _joinedRoomList.Add(roomId);
         }
-        return result;
+        return (result, playRoomCustomState);
     }
-    protected PlayRoomMember BuildPlayerRoomMember(Guid roomId) => new PlayRoomMember(roomId, GrainContext.GrainId.GetGuidKey(), _playerState.PlayerName);
+    protected PlayRoomMember BuildPlayerRoomMember(Guid roomId) 
+        => new PlayRoomMember(roomId, GrainContext.GrainId.GetGuidKey(), _playerState.PlayerName, SerializePlayerExtendData());
 
     /// <summary>
     /// Be called when members of a room has changed. - in and out.
@@ -287,10 +325,11 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     /// <param name="playRoomMember"></param>
     /// <param name="updateReason"></param>
     /// <returns></returns>
-    [OneWay]
+    [OneWay] 
     public async Task OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember, PlayRoomMemberUpdateReason updateReason )
     {
         if (!_IsOnline || _sendDataGrain == null) return;
+
         switch (updateReason)
         {
             case PlayRoomMemberUpdateReason.Join:
@@ -298,7 +337,8 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
                     new OnPlayerJoinRoomArgs(
                         playRoomMember.RoomId,
                         playRoomMember.PlayerId,
-                        playRoomMember.PlayerName
+                        playRoomMember.PlayerName,
+                        playRoomMember.PlayerExtendData
                     )
                     ));
                 break;
@@ -313,12 +353,44 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
                 break;
         }
     }
+    [OneWay]
+    public async Task OnUpdatePlayerExtendData(byte[] extendData)
+    {
+        if( !_IsOnline || _sendDataGrain == null) return; 
+        
+        if(_playerCustomBehavior is not null)
+        {
+            _playerState.Extension = DeserializePlayerExtendData(extendData);
+            await _sendDataGrain.Send
+            (
+                PacketBuilder.Build
+                (
+                    new OnPlayRoomUpdatePlayerExtendDataArgs(PlayerId, SerializePlayerExtendData())
+                )
+            );
+        }
+    }
+
+    [OneWay]
+    public async Task OnUpdatePlayRoomCustomState(Guid roomId, byte[] customState)
+    {
+        if (_IsOnline && _sendDataGrain != null)
+        {
+            await _sendDataGrain.Send(PacketBuilder.Build(new OnPlayRoomStateUpdateArgs(roomId, customState)));
+        }
+    }
 
     public async Task<List<PlayRoomMember>> GetPlayerListInPlayRoom(Guid roomId)
     {
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(roomId);
-        List<PlayRoomMember> Players = await playRoomActor.GetPlayersInPlayRoom();
-        return Players;
+        List<PlayRoomMember> players = await playRoomActor.GetPlayersInPlayRoom();
+        return players;
+    }
+    
+    public async Task PlayerActionToPlayRoom(Guid roomId, string actionType, byte[] actionParameter)
+    {
+        IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(roomId);
+        await playRoomActor.OnPlayerActionToPlayRoom(PlayerId, actionType, actionParameter);
     }
 
     public async Task<PacketErrorCodes> LeavePlayRoom(Guid roomId)
@@ -339,53 +411,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     public Guid PlayerId => GrainContext.GrainId.GetGuidKey();
 
 
-    public async Task InvokeHandler(byte[] data)
-    {
-        await _routeTable.Execute(
-            PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data)));
-    }
-
-    public async Task PushRecievedData(byte[] Data)
-    {
-        var currentActivity = Activity.Current;
-        Activity.Current = null;
-        try
-        {
-            var queueActivity = SyncnetTelemetry.Trace.StartActivity("InReceiveQueue", ActivityKind.Internal);
-            await _receiveQueueChannel.Writer.WriteAsync(new PendingPacket(Data, queueActivity));
-        }
-        finally
-        {
-            Activity.Current = currentActivity;
-        }
-    }
-
-    public async Task RunRoutingPackets(CancellationToken shutdownToken)
-    {
-        try
-        {
-            await foreach (var pending in _receiveQueueChannel.Reader.ReadAllAsync(shutdownToken))
-            {
-                ActivityContext parentContext = pending.QueueActivity?.Context ?? default;
-                pending.QueueActivity?.Dispose();
-
-                using var handleActivity = SyncnetTelemetry.Trace.StartActivity(
-                    "HandlePacketLogic", 
-                    ActivityKind.Internal,
-                    parentContext: parentContext
-                    );
-                await InvokeHandler(pending.Data);
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            // Normal shutdown
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error in RunRoutingPackets loop");
-        }
-    }
+    
 
     public async Task OnHandleCustomPacket(byte[] customPacket)
     {

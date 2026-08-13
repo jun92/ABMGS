@@ -30,6 +30,12 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         Assert.Equal(PacketErrorCodes.RoomNotFound, packetWrapper.SystemPacketAsResJoinRoom().Result);
     }
 
+    [Fact]
+    public async Task PlayroomCreationAndDestructionTestWithMetadata()
+    {
+
+    }
+
 
     [Fact]
     public async Task PlayroomNotExistingFailTest()
@@ -61,13 +67,13 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         (result, packetWrapper) = await SendAndReceive(wsClientOwner, ReqUserInfoPacket);
         Assert.Equal(SystemPacket.ResUserInfo, packetWrapper.SystemPacketType);
         Guid OwnerPlayerId = default;
-        OwnerPlayerId.FromGuidType(packetWrapper.SystemPacketAsResUserInfo().PlayerId);
+        OwnerPlayerId.FromGuidType(packetWrapper.SystemPacketAsResUserInfo().Id);
 
         // Joiner info.
         (result, packetWrapper) = await SendAndReceive(wsClientJoiner, ReqUserInfoPacket);
         Assert.Equal(SystemPacket.ResUserInfo, packetWrapper.SystemPacketType);
         Guid JoinerPlayerId = default;
-        JoinerPlayerId.FromGuidType(packetWrapper.SystemPacketAsResUserInfo().PlayerId);
+        JoinerPlayerId.FromGuidType(packetWrapper.SystemPacketAsResUserInfo().Id);
 
         // Owner creates a room.
         (result, packetWrapper) = await SendAndReceive(wsClientOwner, BuildReqCreatePlayRoomPacket("CreateRoomTestTitle", false, "", 5));
@@ -91,7 +97,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         Guid JoinedPlayerId = default;
 
         RecvRoomId.FromGuidType(packetWrapper.SystemPacketAsOnPlayerJoinRoom().RoomId);
-        JoinedPlayerId.FromGuidType(packetWrapper.SystemPacketAsOnPlayerJoinRoom().PlayerId);
+        JoinedPlayerId.FromGuidType(packetWrapper.SystemPacketAsOnPlayerJoinRoom().JoinerId);
 
         Assert.Equal(roomId, RecvRoomId);
         Assert.Equal(JoinerPlayerId, JoinedPlayerId);

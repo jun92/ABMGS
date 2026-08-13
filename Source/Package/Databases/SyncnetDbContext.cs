@@ -12,7 +12,8 @@ namespace SyncnetPlatform.Databases;
 
 public interface IPlayerDataExtendCreater
 {
-    void CreateExtendColumns(EntityTypeBuilder<PlayerData> e);
+    //void CreateExtendColumns(EntityTypeBuilder<PlayerData> e);
+    IReadOnlyList<(Type, string, object)> RegisterPlayerCustomData();
 }
 
 public class SyncnetDbContext(
@@ -41,7 +42,14 @@ public class SyncnetDbContext(
             e.Property(p => p.Id).ValueGeneratedOnAdd();
 
             e.HasIndex(p => p.PlayerId).IsUnique();
-            playerDataExtendCreater?.CreateExtendColumns(e);
+            if(playerDataExtendCreater is not null)
+            {
+                var customData = playerDataExtendCreater.RegisterPlayerCustomData();
+                foreach( var (dataType, name, defaultValue) in customData)
+                {
+                    e.IndexerProperty(dataType, name).HasDefaultValue(defaultValue);
+                }
+            }
         });
 
     }

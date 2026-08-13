@@ -13,6 +13,7 @@ table ReqCreateRoom{
 table ResCreateRoom{
     result: PacketErrorCodes;
     room_id: GuidType;
+    room_state: [ubyte];
 }
 
 table ReqJoinRoom{
@@ -22,11 +23,14 @@ table ReqJoinRoom{
 
 table ResJoinRoom{
     result: PacketErrorCodes;
+    app_error_code: int;
+    room_state: [ubyte];
 }
 table OnPlayerJoinRoom{
     room_id: GuidType;
-    player_id: GuidType;
-    name: string;
+    joiner_id: GuidType;
+    joiner_name: string;
+    joiner_metadata: [ubyte];
 }
 
 table ReqPlayerListInRoom{
@@ -36,6 +40,30 @@ table ReqPlayerListInRoom{
 table ResPlayerListInRoom{
     room_id: GuidType;
     members: [PlayerInfoInRoom];
+}
+
+// 사용자의 특정 액션이 발생했고 게임 모드 진행에 변경을 요구할 경우 전송 
+table ReqPlayerActionToPlayRoom {
+    room_id: GuidType;
+    action_type: string;
+    action_parameter: [ubyte];
+}
+
+table ResPlayerActionToPlayRoom {
+    result: PacketErrorCodes;
+    app_error_code: int;
+}
+
+// 게임모드 진행에 변경 사항에 생겼을 경우 전체에 브로드 캐스팅
+table OnPlayRoomStateUpdate  {
+    room_id: GuidType;
+    updated_room_state: [ubyte];
+}
+
+// 특정 사용자의 정보가 업데이트 되었을 경우 전체에 브로드 캐스팅 
+table OnPlayRoomUpdatePlayerExtendData {
+    player_id: GuidType;
+    updated_player_extend_data: [ubyte];
 }
 
 table ReqLeaveRoom{

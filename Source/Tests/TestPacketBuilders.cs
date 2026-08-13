@@ -48,7 +48,12 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         return dataToSend;
     }
 
-    protected byte[] BuildReqCreatePlayRoomPacket(string playRoomName, bool IsPrivate = false, string password ="", int maxCount = 1)
+    protected byte[] BuildReqCreatePlayRoomPacket(
+        string playRoomName, 
+        bool IsPrivate = false, 
+        string password ="", 
+        int maxCount = 1,
+        byte[]? metaData = null)
     {
         byte[] dataToSend = SyncnetPacketBuilder.Build<ReqCreateRoomArgs>(
             new ReqCreateRoomArgs(playRoomName, IsPrivate, password, maxCount)
@@ -83,11 +88,11 @@ public partial class ABMGS_TestMain : IAsyncLifetime
 
     protected byte[] BuildReqUserActionForUpdatePlayerCustomData(string actionType, byte[] actionParameters)
     {
-        byte[] dataToSend = SyncnetPacketBuilder.Build<ReqUserActionForUpdatePlayerCustomDataArgs>(
-            new ReqUserActionForUpdatePlayerCustomDataArgs(actionType, actionParameters)
+        byte[] dataToSend = SyncnetPacketBuilder.Build<ReqUserActionForUpdatePlayerExtendDataArgs>(
+            new ReqUserActionForUpdatePlayerExtendDataArgs(actionType, actionParameters)
             );
         PacketWrapper verifyPacket = PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(dataToSend));
-        Assert.Equal(SystemPacket.ReqUserActionForUpdatePlayerCustomData, verifyPacket.SystemPacketType);
+        Assert.Equal(SystemPacket.ReqUserActionForUpdatePlayerExtendData, verifyPacket.SystemPacketType);
         return dataToSend;
     }
     
