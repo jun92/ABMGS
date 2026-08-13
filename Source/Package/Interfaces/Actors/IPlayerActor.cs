@@ -22,7 +22,7 @@ public interface IPlayerActor : IGrainWithGuidKey, IPacketHandlerActor
     Task PingPong(int seq);
     Task<PacketErrorCodes> SendDirectDeliverData(Guid toPlayerId, string message, DirectDeliveryDataType dataType);
     Task SetIdProvider(SupportedPlatformType idpFrom);
-    Task SetOnline(bool isOnline);
+    ValueTask SetOnline(bool isOnline);
     Task UpdatePlayerName(string newName);
     Task OnHandleCustomPacket(byte[] customPacket);
     ValueTask OnUpdatePlayRoomCustomState(Guid roomId, byte[] customState);
