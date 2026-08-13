@@ -66,7 +66,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(displayName, nameof(displayName));
         _playRoomState.DisplayName = displayName;
-        _playRoomState.PasswordForEntrace = roomPassword;
+        _playRoomState.PasswordForEntrance = roomPassword;
         _maxPlayerCapacity = maxCapacity;
         _isPrivate = isPrivate;
         _ownerPlayerId = owner.PlayerId;
@@ -86,16 +86,9 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     public async Task<(PacketErrorCodes, byte[])> JoinPlayer(PlayRoomMember joiner)
     {
         #region Early exit check
-        Dictionary<Predicate<PlayRoomActor>, PacketErrorCodes> earlyExitCheck = new Dictionary<Predicate<PlayRoomActor>, PacketErrorCodes>
-        {
-            { r => r._ownerPlayerId == Guid.Empty, PacketErrorCodes.RoomNotFound },
-            { r => r._players.Exists(p => p.PlayerId == joiner.PlayerId), PacketErrorCodes.AlreadyInRoom },
-            { r => r._players.Count == _maxPlayerCapacity, PacketErrorCodes.RoomFull }
-        };
-        if( earlyExitCheck.FirstOrDefault(f => f.Key(this)) is {  Key: not null } match)
-        {
-            return (match.Value, Array.Empty<byte>());
-        }
+        if(_ownerPlayerId == Guid.Empty) return (PacketErrorCodes.RoomNotFound, []);
+        if(_players.Exists(p => p.PlayerId == joiner.PlayerId)) return (PacketErrorCodes.AlreadyInRoom, []);
+        if (_players.Count == _maxPlayerCapacity) return (PacketErrorCodes.RoomFull, []);
         #endregion
 
         foreach (PlayRoomMember player in _players)
@@ -170,7 +163,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
                 foreach (PlayRoomMember member in _players)
                 {
                     IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(member.PlayerId);
-                    await p.OnUpatePlayRoomCustomState(RoomId, updatedPlayRoomCustomState);
+                    await p.OnUpdatePlayRoomCustomState(RoomId, updatedPlayRoomCustomState);
                 }
             }
             
