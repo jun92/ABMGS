@@ -3,6 +3,7 @@
 using Google.FlatBuffers;
 using SyncnetPlatform.Actors;
 using TGame.Packets;
+using Silo.Models;
 
 namespace Silo.Player;
 
@@ -39,7 +40,14 @@ public class TGamePlayerBehavior : IPlayerCustomBehavior
 
     public byte[] SerializePlayerExtendData(Dictionary<string, object?> playerState, CancellationToken? cancellationToken = null)
     {
-        throw new NotImplementedException();
+        FlatBufferBuilder builder = new (4096);
+        TGamePlayerCustomData.StartTGamePlayerCustomData(builder);
+        TGamePlayerCustomData.AddWinCount(builder, (int)(playerState[TGamePlayerModelExtend.WinCount] ?? 0));
+        TGamePlayerCustomData.AddLoseCount(builder, (int)(playerState[TGamePlayerModelExtend.LoseCount] ?? 0));
+        TGamePlayerCustomData.AddPlayCount(builder, (int)(playerState[TGamePlayerModelExtend.PlayCount] ?? 0));
+        builder.Finish(TGamePlayerCustomData.EndTGamePlayerCustomData(builder).Value);
+        return builder.SizedByteArray();
+        
     }
 
     public void UpdatePlayerExtendDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState)
