@@ -1,0 +1,60 @@
+
+namespace TGame.Packets;
+
+table TGamePlayerCustomData {
+    win_count: int = 0;
+    lose_count: int = 0;
+    play_count: int = 0;
+}
+
+table TGameCellInfo  {
+    marked_player_id: string;
+    marked_time: string;
+    mark : int;
+}
+
+union TGameActionParameters {
+    TGameReqStartGame,
+    TGameResStartGame,
+    TGameReqEndGame,
+    TGameResEndGame,
+    TGameReqActionPutItem,
+    TGameResActionPutItem,
+    OnUpdatePlayBoard
+}
+
+
+table TGameReqStartGame {
+
+}
+
+table TGameResStartGame {
+    result: bool;
+    error_code: int;
+}
+
+table TGameReqEndGame {
+
+}
+table TGameResEndGame {
+    result: bool;
+    error_code: int;
+}
+
+table TGameReqActionPutItem {
+    x:int;
+    y:int;
+}
+
+table TGameResActionPutItem {
+    result: bool;
+    error_code: int;
+}
+
+table OnUpdatePlayBoard {
+    board_info: [TGameCellInfo];
+}
+
+table OnTurnChanged {
+    on_turn_player_id: string;
+}
