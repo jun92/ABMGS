@@ -12,10 +12,14 @@ public class TGamePlayerBehavior : IPlayerCustomBehavior
 {
     public Dictionary<string, object?> DeserializePlayerExtendData(byte[] data)
     {
-        FlatBufferBuilder builder = new (4096);
-        
-        
-        throw new NotImplementedException();
+        TGamePlayerCustomData customData = TGamePlayerCustomData.GetRootAsTGamePlayerCustomData(new ByteBuffer(data));
+
+        return new Dictionary<string, object?>
+        {
+            {TGamePlayerModelExtend.WinCount, customData.WinCount},
+            {TGamePlayerModelExtend.LoseCount, customData.LoseCount},
+            {TGamePlayerModelExtend.PlayCount, customData.PlayCount},
+        };
     }
 
     public Task HandleCustomPacket(byte[] customPacket)
