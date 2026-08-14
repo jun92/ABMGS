@@ -168,9 +168,10 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
             this.DelayDeactivation(TimeSpan.FromMinutes(1));
         }
     }
-    public async Task SetIdProvider(SupportedPlatformType idpFrom)
+    public ValueTask SetIdProvider(SupportedPlatformType idpFrom) 
     {
         _idpFrom = idpFrom;
+        return ValueTask.CompletedTask;
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
@@ -275,7 +276,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         return PacketErrorCodes.Success;
     }
 
-    public async ValueTask<(PacketErrorCodes ,Guid, byte[]?)> CreateAndJoinPlayRoom(string roomName,
+    public async Task<(PacketErrorCodes ,Guid, byte[]?)> CreateAndJoinPlayRoom(string roomName,
         bool isPrivate,
         int maxCapacity,
         string roomPassword,

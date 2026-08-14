@@ -80,10 +80,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         return (PacketErrorCodes.Success, SerializePlayRoomCustomState());
     }
 
-    public ValueTask<bool> IsValidRoomToJoin() //=> new ValueTask<bool>(_ownerPlayerId != Guid.Empty);
-    {
-        return ValueTask.FromResult<bool>(_ownerPlayerId != Guid.Empty);
-    }
+    public ValueTask<bool> IsValidRoomToJoin() => ValueTask.FromResult<bool>(_ownerPlayerId != Guid.Empty);
 
     public async Task<(PacketErrorCodes, byte[])> JoinPlayer(PlayRoomMember joiner)
     {
@@ -151,7 +148,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         _players.Clear();
     }
 
-    public async ValueTask OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
+    public async Task OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
     {
         if(_playRoomCustomEventHandler is not null)
         {
