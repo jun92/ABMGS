@@ -8,7 +8,7 @@ namespace SyncnetPlatform.Interfaces.Actors;
 public interface IPlayerActor : IGrainWithGuidKey, IPacketHandlerActor
 {
     [Alias("CreateAndJoinPlayRoom")]
-    ValueTask<(PacketErrorCodes, Guid, byte[]?)> CreateAndJoinPlayRoom(string roomName, bool isPrivate, int maxCapacity, string roomPassword, byte[] playerMetadata);
+    Task<(PacketErrorCodes, Guid, byte[]?)> CreateAndJoinPlayRoom(string roomName, bool isPrivate, int maxCapacity, string roomPassword, byte[] playerMetadata);
     
     [Alias("Echo")]
     public Task Echo(int seq);
