@@ -151,7 +151,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         _players.Clear();
     }
 
-    public async Task OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
+    public async ValueTask OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
     {
         if(_playRoomCustomEventHandler is not null)
         {
