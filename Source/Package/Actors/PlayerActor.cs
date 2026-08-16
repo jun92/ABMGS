@@ -367,7 +367,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
             (
                 PacketBuilder.Build
                 (
-                    new OnPlayRoomUpdatePlayerExtendDataArgs(PlayerId, SerializePlayerExtendData())
+                    new OnPlayRoomUpdatePlayerExtendDataArgs(PlayerId, extendData)
                 )
             );
         }

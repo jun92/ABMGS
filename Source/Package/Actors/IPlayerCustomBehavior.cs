@@ -15,4 +15,10 @@ public interface IPlayerCustomBehavior
     void OnJoinPlayRoom(PlayerState playerState, Guid playRoomId, bool isOwner, byte[]? roomState);
 }
 
+public interface IPlayerCustomState
+{
+    byte[] Serialize(Dictionary<string, object?> playerState);
+    Dictionary<string, object?> Deserialize(byte[] data);
+}
+
 

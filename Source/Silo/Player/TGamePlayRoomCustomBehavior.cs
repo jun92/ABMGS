@@ -3,14 +3,14 @@ using SyncnetPlatform.Actors;
 namespace Silo.Player;
 
 
-internal enum CellState
+public enum CellState
 {
     Empty,
     X,
     O
 }
 
-internal class CellInfo
+public class CellInfo
 {
     public Guid PlayerId { get; set; } = Guid.Empty;
     public DateTime MarkedTime { get; set; } = DateTime.MinValue;
@@ -19,8 +19,13 @@ internal class CellInfo
 
 public class TGamePlayRoomState : IPlayRoomCustomState
 {
+    // Storing player id
     private List<Guid> _playerIds = new();
+    // Stating player ready or not 
+    private List<bool> _playerReadyState = new();
+    // Indicate who is currently on.
     private int _turnIndex = 0;
+    // Board state. 
     private CellInfo[,] _playBoard = new CellInfo[3, 3]; 
     
     
@@ -38,14 +43,23 @@ public class TGamePlayRoomState : IPlayRoomCustomState
 
 public class TGamePlayRoomCustomBehavior : IPlayRoomCustomEventHandler
 {
+    IPlayRoomCustomState _playRoomCustomState;
+    private List<Guid> _playerIds = new();
+    private Dictionary<Guid, IPlayerCustomState> _playerCustomStates = new();
+
+    public TGamePlayRoomCustomBehavior(IPlayRoomCustomState playRoomCustomState)
+    {
+        _playRoomCustomState = playRoomCustomState;
+    }
+    
     public Task<IPlayRoomCustomState> OnPlayRoomInitializingAsync()
     {
-        throw new NotImplementedException();
+        _playerIds.Clear();
     }
 
     public Task OnPlayRoomDestroyingAsync()
     {
-        throw new NotImplementedException();
+        _playerIds.Clear();
     }
 
     public Task OnHandleCustomPacket(byte[] customPacket)
@@ -63,14 +77,16 @@ public class TGamePlayRoomCustomBehavior : IPlayRoomCustomEventHandler
         throw new NotImplementedException();
     }
 
-    public Task AddPlayerToPlayRoom(Guid id, byte[] playerMetadata)
+    public Task AddPlayerToPlayRoom(Guid id, IPlayerCustomState playerCustomState)
     {
-        throw new NotImplementedException();
+        _playerIds.Add(id);
+        _playerCustomStates.Add(id, playerCustomState);
     }
 
     public Task<(Dictionary<Guid, byte[]>, byte[]?)> OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
     {
         throw new NotImplementedException();
+        // return (new Dictionary<Guid, byte[]>(), new byte[8]);
     }
 
     public Task OnTimer(float delta)
