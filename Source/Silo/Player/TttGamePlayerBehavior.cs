@@ -7,7 +7,7 @@ using Silo.Models;
 
 namespace Silo.Player;
 
-public class TGamePlayerCustomState : IPlayerCustomState
+public class TttGamePlayerExtendData : IPlayerExtendData
 {
     private int _winCount = 0;
     private int _loseCount = 0;
@@ -17,9 +17,9 @@ public class TGamePlayerCustomState : IPlayerCustomState
     {
         FlatBufferBuilder builder = new (4096);
         TGamePlayerCustomData.StartTGamePlayerCustomData(builder);
-        TGamePlayerCustomData.AddWinCount(builder, (int)(playerState[TGamePlayerModelExtend.WinCount] ?? 0));
-        TGamePlayerCustomData.AddLoseCount(builder, (int)(playerState[TGamePlayerModelExtend.LoseCount] ?? 0));
-        TGamePlayerCustomData.AddPlayCount(builder, (int)(playerState[TGamePlayerModelExtend.PlayCount] ?? 0));
+        TGamePlayerCustomData.AddWinCount(builder, (int)(playerState[TttGamePlayerModelExtend.WinCount] ?? 0));
+        TGamePlayerCustomData.AddLoseCount(builder, (int)(playerState[TttGamePlayerModelExtend.LoseCount] ?? 0));
+        TGamePlayerCustomData.AddPlayCount(builder, (int)(playerState[TttGamePlayerModelExtend.PlayCount] ?? 0));
         builder.Finish(TGamePlayerCustomData.EndTGamePlayerCustomData(builder).Value);
         return builder.SizedByteArray();
     }
@@ -27,9 +27,9 @@ public class TGamePlayerCustomState : IPlayerCustomState
     public void Initialize(IReadOnlyDictionary<string, object?> state)
     {
         FillInnerState(
-            (int)(state[TGamePlayerModelExtend.WinCount] ?? 0),
-            (int)(state[TGamePlayerModelExtend.LoseCount] ?? 0),
-            (int)(state[TGamePlayerModelExtend.PlayCount] ?? 0)
+            (int)(state[TttGamePlayerModelExtend.WinCount] ?? 0),
+            (int)(state[TttGamePlayerModelExtend.LoseCount] ?? 0),
+            (int)(state[TttGamePlayerModelExtend.PlayCount] ?? 0)
             );
     }
    
@@ -39,9 +39,9 @@ public class TGamePlayerCustomState : IPlayerCustomState
         FillInnerState(customData.WinCount, customData.LoseCount, customData.PlayCount);
         return new Dictionary<string, object?>
         {
-            {TGamePlayerModelExtend.WinCount, customData.WinCount},
-            {TGamePlayerModelExtend.LoseCount, customData.LoseCount},
-            {TGamePlayerModelExtend.PlayCount, customData.PlayCount},
+            {TttGamePlayerModelExtend.WinCount, customData.WinCount},
+            {TttGamePlayerModelExtend.LoseCount, customData.LoseCount},
+            {TttGamePlayerModelExtend.PlayCount, customData.PlayCount},
         };
     }
 
@@ -49,9 +49,9 @@ public class TGamePlayerCustomState : IPlayerCustomState
     {
         return new Dictionary<string, object?>
         {
-            {TGamePlayerModelExtend.WinCount, _winCount},
-            {TGamePlayerModelExtend.LoseCount, _loseCount},
-            {TGamePlayerModelExtend.PlayCount, _playCount},
+            {TttGamePlayerModelExtend.WinCount, _winCount},
+            {TttGamePlayerModelExtend.LoseCount, _loseCount},
+            {TttGamePlayerModelExtend.PlayCount, _playCount},
         };
     }
 
@@ -70,14 +70,14 @@ public static class ActionCommand
 }
 
 // TGame means Tic-Tac-Toe Game.
-public class TGamePlayerBehavior(IPlayerCustomState playerCustomState) : IPlayerCustomBehavior
+public class TttGamePlayerBehavior(IPlayerExtendData playerExtendData) : IPlayerCustomBehavior
 {
-    public IPlayerCustomState GetPlayerCustomState() => playerCustomState; 
+    public IPlayerExtendData GetPlayerCustomState() => playerExtendData; 
 
     public Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null)
     {
         // Storing them into your own.
-        playerCustomState.Initialize(playerData.Extension);
+        playerExtendData.Initialize(playerData.Extension);
         
         // Do something if you need pre-processing on your data. then return true for updating database.
         
@@ -99,8 +99,8 @@ public class TGamePlayerBehavior(IPlayerCustomState playerCustomState) : IPlayer
         // {
         //     ActionCommand.GotWin => (data, state) =>
         //     {
-        //         state[TGamePlayerModelExtend.WinCount] = (int)state[TGamePlayerModelExtend.WinCount] + 1;
-        //         state[TGamePlayerModelExtend.PlayCount] = (int)state[TGamePlayerModelExtend.PlayCount] + 1;
+        //         state[TttGamePlayerModelExtend.WinCount] = (int)state[TttGamePlayerModelExtend.WinCount] + 1;
+        //         state[TttGamePlayerModelExtend.PlayCount] = (int)state[TttGamePlayerModelExtend.PlayCount] + 1;
         //     },
         //     ActionCommand.GotLost => (data, state) => { return 1;},
         // };

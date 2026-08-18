@@ -9,10 +9,10 @@ public interface IPlayerCustomBehavior
     void UpdatePlayerExtendDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState);
     void OnJoinPlayRoom(PlayerState playerState, Guid playRoomId, bool isOwner, byte[]? roomState);
     
-    IPlayerCustomState GetPlayerCustomState();
+    IPlayerExtendData GetPlayerCustomState();
 }
 
-public interface IPlayerCustomState
+public interface IPlayerExtendData
 {
     void Initialize(IReadOnlyDictionary<string, object?> state);
     byte[] Serialize(IReadOnlyDictionary<string, object?> playerState);

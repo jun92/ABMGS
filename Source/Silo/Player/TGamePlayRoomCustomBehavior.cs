@@ -45,7 +45,7 @@ public class TGamePlayRoomCustomBehavior : IPlayRoomCustomEventHandler
 {
     IPlayRoomCustomState _playRoomCustomState;
     private List<Guid> _playerIds = new();
-    private Dictionary<Guid, IPlayerCustomState> _playerCustomStates = new();
+    private Dictionary<Guid, IPlayerExtendData> _playerCustomStates = new();
 
     public TGamePlayRoomCustomBehavior(IPlayRoomCustomState playRoomCustomState)
     {
@@ -78,7 +78,7 @@ public class TGamePlayRoomCustomBehavior : IPlayRoomCustomEventHandler
     {
         _playerIds.Add(id);
         
-        //_playerCustomStates.Add(id, _playRoomCustomState.Deserialize(playerCustomState));
+        //_playerCustomStates.Add(id, _playRoomCustomState.Deserialize(playerExtendData));
 
         return Task.CompletedTask;
     }

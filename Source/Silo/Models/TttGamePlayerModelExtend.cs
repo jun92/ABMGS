@@ -2,7 +2,7 @@ using SyncnetPlatform.Databases;
 
 namespace Silo.Models;
 
-public class TGamePlayerModelExtend : IPlayerDataExtendCreater
+public class TttGamePlayerModelExtend : IPlayerDataExtendCreater
 {
     public const string WinCount = "WinCount";
     public const string LoseCount = "LoseCount";

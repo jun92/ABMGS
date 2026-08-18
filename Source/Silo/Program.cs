@@ -1,5 +1,6 @@
 using OpenTelemetry.Exporter;
 using Silo.Player;
+using Silo.Models;
 using SyncnetPlatform.Actors;
 using SyncnetPlatform.ApplicationBuilder;
 using SyncnetPlatform.Databases;
@@ -11,8 +12,9 @@ string? EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRON
 var builder = SyncnetApplicationBuilder.CreateActorBuilder(args);
 builder.ConfigureActor(option =>
 {
-    option.UsePlayerCustomBehavior<MyPlayerBehavior>();
-    option.UsePlayerDataExtendCreator<MyGamePlayerDataExtendCreater>();
+    option.UsePlayerCustomBehavior<TttGamePlayerBehavior>();
+    option.UsePlayerDataExtendCreator<TttGamePlayerModelExtend>();
+    
     option.AutoMigrateDatabase = true;
     if(false)
     //if( builder.Configuration.GetSection("ConnectionStrings:telemetry").Exists())

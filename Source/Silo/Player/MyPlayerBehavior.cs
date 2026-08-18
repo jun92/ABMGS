@@ -13,7 +13,7 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
     {
     }
 
-    public IPlayerCustomState GetPlayerCustomState()
+    public IPlayerExtendData GetPlayerCustomState()
     {
         throw new NotImplementedException();
     }
