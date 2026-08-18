@@ -13,12 +13,17 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
     {
     }
 
+    public IPlayerCustomState GetPlayerCustomState()
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null)
     {
         return Task.FromResult<bool>(false);
     }
 
-    public Task<bool> OnLogoutAsync(PlayerState playerData, CancellationToken? cancellationToken = null)
+    public Task<bool> OnLogoutAsync(CancellationToken? cancellationToken = null)
     {
 
         return Task.FromResult<bool>(false);

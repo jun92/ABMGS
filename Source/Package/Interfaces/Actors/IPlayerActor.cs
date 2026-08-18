@@ -49,9 +49,6 @@ public interface IPlayerActor : IGrainWithGuidKey, IPacketHandlerActor
     [Alias("UpdatePlayerName")]
     Task UpdatePlayerName(string newName);
     
-    [Alias("OnHandleCustomPacket")]
-    Task OnHandleCustomPacket(byte[] customPacket);
-    
     [Alias("OnUpdatePlayRoomCustomState")]
     ValueTask OnUpdatePlayRoomCustomState(Guid roomId, byte[] customState);
 }

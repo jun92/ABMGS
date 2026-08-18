@@ -9,11 +9,11 @@ namespace Silo.Player;
 
 public class TGamePlayerCustomState : IPlayerCustomState
 {
+    private int _winCount = 0;
+    private int _loseCount = 0;
+    private int _playCount = 0;
     
-    public TGamePlayerCustomState()
-    {
-    }
-    public byte[] Serialize(Dictionary<string, object?> playerState)
+    public byte[] Serialize(IReadOnlyDictionary<string, object?> playerState)
     {
         FlatBufferBuilder builder = new (4096);
         TGamePlayerCustomData.StartTGamePlayerCustomData(builder);
@@ -24,15 +24,42 @@ public class TGamePlayerCustomState : IPlayerCustomState
         return builder.SizedByteArray();
     }
 
+    public void Initialize(IReadOnlyDictionary<string, object?> state)
+    {
+        FillInnerState(
+            (int)(state[TGamePlayerModelExtend.WinCount] ?? 0),
+            (int)(state[TGamePlayerModelExtend.LoseCount] ?? 0),
+            (int)(state[TGamePlayerModelExtend.PlayCount] ?? 0)
+            );
+    }
+   
     public Dictionary<string, object?> Deserialize(byte[] data)
     {
         TGamePlayerCustomData customData = TGamePlayerCustomData.GetRootAsTGamePlayerCustomData(new ByteBuffer(data));
+        FillInnerState(customData.WinCount, customData.LoseCount, customData.PlayCount);
         return new Dictionary<string, object?>
         {
             {TGamePlayerModelExtend.WinCount, customData.WinCount},
             {TGamePlayerModelExtend.LoseCount, customData.LoseCount},
             {TGamePlayerModelExtend.PlayCount, customData.PlayCount},
         };
+    }
+
+    public Dictionary<string, object?> Deserialize()
+    {
+        return new Dictionary<string, object?>
+        {
+            {TGamePlayerModelExtend.WinCount, _winCount},
+            {TGamePlayerModelExtend.LoseCount, _loseCount},
+            {TGamePlayerModelExtend.PlayCount, _playCount},
+        };
+    }
+
+    private void FillInnerState(int winCount, int loseCount, int playCount)
+    {
+        _winCount = winCount;
+        _loseCount = loseCount;
+        _playCount = playCount;
     }
 }
 
@@ -43,56 +70,29 @@ public static class ActionCommand
 }
 
 // TGame means Tic-Tac-Toe Game.
-public class TGamePlayerBehavior : IPlayerCustomBehavior
+public class TGamePlayerBehavior(IPlayerCustomState playerCustomState) : IPlayerCustomBehavior
 {
-    // public Dictionary<string, object?> DeserializePlayerExtendData(byte[] data)
-    // {
-    //     TGamePlayerCustomData customData = TGamePlayerCustomData.GetRootAsTGamePlayerCustomData(new ByteBuffer(data));
-    //     return new Dictionary<string, object?>
-    //     {
-    //         {TGamePlayerModelExtend.WinCount, customData.WinCount},
-    //         {TGamePlayerModelExtend.LoseCount, customData.LoseCount},
-    //         {TGamePlayerModelExtend.PlayCount, customData.PlayCount},
-    //     };
-    // }
-    private readonly IPlayerCustomState  _playerCustomState;
-
-    public TGamePlayerBehavior(IPlayerCustomState playerCustomState)
-    {
-        _playerCustomState = playerCustomState;
-    }
-
-    public Task HandleCustomPacket(byte[] customPacket)
-    {
-        throw new NotImplementedException();
-    }
-
-    public void OnJoinPlayRoom(PlayerState playerState, Guid playRoomId, bool isOwner, byte[]? roomState)
-    {
-        throw new NotImplementedException();
-    }
+    public IPlayerCustomState GetPlayerCustomState() => playerCustomState; 
 
     public Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null)
     {
-        throw new NotImplementedException();
+        // Storing them into your own.
+        playerCustomState.Initialize(playerData.Extension);
+        
+        // Do something if you need pre-processing on your data. then return true for updating database.
+        
+        return Task.FromResult(false); // no need to update database. true if it needs.
     }
 
-    public Task<bool> OnLogoutAsync(PlayerState playerData, CancellationToken? cancellationToken = null)
+    public Task<bool> OnLogoutAsync(CancellationToken? cancellationToken = null)
     {
-        throw new NotImplementedException();
+        return Task.FromResult(false);
     }
-
-    // public byte[] SerializePlayerExtendData(Dictionary<string, object?> playerState, CancellationToken? cancellationToken = null)
-    // {
-    //     FlatBufferBuilder builder = new (4096);
-    //     TGamePlayerCustomData.StartTGamePlayerCustomData(builder);
-    //     TGamePlayerCustomData.AddWinCount(builder, (int)(playerState[TGamePlayerModelExtend.WinCount] ?? 0));
-    //     TGamePlayerCustomData.AddLoseCount(builder, (int)(playerState[TGamePlayerModelExtend.LoseCount] ?? 0));
-    //     TGamePlayerCustomData.AddPlayCount(builder, (int)(playerState[TGamePlayerModelExtend.PlayCount] ?? 0));
-    //     builder.Finish(TGamePlayerCustomData.EndTGamePlayerCustomData(builder).Value);
-    //     return builder.SizedByteArray();
-    // }
-
+    
+    public void OnJoinPlayRoom(PlayerState playerState, Guid playRoomId, bool isOwner, byte[]? roomState)
+    {
+    }
+    
     public void UpdatePlayerExtendDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState)
     {
         // Func<byte[], PlayerState,  int> handler = actionType switch

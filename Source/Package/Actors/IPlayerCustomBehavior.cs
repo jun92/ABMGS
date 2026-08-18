@@ -4,21 +4,20 @@ namespace SyncnetPlatform.Actors;
 public interface IPlayerCustomBehavior
 {
     Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null);
-    Task<bool> OnLogoutAsync(PlayerState playerData, CancellationToken? cancellationToken = null);
-    Task HandleCustomPacket(byte[] customPacket);
+    Task<bool> OnLogoutAsync(CancellationToken? cancellationToken = null);
 
-    // return Array.Empty<byte> if no available serializer or data. 
-    byte[] SerializePlayerExtendData(Dictionary<string, object?> playerState, CancellationToken? cancellationToken = null);
-    Dictionary<string, object?> DeserializePlayerExtendData(byte[] data);
     void UpdatePlayerExtendDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState);
-    // When the play join a playroom
     void OnJoinPlayRoom(PlayerState playerState, Guid playRoomId, bool isOwner, byte[]? roomState);
+    
+    IPlayerCustomState GetPlayerCustomState();
 }
 
 public interface IPlayerCustomState
 {
-    byte[] Serialize(Dictionary<string, object?> playerState);
+    void Initialize(IReadOnlyDictionary<string, object?> state);
+    byte[] Serialize(IReadOnlyDictionary<string, object?> playerState);
     Dictionary<string, object?> Deserialize(byte[] data);
+    Dictionary<string, object?> Deserialize();
 }
 
 

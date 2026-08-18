@@ -153,7 +153,6 @@ public partial class PlayerActor
         {
             case DeliverDestination.None: break;
             case DeliverDestination.Player:
-                await OnHandleCustomPacket(request.GetCustomPacketArray());
                 break;
             case DeliverDestination.PlayRoom: 
                 break;

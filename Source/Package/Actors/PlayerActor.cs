@@ -45,7 +45,7 @@ public class PlayerState
     }
 }
 
-[GenerateSerializer] //public record PlayRoomMember(Guid RoomId, Guid PlayerId, string PlayerName, byte[]? PlayerExtendData);
+[GenerateSerializer] 
 public class PlayRoomMember
 {
     public PlayRoomMember(Guid roomId, Guid playerId, string playerName, byte[]? playerExtendData)
@@ -62,6 +62,7 @@ public class PlayRoomMember
     public Guid PlayerId { get; set; }
     [Id(2)]
     public string PlayerName { get; set; }
+    // One time use only.
     [Id(3)]
     public byte[]? PlayerExtendData { get; set; }
 
@@ -195,7 +196,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         bool needToUpdateDb = false;
         if (_playerCustomBehavior != null)
         {
-            needToUpdateDb = await _playerCustomBehavior.OnLogoutAsync(_playerState, cancellationToken);
+            needToUpdateDb = await _playerCustomBehavior.OnLogoutAsync(cancellationToken);
         }
 
         _ctsForRunRoutingPackets?.Cancel();
@@ -240,24 +241,18 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     {
         if(_playerCustomBehavior is not null)
         {
-            return _playerCustomBehavior.SerializePlayerExtendData(_playerState.Extension);
+            return _playerCustomBehavior.GetPlayerCustomState().Serialize(_playerState.Extension);
         }
-        else
-        {
-            return Array.Empty<byte>();
-        }
+        return [];
     }
 
     protected Dictionary<string, object?> DeserializePlayerExtendData(byte[] data)
     {
         if(_playerCustomBehavior is not null)
         {
-            return _playerCustomBehavior.DeserializePlayerExtendData(data);
+            return _playerCustomBehavior.GetPlayerCustomState().Deserialize(data);
         }
-        else
-        {
-            return new Dictionary<string, object?>(capacity: 0);
-        }
+        return new Dictionary<string, object?>(capacity: 0);
     }
 
     public async Task<PacketErrorCodes> SendDirectDeliverData(Guid toPlayerId, string message, DirectDeliveryDataType dataType)
@@ -288,7 +283,13 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(newPlayRoomId);
 
         // Supply initial data to play room.
-        (PacketErrorCodes errorCode, byte[]? serializedPlayRoomState) = await playRoomActor.SetRoomInformation(roomName, isPrivate, maxCapacity, roomPassword, BuildPlayerRoomMember(newPlayRoomId));
+        (PacketErrorCodes errorCode, byte[]? serializedPlayRoomState) = 
+            await playRoomActor.SetRoomInformation(
+                roomName, 
+                isPrivate, 
+                maxCapacity, 
+                roomPassword, 
+                BuildPlayerRoomMember(newPlayRoomId));
         
         // Just remember rooms I joined.
         _joinedRoomList.Add(newPlayRoomId);
@@ -311,6 +312,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
             return (PacketErrorCodes.RoomNotFound, Array.Empty<byte>());
         }
         var(result, playRoomCustomState) = await playRoomActor.JoinPlayer(BuildPlayerRoomMember(roomId));
+        
         if(result == PacketErrorCodes.Success)
         {
             _joinedRoomList.Add(roomId);
@@ -411,17 +413,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     }
 
     public Guid PlayerId => GrainContext.GrainId.GetGuidKey();
-
-
     
-
-    public async Task OnHandleCustomPacket(byte[] customPacket)
-    {
-        if(_playerCustomBehavior is not null)
-        {
-            await _playerCustomBehavior.HandleCustomPacket(customPacket);
-        }
-    }
 }
 
 

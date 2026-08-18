@@ -55,21 +55,18 @@ public class TGamePlayRoomCustomBehavior : IPlayRoomCustomEventHandler
     public Task<IPlayRoomCustomState> OnPlayRoomInitializingAsync()
     {
         _playerIds.Clear();
+        return Task.FromResult(_playRoomCustomState);
     }
 
     public Task OnPlayRoomDestroyingAsync()
     {
         _playerIds.Clear();
-    }
-
-    public Task OnHandleCustomPacket(byte[] customPacket)
-    {
-        throw new NotImplementedException();
+        return Task.CompletedTask;
     }
 
     public IPlayRoomCustomState DeserializePlayRoomState(byte[] roomMetaData)
     {
-        throw new NotImplementedException();
+        return _playRoomCustomState;
     }
 
     public byte[] SerializePlayRoomState(IPlayRoomCustomState playRoomCustomState)
@@ -77,10 +74,13 @@ public class TGamePlayRoomCustomBehavior : IPlayRoomCustomEventHandler
         throw new NotImplementedException();
     }
 
-    public Task AddPlayerToPlayRoom(Guid id, IPlayerCustomState playerCustomState)
+    public Task AddPlayerToPlayRoom(Guid id, byte[] playerCustomState)
     {
         _playerIds.Add(id);
-        _playerCustomStates.Add(id, playerCustomState);
+        
+        //_playerCustomStates.Add(id, _playRoomCustomState.Deserialize(playerCustomState));
+
+        return Task.CompletedTask;
     }
 
     public Task<(Dictionary<Guid, byte[]>, byte[]?)> OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
