@@ -29,10 +29,10 @@ public class SyncnetActorApplicationBuilder : SyncnetBaseApplicationBuilder<Sync
         }
         Builder.AddSyncnetPlatformSilo(_options.LoggerConfigure, _options.TelemetryConfigure, entryAssembly.GetName().Name);
 
-        if(_options.PlayerDataExtendCreateType is Type PlayerDataExtendType )
-            Builder.Services.AddTransient(typeof(IPlayerDataExtendCreater), PlayerDataExtendType);
-        if (_options.PlayerCustomBehaviorType is Type PlayerCustomBehaviorType)
-            Builder.Services.AddTransient(typeof(IPlayerCustomBehavior), PlayerCustomBehaviorType);
+        if(_options.PlayerDataExtendCreateType is { } playerDataExtendType )
+            Builder.Services.AddTransient(typeof(IPlayerDataExtendCreater), playerDataExtendType);
+        if (_options.PlayerCustomBehaviorType is { } playerCustomBehaviorType)
+            Builder.Services.AddTransient(typeof(IPlayerCustomBehavior), playerCustomBehaviorType);
 
         var webApp = Builder.Build();
         return new SyncnetActorApplication(webApp, _options);
