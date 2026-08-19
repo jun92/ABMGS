@@ -148,17 +148,18 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         _players.Clear();
     }
 
-    public async Task OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
+    public async Task<PacketErrorCodes> OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
     {
         if(_playRoomCustomEventHandler is not null)
         {
             // Custom processing 
-            (Dictionary<Guid,byte[]> updatedPlayerExtendData, byte[]? updatedPlayRoomCustomState) = await _playRoomCustomEventHandler.OnPlayerActionToPlayRoom(playerId, actionType, actionParameter);
+            (Dictionary<Guid,byte[]> updatedPlayerExtendData, byte[]? updatedPlayRoomCustomState) = 
+                await _playRoomCustomEventHandler.OnPlayerActionToPlayRoom(playerId, actionType, actionParameter);
             
             
-            // Broadcasting to all players
             if( updatedPlayRoomCustomState is not null)
             {
+                // Broadcasting to all players due to playroom state changed.
                 foreach (PlayRoomMember member in _players)
                 {
                     IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(member.PlayerId);
@@ -176,5 +177,6 @@ public class PlayRoomActor : Grain, IPlayRoomActor
                 }
             }
         }
+        return PacketErrorCodes.Success;
     }
 }

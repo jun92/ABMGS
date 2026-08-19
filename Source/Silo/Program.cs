@@ -45,8 +45,8 @@ builder.ConfigureActor(option =>
 });
 
 //Custom classes for play room supporting.
-builder.Services.AddTransient<IPlayRoomCustomState, MyPlayRoomCustomState>();
-builder.Services.AddTransient<IPlayRoomCustomEventHandler, MyPlayRoomCustomBehavior>();
+builder.Services.AddTransient<IPlayRoomCustomState, TttGamePlayRoomState>();
+builder.Services.AddTransient<IPlayRoomCustomEventHandler, TttGamePlayRoomCustomBehavior>();
 
 
 

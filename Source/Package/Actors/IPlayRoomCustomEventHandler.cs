@@ -9,7 +9,7 @@ public interface IPlayRoomCustomEventHandler
     IPlayRoomCustomState DeserializePlayRoomState(byte[] roomMetaData);
     byte[]  SerializePlayRoomState(IPlayRoomCustomState playRoomCustomState);
 
-    Task AddPlayerToPlayRoom(Guid id, byte[] playerCustomState);
+    Task AddPlayerToPlayRoom(Guid id, byte[] playerExtendData);
 
     Task<(Dictionary<Guid, byte[]>, byte[]?)> OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter);
     Task OnTimer(float delta);

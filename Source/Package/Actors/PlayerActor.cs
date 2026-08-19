@@ -311,7 +311,8 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         {
             return (PacketErrorCodes.RoomNotFound, Array.Empty<byte>());
         }
-        var(result, playRoomCustomState) = await playRoomActor.JoinPlayer(BuildPlayerRoomMember(roomId));
+        var(result, playRoomCustomState) = 
+            await playRoomActor.JoinPlayer(BuildPlayerRoomMember(roomId));
         
         if(result == PacketErrorCodes.Success)
         {

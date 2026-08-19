@@ -17,6 +17,6 @@ public interface IPlayRoomActor : IGrainWithGuidKey
     [Alias("SetRoomInformation")]
     Task<(PacketErrorCodes, byte[]?)> SetRoomInformation(string displayName, bool isPrivate, int maxCapacity, string roomPassword, PlayRoomMember owner);
     [Alias("OnPlayerActionToPlayRoom")]
-    Task OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter);
+    Task<PacketErrorCodes> OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter);
 }
 
