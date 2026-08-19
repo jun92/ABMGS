@@ -30,7 +30,15 @@ public class TttGamePlayRoomState : IPlayRoomCustomState
     public int _turnIndex = 0;
     public Guid _currentTurnPlayerId = Guid.Empty;
     // Board state. 
-    public CellInfo[,] _playBoard = new CellInfo[3, 3]; 
+    public CellInfo[,] _playBoard = new CellInfo[3, 3];
+
+    public int CurrentInCount
+    {
+        get
+        {
+            return _playerCustomStates.Count(); 
+        }
+    }
     
     private readonly Dictionary<Guid, Dictionary<string, object?>> _playerCustomStates = new();
 
@@ -84,12 +92,17 @@ public class TttGamePlayRoomCustomBehavior(
         throw new NotImplementedException();
     }
 
-    public Task AddPlayerToPlayRoom(Guid id, byte[] playerExtendDataArray)
+    public Task<int> AddPlayerToPlayRoom(Guid id, byte[] playerExtendDataArray)
     {
         if (playerExtendDataArray.Length == 0)
         {
             _tttGamePlayRoomState!.AddPlayer(id, new Dictionary<string, object?>(capacity:0));
-            return Task.CompletedTask;
+            return Task.FromResult(0);
+        }
+
+        if (_tttGamePlayRoomState!.CurrentInCount >= 2)
+        {
+            return Task.FromResult(-1);
         }
         
         // FlatBuffer parsing, use your favorite serialize library. ex) protoBuf, json, etc.
@@ -102,12 +115,11 @@ public class TttGamePlayRoomCustomBehavior(
             {TttGamePlayerModelExtend.LoseCount, playerExtendData.LoseCount},
             {TttGamePlayerModelExtend.PlayCount, playerExtendData.PlayCount},
         } );
-        return Task.CompletedTask;
+        return Task.FromResult(0);
     }
     public Task<(Dictionary<Guid, byte[]>, byte[]?)> OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
     {
         throw new NotImplementedException();
-        // return (new Dictionary<Guid, byte[]>(), new byte[8]);
     }
 
     public Task OnTimer(float delta)
