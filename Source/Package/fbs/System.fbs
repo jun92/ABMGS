@@ -34,8 +34,7 @@ union SystemPacket {
     ResBroadcastRoom,
     BroadcastRoom,
     ReqUpdatePlayerName,
-    ResUpdatePlayerName,
-    DeliverCustomPacket
+    ResUpdatePlayerName
 }
 
 table PacketWrapper {

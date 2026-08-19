@@ -395,17 +395,3 @@ internal class BroadcastRoomPacketBuilder : PacketBABuilder<BroadcastRoomArgs>
         return Wrap(builder, SystemPacket.BroadcastRoom, BroadcastRoom.EndBroadcastRoom(builder).Value);
     }
 }
-internal class DeliverCustomPacketBuilder : PacketBABuilder<DeliverCustomPacketArgs>
-{
-    public override byte[] Build(DeliverCustomPacketArgs args)
-    {
-        var builder = CreateBuilder();
-        
-        VectorOffset customPacketVectorOffset = DeliverCustomPacket.CreateCustomPacketVector(builder, args.CustomData);
-        DeliverCustomPacket.StartDeliverCustomPacket(builder);
-        DeliverCustomPacket.AddDestination(builder, args.Dest);
-        DeliverCustomPacket.AddCustomPacket(builder, customPacketVectorOffset);
-
-        return Wrap(builder, SystemPacket.DeliverCustomPacket, DeliverCustomPacket.EndDeliverCustomPacket(builder).Value);
-    }
-}

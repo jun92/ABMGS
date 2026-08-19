@@ -146,18 +146,7 @@ public partial class PlayerActor
             new ResLeaveRoomArgs(result)
             ));
     }
-    [PacketHandler(typeof(DeliverCustomPacket))]
-    public async Task HandleDeliverCustomPacket(DeliverCustomPacket request)
-    {
-        switch(request.Destination)
-        {
-            case DeliverDestination.None: break;
-            case DeliverDestination.Player:
-                break;
-            case DeliverDestination.PlayRoom: 
-                break;
-        }
-    }
+    
     [PacketHandler(typeof(ReqPlayerActionToPlayRoom))]
     public async Task HandleReqPlayerActionToPlayRoom(ReqPlayerActionToPlayRoom request)
     {
@@ -178,6 +167,8 @@ public partial class PlayerActor
             this.GetGrainId().GetGuidKey(), 
             request.ActionType, 
             request.GetActionParameterArray());
+        
+        
 
     }
     

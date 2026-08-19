@@ -42,4 +42,3 @@ namespace SyncnetPlatform.Network.Utils;
 [GenerateSerializer] public record ResBroadcastRoomArgs(PacketErrorCodes result) : IPacketBuildArgs;
 [GenerateSerializer] public record BroadcastRoomArgs(Guid from, string message) : IPacketBuildArgs;
 
-[GenerateSerializer] public record DeliverCustomPacketArgs(DeliverDestination Dest, byte[] CustomData) : IPacketBuildArgs;
