@@ -1,6 +1,9 @@
 using Google.FlatBuffers;
 using SyncnetPlatform.Extensions;
 using SyncnetPlatform.Protocols.Generated;
+using System;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace SyncnetPlatform.Tests;
 
@@ -11,9 +14,9 @@ public partial class ABMGS_TestMain : IAsyncLifetime
     {
         var wsClient = await CreateAuthoredWebSocket();
 
-        string RandomPlayerName = "Guest" + CreateRandomString(6);
+        string randomPlayerName = "Guest" + CreateRandomString(6);
 
-        var (result, packetWrapper) = await SendAndReceive(wsClient, BuildUpdatePlayerNamePacket(RandomPlayerName));
+        var (result, packetWrapper) = await SendAndReceive(wsClient, BuildUpdatePlayerNamePacket(randomPlayerName));
 
         _output.WriteLine($"Count: {result.Count}");
         Assert.True(result.EndOfMessage);
@@ -26,7 +29,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
 
         Assert.True(result.EndOfMessage);
 
-        Assert.Equal(RandomPlayerName, packetWrapper.SystemPacketAsResUserInfo().Name);
+        Assert.Equal(randomPlayerName, packetWrapper.SystemPacketAsResUserInfo().Name);
 
         await CloseAuthoredWebSocket(wsClient);
     }
