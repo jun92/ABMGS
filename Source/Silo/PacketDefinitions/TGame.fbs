@@ -18,6 +18,8 @@ union TGameActionParameters {
     TGameResStartGame,
     TGameReqEndGame,
     TGameResEndGame,
+    TGameReqActionSetReady,
+    TGameResActionSetReady,
     TGameReqActionPutItem,
     TGameResActionPutItem,
     OnUpdatePlayBoard
@@ -39,6 +41,16 @@ table TGameReqEndGame {
 table TGameResEndGame {
     result: bool;
     error_code: int;
+}
+
+table TGameReqActionSetReady {
+    player_id: string;
+    ready_state: bool;
+}
+
+table TGameResActionSetReady {
+    error_code: int;
+   
 }
 
 table TGameReqActionPutItem {

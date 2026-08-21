@@ -12,9 +12,11 @@ public enum TGameActionParameters : byte
   TGameResStartGame = 2,
   TGameReqEndGame = 3,
   TGameResEndGame = 4,
-  TGameReqActionPutItem = 5,
-  TGameResActionPutItem = 6,
-  OnUpdatePlayBoard = 7,
+  TGameReqActionSetReady = 5,
+  TGameResActionSetReady = 6,
+  TGameReqActionPutItem = 7,
+  TGameResActionPutItem = 8,
+  OnUpdatePlayBoard = 9,
 };
 
 
@@ -37,6 +39,12 @@ static public class TGameActionParametersVerify
         break;
       case TGameActionParameters.TGameResEndGame:
         result = TGame.Packets.TGameResEndGameVerify.Verify(verifier, tablePos);
+        break;
+      case TGameActionParameters.TGameReqActionSetReady:
+        result = TGame.Packets.TGameReqActionSetReadyVerify.Verify(verifier, tablePos);
+        break;
+      case TGameActionParameters.TGameResActionSetReady:
+        result = TGame.Packets.TGameResActionSetReadyVerify.Verify(verifier, tablePos);
         break;
       case TGameActionParameters.TGameReqActionPutItem:
         result = TGame.Packets.TGameReqActionPutItemVerify.Verify(verifier, tablePos);
