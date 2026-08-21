@@ -3,6 +3,7 @@ using SyncnetPlatform.Actors;
 using SyncnetPlatform.ApplicationBuilder.Options;
 using SyncnetPlatform.Databases;
 using SyncnetPlatform.Extensions;
+using System;
 using System.Reflection;
 
 namespace SyncnetPlatform.ApplicationBuilder;

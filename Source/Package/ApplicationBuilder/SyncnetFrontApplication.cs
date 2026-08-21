@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using SyncnetPlatform.ApplicationBuilder.Options;
 using SyncnetPlatform.Extensions;
+using System.Threading.Tasks;
 
 namespace SyncnetPlatform.ApplicationBuilder;
 
