@@ -2,6 +2,7 @@ using Google.FlatBuffers;
 using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Protocols.Generated;
+using System.Threading.Tasks;
 
 namespace SyncnetPlatform.Interfaces.Network.Utils;
 
