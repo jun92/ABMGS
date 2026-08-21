@@ -1,7 +1,10 @@
 using Google.FlatBuffers;
 using SyncnetPlatform.Extensions;
 using SyncnetPlatform.Protocols.Generated;
+using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Numerics;
 
 namespace SyncnetPlatform.Network.Utils;
 
@@ -209,7 +212,7 @@ internal class OnPlayerJoinRoomPacketBuilder : PacketBABuilder<OnPlayerJoinRoomA
     {
         var builder = CreateBuilder();
         StringOffset playerName = builder.CreateString(args.playerName);
-        VectorOffset playerCustomData = OnPlayerJoinRoom.CreateJoinerMetadataVector(builder, args.PlayerMetadata ?? Array.Empty<byte>());
+        VectorOffset playerCustomData = OnPlayerJoinRoom.CreateJoinerMetadataVector(builder, args.PlayerMetadata ?? []);
         
         OnPlayerJoinRoom.StartOnPlayerJoinRoom(builder);
         OnPlayerJoinRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
@@ -317,11 +320,26 @@ internal class ResPlayerActionToPlayRoomPacketBuilder : PacketBABuilder<ResPlaye
     }
 }
 
+internal class OnPlayerActionToPlayRoomResultPacketBuilder : PacketBABuilder<OnPlayerActionToPlayRoomResultArgs>
+{
+    public override byte[] Build(OnPlayerActionToPlayRoomResultArgs args)
+    {
+        FlatBufferBuilder builder = CreateBuilder();
+        VectorOffset actionParameterResult =
+            OnPlayerActionToPlayRoomResult.CreateActionParameterResultVector(builder,args.ActionParameterResult);
+        StringOffset actionType = builder.CreateString(args.ActionType);
+        OnPlayerActionToPlayRoomResult.StartOnPlayerActionToPlayRoomResult(builder);
+        OnPlayerActionToPlayRoomResult.AddActionType(builder, actionType);
+        OnPlayerActionToPlayRoomResult.AddActionParameterResult(builder, actionParameterResult);
+        return Wrap(builder, SystemPacket.OnPlayerActionToPlayRoomResult,  OnPlayerActionToPlayRoomResult.EndOnPlayerActionToPlayRoomResult(builder).Value);
+    }
+}
+
 internal class ReqLeaveRoomPacketBuilder : PacketBABuilder<ReqLeaveRoomArgs>
 {
     public override byte[] Build(ReqLeaveRoomArgs args)
     {
-        var builder = CreateBuilder();
+        FlatBufferBuilder builder = CreateBuilder();
         ReqLeaveRoom.StartReqLeaveRoom(builder);
         ReqLeaveRoom.AddRoomId(builder, args.roomId.ToGuidType(builder));
         return Wrap(builder, SystemPacket.ReqLeaveRoom, ReqLeaveRoom.EndReqLeaveRoom(builder).Value);

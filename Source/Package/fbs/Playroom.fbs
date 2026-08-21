@@ -53,6 +53,11 @@ table ResPlayerActionToPlayRoom {
     result: PacketErrorCodes;
     app_error_code: int;
 }
+// After processing player's specific action result, and then let clients know what happened and what should do next.
+table OnPlayerActionToPlayRoomResult {
+    action_type: string;
+    action_parameter_result: [ubyte];
+}
 
 // 게임모드 진행에 변경 사항에 생겼을 경우 전체에 브로드 캐스팅
 table OnPlayRoomStateUpdate  {
