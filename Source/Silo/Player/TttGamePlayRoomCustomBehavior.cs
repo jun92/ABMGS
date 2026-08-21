@@ -1,6 +1,11 @@
 using Google.FlatBuffers;
 using Silo.Models;
 using SyncnetPlatform.Actors;
+using SyncnetPlatform.Network.Buffers;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using TGame.Packets;
 
 namespace Silo.Player;
@@ -11,6 +16,12 @@ public enum CellState
     Empty,
     X,
     O
+}
+
+public class Command
+{
+    public const string Ready = "Ready";
+    public const string PutMarker = "Put";
 }
 
 public class CellInfo
@@ -25,12 +36,14 @@ public class TttGamePlayRoomState : IPlayRoomCustomState
     // Storing player id
     //public List<Guid> _playerIds = new();
     // Stating player ready or not 
-    public List<bool> _playerReadyState = new();
+    public Dictionary<Guid, bool> _playerReadyState = new();
     // Indicate who is currently on.
     public int _turnIndex = 0;
     public Guid _currentTurnPlayerId = Guid.Empty;
     // Board state. 
     public CellInfo[,] _playBoard = new CellInfo[3, 3];
+
+    public int MaxPlayerNum = 2;
 
     public int CurrentInCount
     {
@@ -45,6 +58,7 @@ public class TttGamePlayRoomState : IPlayRoomCustomState
     public void AddPlayer(Guid id, Dictionary<string, object?> extendData)
     {
         _playerCustomStates.TryAdd(id, extendData);
+        _playerReadyState.Add(id, false);
     }
 
     public void RemovePlayer(Guid id)
@@ -62,6 +76,12 @@ public class TttGamePlayRoomState : IPlayRoomCustomState
     {
         throw new NotImplementedException();
     }
+
+    public bool SetPlayerReady(Guid playerId, bool  readyState)
+    {
+        _playerReadyState[playerId] = readyState;
+        return _playerReadyState.Count(c => c.Value == true) == MaxPlayerNum;
+    }
 }
 
 public class TttGamePlayRoomCustomBehavior(
@@ -69,6 +89,8 @@ public class TttGamePlayRoomCustomBehavior(
     ) : IPlayRoomCustomEventHandler
 {
     private TttGamePlayRoomState? _tttGamePlayRoomState;
+    
+    private Dictionary<Guid, Queue<byte[]>> _sendQueue = new();
 
     public Task<IPlayRoomCustomState> OnPlayRoomInitializingAsync()
     {
@@ -117,9 +139,30 @@ public class TttGamePlayRoomCustomBehavior(
         } );
         return Task.FromResult(0);
     }
-    public Task<(Dictionary<Guid, byte[]>, byte[]?)> OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
+    public Task<(Dictionary<Guid, byte[]>, byte[]?)> OnPlayerActionToPlayRoom(Guid playerId, string actionType,
+        byte[] actionParameter, IPlayRoomSendBuffer sendBuffer)
     {
-        throw new NotImplementedException();
+        switch (actionType)
+        {
+            case Command.Ready:
+                TGameReqActionSetReady readyState = TGameReqActionSetReady.GetRootAsTGameReqActionSetReady(new ByteBuffer(actionParameter));
+                int result = OnReqPlayerReady(new Guid(readyState.PlayerId), readyState.ReadyState);
+                ;
+                break;
+            case Command.PutMarker:
+                break;
+        }
+        return Task.FromResult<(Dictionary<Guid, byte[]>, byte[]?)>(([], []));
+    }
+
+    private int OnReqPlayerReady(Guid playerId, bool readyState)
+    {
+        bool IsAllReady = _tttGamePlayRoomState.SetPlayerReady(playerId, readyState);
+        if (IsAllReady)
+        {
+            // Start a new game.
+        }
+        return 0;
     }
 
     public Task OnTimer(float delta)

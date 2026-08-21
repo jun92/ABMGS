@@ -1,3 +1,4 @@
+using SyncnetPlatform.Network.Buffers;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -15,6 +16,6 @@ public interface IPlayRoomCustomEventHandler
 
     Task<int> AddPlayerToPlayRoom(Guid id, byte[] playerExtendData);
 
-    Task<(Dictionary<Guid, byte[]>, byte[]?)> OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter);
+    Task<(Dictionary<Guid, byte[]>, byte[]?)> OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter, IPlayRoomSendBuffer sendBuffer);
     Task OnTimer(float delta);
 }

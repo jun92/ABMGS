@@ -1,6 +1,14 @@
 using Microsoft.Extensions.Logging;
+using Orleans;
+using Orleans.Runtime;
 using SyncnetPlatform.Interfaces.Actors;
+using SyncnetPlatform.Network.Buffers;
 using SyncnetPlatform.Protocols.Generated;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SyncnetPlatform.Actors;
 
@@ -15,15 +23,18 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     private Guid _ownerPlayerId = Guid.Empty;
     private IDisposable? _playRoomTimer;
     private readonly PlayRoomState _playRoomState = new();
+    private readonly IPlayRoomSendBuffer _playRoomSendBuffer;
 
     //Customizations
     private readonly IPlayRoomCustomEventHandler? _playRoomCustomEventHandler = null;
     public PlayRoomActor(
         ILogger<PlayRoomActor> logger,
+        IPlayRoomSendBuffer playRoomSendBuffer,
         IPlayRoomCustomEventHandler? playRoomCustomEventHandler = null
         )
     {
         _logger = logger;
+        _playRoomSendBuffer = playRoomSendBuffer;
         if( playRoomCustomEventHandler is not null)
         {
             _playRoomCustomEventHandler = playRoomCustomEventHandler;
@@ -154,7 +165,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         {
             // Custom processing 
             (Dictionary<Guid,byte[]> updatedPlayerExtendData, byte[]? updatedPlayRoomCustomState) = 
-                await _playRoomCustomEventHandler.OnPlayerActionToPlayRoom(playerId, actionType, actionParameter);
+                await _playRoomCustomEventHandler.OnPlayerActionToPlayRoom(playerId, actionType, actionParameter, TODO);
             
             
             if( updatedPlayRoomCustomState is not null)
