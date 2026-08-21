@@ -6,7 +6,6 @@ using SyncnetPlatform.Network.Attributes;
 using SyncnetPlatform.Protocols.Generated;
 using SyncnetPlatform.Extensions;
 using SyncnetPlatform.Network.Utils;
-using SyncnetPlatform.Network.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
