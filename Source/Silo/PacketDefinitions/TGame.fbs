@@ -14,33 +14,27 @@ table TGameCellInfo  {
 }
 
 union TGameActionParameters {
-    TGameReqStartGame,
-    TGameResStartGame,
-    TGameReqEndGame,
-    TGameResEndGame,
+    TGamePlayRoomState,
+    TGameNotifyGameStarted,
     TGameReqActionSetReady,
     TGameResActionSetReady,
     TGameReqActionPutItem,
-    TGameResActionPutItem,
-    OnUpdatePlayBoard
+    TGameResActionPutItem
 }
 
-
-table TGameReqStartGame {
-
+table ReadyState {
+    player_id: string;
+    is_ready: bool;
 }
 
-table TGameResStartGame {
-    result: bool;
-    error_code: int;
+table TGamePlayRoomState {
+    ready_state: [ReadyState];
+    board_state: [TGameCellInfo];
+    current_turn_player_id: string;
 }
 
-table TGameReqEndGame {
-
-}
-table TGameResEndGame {
-    result: bool;
-    error_code: int;
+table TGameNotifyGameStarted {
+    start_player_id: string;
 }
 
 table TGameReqActionSetReady {
@@ -50,7 +44,6 @@ table TGameReqActionSetReady {
 
 table TGameResActionSetReady {
     error_code: int;
-   
 }
 
 table TGameReqActionPutItem {
@@ -63,10 +56,3 @@ table TGameResActionPutItem {
     error_code: int;
 }
 
-table OnUpdatePlayBoard {
-    board_info: [TGameCellInfo];
-}
-
-table OnTurnChanged {
-    on_turn_player_id: string;
-}

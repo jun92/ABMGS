@@ -13,9 +13,9 @@ namespace Silo.Player;
 
 public enum CellState
 {
-    Empty,
-    X,
-    O
+    Empty = 0,
+    X = 1,
+    O = 2
 }
 
 public class Command
@@ -66,10 +66,44 @@ public class TttGamePlayRoomState : IPlayRoomCustomState
         _playerCustomStates.Remove(id);
     }
     
-    // For sharing the data with clients
+    // For sharing the data with clients, In this case, I used FlatBuffer, but you can use any serializer you want. JSON, protoBuf.
     public byte[] Serialize()
     {
-        throw new NotImplementedException();
+        FlatBufferBuilder builder = new FlatBufferBuilder(4096);
+        
+        List<Offset<ReadyState>>  readyStates = new List<Offset<ReadyState>>();
+        foreach (var readyState in _playerReadyState)
+        {
+            StringOffset playerIdOffset = builder.CreateString(readyState.Key.ToString());
+            ReadyState.StartReadyState(builder);
+            ReadyState.AddIsReady(builder, readyState.Value);
+            ReadyState.AddPlayerId(builder, playerIdOffset);
+            Offset<ReadyState> offsetReadyState = ReadyState.EndReadyState(builder);
+            readyStates.Add(offsetReadyState);
+        }
+
+        StringOffset currentTurnPlayerIdOffset = builder.CreateString(_currentTurnPlayerId.ToString());
+        List<Offset<TGameCellInfo>> boradStates = new List<Offset<TGameCellInfo>>();
+        foreach (var b in _playBoard)
+        {
+            StringOffset markedPlayerIdOffset = builder.CreateString(b.PlayerId.ToString());
+            StringOffset markedTimeOffset = builder.CreateString(b.MarkedTime.ToString());
+            TGameCellInfo.StartTGameCellInfo(builder);
+            TGameCellInfo.AddMarkedPlayerId(builder, markedPlayerIdOffset);
+            TGameCellInfo.AddMarkedTime(builder, markedTimeOffset);
+            TGameCellInfo.AddMark(builder, Int32.Parse(b.State.ToString()) );
+            Offset<TGameCellInfo> cellInfoOffset = TGameCellInfo.EndTGameCellInfo(builder);
+            boradStates.Add(cellInfoOffset);
+        }
+        TGamePlayRoomState.StartTGamePlayRoomState(builder);
+        TGamePlayRoomState.CreateReadyStateVector(builder, readyStates.ToArray());
+        TGamePlayRoomState.CreateBoardStateVector(builder, boradStates.ToArray());
+        TGamePlayRoomState.AddCurrentTurnPlayerId(builder, currentTurnPlayerIdOffset);
+
+        Offset<TGamePlayRoomState> offset = TGamePlayRoomState.EndTGamePlayRoomState(builder);
+        builder.Finish(offset.Value);
+
+        return builder.SizedByteArray();
     }
 
     public void Deserialize(byte[] serialized)
@@ -104,15 +138,7 @@ public class TttGamePlayRoomCustomBehavior(
         return Task.CompletedTask;
     }
 
-    public IPlayRoomCustomState DeserializePlayRoomState(byte[] roomMetaData)
-    {
-        return playRoomCustomState;
-    }
-
-    public byte[] SerializePlayRoomState(IPlayRoomCustomState playRoomCustomState)
-    {
-        throw new NotImplementedException();
-    }
+    
 
     public Task<int> AddPlayerToPlayRoom(Guid id, byte[] playerExtendDataArray)
     {
@@ -139,7 +165,7 @@ public class TttGamePlayRoomCustomBehavior(
         } );
         return Task.FromResult(0);
     }
-    public Task<(Dictionary<Guid, byte[]>, byte[]?)> OnPlayerActionToPlayRoom(Guid playerId, string actionType,
+    public Task<(Dictionary<Guid, byte[]>?, byte[]?)> OnPlayerActionToPlayRoom(Guid playerId, string actionType,
         byte[] actionParameter, IPlayRoomSendBuffer sendBuffer)
     {
         switch (actionType)
@@ -147,17 +173,24 @@ public class TttGamePlayRoomCustomBehavior(
             case Command.Ready:
                 TGameReqActionSetReady readyState = TGameReqActionSetReady.GetRootAsTGameReqActionSetReady(new ByteBuffer(actionParameter));
                 int result = OnReqPlayerReady(new Guid(readyState.PlayerId), readyState.ReadyState);
-                ;
-                break;
+                if (result == 0)
+                {
+                    //let's assume 0 means all players are ready and good to start a new game.
+                    
+                    // sendBuffer.PushBuffer()
+                }
+
+                // play room state has changed. not player state
+                return Task.FromResult<(Dictionary<Guid, byte[]>?, byte[]?)>((null, _tttGamePlayRoomState!.Serialize()));
             case Command.PutMarker:
                 break;
         }
-        return Task.FromResult<(Dictionary<Guid, byte[]>, byte[]?)>(([], []));
+        return Task.FromResult<(Dictionary<Guid, byte[]>?, byte[]?)>((null, null));
     }
 
     private int OnReqPlayerReady(Guid playerId, bool readyState)
     {
-        bool IsAllReady = _tttGamePlayRoomState.SetPlayerReady(playerId, readyState);
+        bool IsAllReady = _tttGamePlayRoomState!.SetPlayerReady(playerId, readyState);
         if (IsAllReady)
         {
             // Start a new game.

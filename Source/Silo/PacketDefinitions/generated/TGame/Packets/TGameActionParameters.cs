@@ -8,15 +8,12 @@ namespace TGame.Packets
 public enum TGameActionParameters : byte
 {
   NONE = 0,
-  TGameReqStartGame = 1,
-  TGameResStartGame = 2,
-  TGameReqEndGame = 3,
-  TGameResEndGame = 4,
-  TGameReqActionSetReady = 5,
-  TGameResActionSetReady = 6,
-  TGameReqActionPutItem = 7,
-  TGameResActionPutItem = 8,
-  OnUpdatePlayBoard = 9,
+  TGamePlayRoomState = 1,
+  TGameNotifyGameStarted = 2,
+  TGameReqActionSetReady = 3,
+  TGameResActionSetReady = 4,
+  TGameReqActionPutItem = 5,
+  TGameResActionPutItem = 6,
 };
 
 
@@ -28,17 +25,11 @@ static public class TGameActionParametersVerify
     bool result = true;
     switch((TGameActionParameters)typeId)
     {
-      case TGameActionParameters.TGameReqStartGame:
-        result = TGame.Packets.TGameReqStartGameVerify.Verify(verifier, tablePos);
+      case TGameActionParameters.TGamePlayRoomState:
+        result = TGame.Packets.TGamePlayRoomStateVerify.Verify(verifier, tablePos);
         break;
-      case TGameActionParameters.TGameResStartGame:
-        result = TGame.Packets.TGameResStartGameVerify.Verify(verifier, tablePos);
-        break;
-      case TGameActionParameters.TGameReqEndGame:
-        result = TGame.Packets.TGameReqEndGameVerify.Verify(verifier, tablePos);
-        break;
-      case TGameActionParameters.TGameResEndGame:
-        result = TGame.Packets.TGameResEndGameVerify.Verify(verifier, tablePos);
+      case TGameActionParameters.TGameNotifyGameStarted:
+        result = TGame.Packets.TGameNotifyGameStartedVerify.Verify(verifier, tablePos);
         break;
       case TGameActionParameters.TGameReqActionSetReady:
         result = TGame.Packets.TGameReqActionSetReadyVerify.Verify(verifier, tablePos);
@@ -51,9 +42,6 @@ static public class TGameActionParametersVerify
         break;
       case TGameActionParameters.TGameResActionPutItem:
         result = TGame.Packets.TGameResActionPutItemVerify.Verify(verifier, tablePos);
-        break;
-      case TGameActionParameters.OnUpdatePlayBoard:
-        result = TGame.Packets.OnUpdatePlayBoardVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;
