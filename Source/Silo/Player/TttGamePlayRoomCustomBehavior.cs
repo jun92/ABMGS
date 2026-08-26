@@ -83,7 +83,7 @@ public class TttGamePlayRoomState : IPlayRoomCustomState
         }
 
         StringOffset currentTurnPlayerIdOffset = builder.CreateString(_currentTurnPlayerId.ToString());
-        List<Offset<TGameCellInfo>> boradStates = new List<Offset<TGameCellInfo>>();
+        List<Offset<TGameCellInfo>> boradStates = [];
         foreach (var b in _playBoard)
         {
             StringOffset markedPlayerIdOffset = builder.CreateString(b.PlayerId.ToString());
