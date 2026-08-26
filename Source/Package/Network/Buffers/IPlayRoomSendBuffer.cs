@@ -8,18 +8,19 @@ namespace SyncnetPlatform.Network.Buffers;
 
 public interface IPlayRoomSendBuffer
 {
-    void PushBuffer(Guid  playerId, byte[] buffer);
     List<Guid> GetPlayersHavePendingData();
-    byte[]? PopBuffer(Guid playerId);
+    void BroadcastToAll(byte[] buffer);
+    void BroadcastFiltered(List<Guid> playerIds, byte[] buffer);
 }
 
 public class PlayRoomSendBuffer : IPlayRoomSendBuffer
 {
     private readonly Dictionary<Guid, Queue<byte[]>> _sendBuffer = new();
+    private readonly Queue<byte[]> _sendBufferToAll = new();
 
-    public void PushBuffer(Guid playerId, byte[] buffer)
+    private void PushBuffer(Guid playerId, byte[] buffer)
     {
-        if (!_sendBuffer.ContainsKey(playerId))
+        if(!_sendBuffer.TryGetValue(playerId, out Queue<byte[]>? queue))
         {
             _sendBuffer[playerId] = new Queue<byte[]>();
         }
@@ -32,8 +33,25 @@ public class PlayRoomSendBuffer : IPlayRoomSendBuffer
             .Select(s => s.Key)
             .ToList();
 
-    public byte[]? PopBuffer(Guid playerId)
+    private byte[]? PopBuffer(Guid playerId)
     {
         return _sendBuffer[playerId].Count == 0 ? null : _sendBuffer[playerId].Dequeue();
     }
+
+    public byte[]? GetBufferForAllPlayers()
+    {
+        return _sendBufferToAll.Count == 0 ? null : _sendBufferToAll.Dequeue();
+    }
+
+    public void BroadcastToAll(byte[] buffer)
+    {
+        _sendBufferToAll.Enqueue(buffer);
+    }
+
+
+    public void BroadcastFiltered(List<Guid> playerIds, byte[] buffer)
+    {
+        playerIds.ForEach(p => PushBuffer(p, buffer));
+    }
+
 }

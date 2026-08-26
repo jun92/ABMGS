@@ -7,6 +7,7 @@ table TGamePlayerCustomData {
     play_count: int = 0;
 }
 
+// for other packets, not solo use.
 table TGameCellInfo  {
     marked_player_id: string;
     marked_time: string;
@@ -22,6 +23,7 @@ union TGameActionParameters {
     TGameResActionPutItem
 }
 
+// for TGamePlayRoomState.  not solo use.
 table ReadyState {
     player_id: string;
     is_ready: bool;

@@ -36,14 +36,14 @@ public class TttGamePlayRoomState : IPlayRoomCustomState
     // Storing player id
     //public List<Guid> _playerIds = new();
     // Stating player ready or not 
-    public Dictionary<Guid, bool> _playerReadyState = new();
+    public OrderedDictionary<Guid, bool> _playerReadyState = new();
     // Indicate who is currently on.
     public int _turnIndex = 0;
     public Guid _currentTurnPlayerId = Guid.Empty;
     // Board state. 
     public CellInfo[,] _playBoard = new CellInfo[3, 3];
 
-    public int MaxPlayerNum = 2;
+    public const int MaxPlayerNum = 2;
 
     public int CurrentInCount
     {
@@ -52,8 +52,25 @@ public class TttGamePlayRoomState : IPlayRoomCustomState
             return _playerCustomStates.Count(); 
         }
     }
+
+    public Guid GetPlayerIdInTurn()
+    {
+        var playerInTurn = _playerCustomStates.GetAt(_turnIndex);
+        return playerInTurn.Key;
+    }
+
+    public void TurnToNextPlayer()
+    {
+        _turnIndex++;
+        if (_turnIndex >= MaxPlayerNum )
+        {
+            _turnIndex = 0;
+        }
+    }
+
+    public List<Guid> GetBroadcastTargets() => [.. _playerCustomStates.Select(c => c.Key)];
     
-    private readonly Dictionary<Guid, Dictionary<string, object?>> _playerCustomStates = new();
+    private readonly OrderedDictionary<Guid, Dictionary<string, object?>> _playerCustomStates = new();
 
     public void AddPlayer(Guid id, Dictionary<string, object?> extendData)
     {
@@ -171,13 +188,25 @@ public class TttGamePlayRoomCustomBehavior(
         switch (actionType)
         {
             case Command.Ready:
+                // Packet parsing.
                 TGameReqActionSetReady readyState = TGameReqActionSetReady.GetRootAsTGameReqActionSetReady(new ByteBuffer(actionParameter));
+                
+                // Processing.
                 int result = OnReqPlayerReady(new Guid(readyState.PlayerId), readyState.ReadyState);
                 if (result == 0)
                 {
                     //let's assume 0 means all players are ready and good to start a new game.
                     
-                    // sendBuffer.PushBuffer()
+                    // Use your serializer 
+                    FlatBufferBuilder builder = new FlatBufferBuilder(4096);
+                    var offset = TGameNotifyGameStarted.CreateTGameNotifyGameStarted(builder, builder.CreateString(_tttGamePlayRoomState!.GetPlayerIdInTurn().ToString()));
+                    builder.Finish(offset.Value);
+                    byte[] dataToSend = builder.SizedByteArray();
+
+                    // 
+                    List<Guid> players = _tttGamePlayRoomState.GetBroadcastTargets();
+                    
+                    sendBuffer.BroadcastFiltered(players, dataToSend);
                 }
 
                 // play room state has changed. not player state
