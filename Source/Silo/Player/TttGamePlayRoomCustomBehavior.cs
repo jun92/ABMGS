@@ -18,7 +18,7 @@ public enum CellState
     O = 2
 }
 
-public class Command
+public struct Command
 {
     public const string Ready = "Ready";
     public const string PutMarker = "Put";
@@ -33,23 +33,34 @@ public class CellInfo
 
 public class TttGamePlayRoomState : IPlayRoomCustomState
 {
-    // Storing player id
-    //public List<Guid> _playerIds = new();
-    // Stating player ready or not 
-    public OrderedDictionary<Guid, bool> _playerReadyState = new();
-    // Indicate who is currently on.
-    public int _turnIndex = 0;
-    public Guid _currentTurnPlayerId = Guid.Empty;
-    // Board state. 
-    public CellInfo[,] _playBoard = new CellInfo[3, 3];
+    private OrderedDictionary<Guid, bool> _playerReadyState = new();
+    private int _turnIndex = 0;
+    private Guid _currentTurnPlayerId = Guid.Empty;
+    private readonly CellInfo[,] _playBoard = new CellInfo[3, 3];
+    private const int MaxPlayerNum = 2;
+    private Guid _winnerPlayerId = Guid.Empty;
 
-    public const int MaxPlayerNum = 2;
+    public TttGamePlayRoomState()
+    {
+        ResetBoard();
+    }
 
     public int CurrentInCount
     {
         get
         {
             return _playerCustomStates.Count(); 
+        }
+    }
+
+    private void ResetBoard()
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            for (int j = 0; j < 3; j++)
+            {
+                _playBoard[i, j] = new CellInfo();
+            }
         }
     }
 
@@ -66,6 +77,79 @@ public class TttGamePlayRoomState : IPlayRoomCustomState
         {
             _turnIndex = 0;
         }
+    }
+
+    public bool PutMarket(int x, int y, Guid playerId)
+    {
+        
+        //early exit check.
+        if (x < 0 || x > 2 || y < 0 || y > 2) return false;
+        if (_playBoard[x, y].PlayerId != Guid.Empty) return false;
+        
+        // Decide player's mark symbol.
+        CellState thisPlayerMark = CellState.X;
+        if (_playerCustomStates.GetAt(0).Key == playerId)
+        {
+            thisPlayerMark = CellState.O;
+        }
+        _playBoard[x,y] = new CellInfo
+        {
+             PlayerId = playerId,
+             MarkedTime = DateTime.UtcNow,
+             State = thisPlayerMark
+        };
+        return true;
+    }
+
+    private bool IsGameOver()
+    {
+        // vertical check.
+        for (int i = 0; i < 3; i++)
+        {
+            if (_playBoard[0,i].PlayerId != Guid.Empty && 
+                Enumerable.Range(0, 3).All(j => _playBoard[j, i].PlayerId.Equals(_playBoard[0, i].PlayerId)))
+            {
+                _winnerPlayerId = _playBoard[0, i].PlayerId;
+                return true;
+            }
+        }
+
+        // horizonal check
+        for (int i = 0; i < 3; i++)
+        {
+            if (_playBoard[i,0].PlayerId != Guid.Empty &&
+                Enumerable.Range(0, 3).All(j => _playBoard[i, j].PlayerId.Equals(_playBoard[i, 0].PlayerId)))
+            {
+                _winnerPlayerId = _playBoard[i, 0].PlayerId;
+                return true;
+            }
+        }
+
+        if (_playBoard[1, 1].PlayerId != Guid.Empty)
+        {
+            //Diagonal check.
+            // [ \ ] check
+            if ( _playBoard[0, 0].PlayerId == _playBoard[1, 1].PlayerId &&
+                 _playBoard[1, 1].PlayerId == _playBoard[2, 2].PlayerId)
+            {
+                _winnerPlayerId = _playBoard[1, 1].PlayerId;
+                return true;
+            }
+            // [ / ] check
+            if ( _playBoard[2, 0].PlayerId == _playBoard[1, 1].PlayerId &&
+                 _playBoard[1, 1].PlayerId == _playBoard[0, 2].PlayerId)
+            {
+                _winnerPlayerId = _playBoard[1, 1].PlayerId;
+                return true;
+            }
+        }
+
+        if (_playBoard.Cast<CellInfo>().All(c => c.PlayerId != Guid.Empty))
+        {
+            _winnerPlayerId = Guid.Empty;
+            return true;
+        }
+        return false;
     }
 
     public List<Guid> GetBroadcastTargets() => [.. _playerCustomStates.Select(c => c.Key)];
@@ -188,33 +272,45 @@ public class TttGamePlayRoomCustomBehavior(
         switch (actionType)
         {
             case Command.Ready:
-                // Packet parsing.
-                TGameReqActionSetReady readyState = TGameReqActionSetReady.GetRootAsTGameReqActionSetReady(new ByteBuffer(actionParameter));
-                
-                // Processing.
-                int result = OnReqPlayerReady(new Guid(readyState.PlayerId), readyState.ReadyState);
-                if (result == 0)
-                {
-                    //let's assume 0 means all players are ready and good to start a new game.
-                    
-                    // Use your serializer 
-                    FlatBufferBuilder builder = new FlatBufferBuilder(4096);
-                    var offset = TGameNotifyGameStarted.CreateTGameNotifyGameStarted(builder, builder.CreateString(_tttGamePlayRoomState!.GetPlayerIdInTurn().ToString()));
-                    builder.Finish(offset.Value);
-                    byte[] dataToSend = builder.SizedByteArray();
-
-                    // 
-                    List<Guid> players = _tttGamePlayRoomState.GetBroadcastTargets();
-                    
-                    sendBuffer.BroadcastFiltered(players, dataToSend);
-                }
-
+                HandleReqPlayerReady(actionParameter, playerId, sendBuffer);
                 // play room state has changed. not player state
                 return Task.FromResult<(Dictionary<Guid, byte[]>?, byte[]?)>((null, _tttGamePlayRoomState!.Serialize()));
             case Command.PutMarker:
                 break;
         }
         return Task.FromResult<(Dictionary<Guid, byte[]>?, byte[]?)>((null, null));
+    }
+
+    private void HandleReqPutMarker(byte[] parameter, Guid playerId, IPlayRoomSendBuffer sendBuffer)
+    {
+        TGameReqActionPutItem putItem = TGameReqActionPutItem.GetRootAsTGameReqActionPutItem(new ByteBuffer(parameter));
+
+        if (putItem.X < 0 || putItem.Y < 0 || putItem.X > 2 || putItem.Y > 2) return;
+        
+        _tttGamePlayRoomState
+        
+    }
+
+    private void HandleReqPlayerReady(byte[] parameter, Guid playerId, IPlayRoomSendBuffer sendBuffer)
+    {
+        // Packet parsing.
+        TGameReqActionSetReady readyState =
+            TGameReqActionSetReady.GetRootAsTGameReqActionSetReady(new ByteBuffer(parameter));
+        
+        // Update play room custom states
+        int result = OnReqPlayerReady(new Guid(readyState.PlayerId), readyState.ReadyState);
+        if (result == 0)
+        {
+            //let's assume 0 means all players are ready and good to start a new game.
+            // Use your serializer 
+            FlatBufferBuilder builder = new FlatBufferBuilder(128);
+            var offset = TGameNotifyGameStarted.CreateTGameNotifyGameStarted(builder, builder.CreateString(_tttGamePlayRoomState!.GetPlayerIdInTurn().ToString()));
+            builder.Finish(offset.Value);
+            byte[] dataToSend = builder.SizedByteArray();
+            // 
+            List<Guid> players = _tttGamePlayRoomState.GetBroadcastTargets();
+            sendBuffer.BroadcastFiltered(players, dataToSend);
+        }
     }
 
     private int OnReqPlayerReady(Guid playerId, bool readyState)
