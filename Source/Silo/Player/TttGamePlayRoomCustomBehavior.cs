@@ -287,7 +287,6 @@ public class TttGamePlayRoomCustomBehavior(
 
         if (putItem.X < 0 || putItem.Y < 0 || putItem.X > 2 || putItem.Y > 2) return;
         
-        _tttGamePlayRoomState
         
     }
 
