@@ -40,6 +40,11 @@ public class TttGamePlayRoomState : IPlayRoomCustomState
     private const int MaxPlayerNum = 2;
     private Guid _winnerPlayerId = Guid.Empty;
 
+    public Guid WinnerPlayerId
+    {
+        get => _winnerPlayerId;
+    }
+
     public TttGamePlayRoomState()
     {
         ResetBoard();
@@ -101,7 +106,7 @@ public class TttGamePlayRoomState : IPlayRoomCustomState
         return true;
     }
 
-    private bool IsGameOver()
+    public bool IsGameOver()
     {
         // [=] vertical check.
         for (int i = 0; i < 3; i++)
@@ -285,10 +290,20 @@ public class TttGamePlayRoomCustomBehavior(
     private void HandleReqPutMarker(byte[] parameter, Guid playerId, IPlayRoomSendBuffer sendBuffer)
     {
         TGameReqActionPutItem putItem = TGameReqActionPutItem.GetRootAsTGameReqActionPutItem(new ByteBuffer(parameter));
-
-        if (putItem.X < 0 || putItem.Y < 0 || putItem.X > 2 || putItem.Y > 2) return;
-        
-        
+        if (_tttGamePlayRoomState!.PutMarket(putItem.X, putItem.Y, playerId))
+        {
+            if (_tttGamePlayRoomState.IsGameOver())
+            {
+                if (_tttGamePlayRoomState.WinnerPlayerId == Guid.Empty)
+                {
+                    // Draw
+                }
+                else
+                {
+                    // Winner is : _tttGamePlayRoomState.WinnerPlayerId
+                }
+            }
+        }
     }
 
     private void HandleReqPlayerReady(byte[] parameter, Guid playerId, IPlayRoomSendBuffer sendBuffer)
