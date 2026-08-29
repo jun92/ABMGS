@@ -55,22 +55,12 @@ public class TttGamePlayRoomState : ITttGamePlayRoomState
     private Guid _winnerPlayerId = Guid.Empty;
     private readonly OrderedDictionary<Guid, Dictionary<string, object?>> _playerCustomStates = new();
 
-    public Guid WinnerPlayerId
-    {
-        get => _winnerPlayerId;
-    }
+    public int CurrentInCount { get => _playerCustomStates.Count; }
+    public Guid WinnerPlayerId { get => _winnerPlayerId; }
 
     public TttGamePlayRoomState()
     {
         ResetBoard();
-    }
-
-    public int CurrentInCount
-    {
-        get
-        {
-            return _playerCustomStates.Count; 
-        }
     }
 
     private void ResetBoard()
@@ -101,7 +91,6 @@ public class TttGamePlayRoomState : ITttGamePlayRoomState
 
     public bool PutMarket(int x, int y, Guid playerId)
     {
-        
         //early exit check.
         if (x < 0 || x > 2 || y < 0 || y > 2) return false;
         if (_playBoard[x, y].PlayerId != Guid.Empty) return false;
@@ -257,9 +246,6 @@ public class TttGamePlayRoomCustomBehavior(
     {
         return Task.CompletedTask;
     }
-
-    
-
     public Task<int> AddPlayerToPlayRoom(Guid id, byte[] playerExtendDataArray)
     {
         if (playerExtendDataArray.Length == 0)
