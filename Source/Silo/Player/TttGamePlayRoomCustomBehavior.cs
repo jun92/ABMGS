@@ -33,6 +33,8 @@ public class CellInfo
 
 public interface ITttGamePlayRoomState : IPlayRoomCustomState
 {
+    int CurrentInCount { get; }
+    Guid WinnerPlayerId { get; }
     Guid GetPlayerIdInTurn();
     void TurnToNextPlayer();
     bool PutMarket(int x, int y, Guid playerId);
