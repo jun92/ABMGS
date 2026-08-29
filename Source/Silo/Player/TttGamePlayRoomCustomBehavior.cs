@@ -49,7 +49,7 @@ public class TttGamePlayRoomState : IPlayRoomCustomState
     {
         get
         {
-            return _playerCustomStates.Count(); 
+            return _playerCustomStates.Count; 
         }
     }
 
@@ -103,7 +103,7 @@ public class TttGamePlayRoomState : IPlayRoomCustomState
 
     private bool IsGameOver()
     {
-        // vertical check.
+        // [=] vertical check.
         for (int i = 0; i < 3; i++)
         {
             if (_playBoard[0,i].PlayerId != Guid.Empty && 
@@ -114,7 +114,7 @@ public class TttGamePlayRoomState : IPlayRoomCustomState
             }
         }
 
-        // horizonal check
+        // [||] horizonal check
         for (int i = 0; i < 3; i++)
         {
             if (_playBoard[i,0].PlayerId != Guid.Empty &&
@@ -276,6 +276,7 @@ public class TttGamePlayRoomCustomBehavior(
                 // play room state has changed. not player state
                 return Task.FromResult<(Dictionary<Guid, byte[]>?, byte[]?)>((null, _tttGamePlayRoomState!.Serialize()));
             case Command.PutMarker:
+                HandleReqPutMarker(actionParameter, playerId, sendBuffer);
                 break;
         }
         return Task.FromResult<(Dictionary<Guid, byte[]>?, byte[]?)>((null, null));
@@ -314,8 +315,8 @@ public class TttGamePlayRoomCustomBehavior(
 
     private int OnReqPlayerReady(Guid playerId, bool readyState)
     {
-        bool IsAllReady = _tttGamePlayRoomState!.SetPlayerReady(playerId, readyState);
-        if (IsAllReady)
+        bool isAllReady = _tttGamePlayRoomState!.SetPlayerReady(playerId, readyState);
+        if (isAllReady)
         {
             // Start a new game.
         }
