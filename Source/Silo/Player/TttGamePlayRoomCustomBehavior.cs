@@ -31,7 +31,19 @@ public class CellInfo
     public CellState State { get; set; } = CellState.Empty;
 }
 
-public class TttGamePlayRoomState : IPlayRoomCustomState
+public interface ITttGamePlayRoomState : IPlayRoomCustomState
+{
+    Guid GetPlayerIdInTurn();
+    void TurnToNextPlayer();
+    bool PutMarket(int x, int y, Guid playerId);
+    bool IsGameOver();
+    List<Guid> GetBroadcastTargets();
+    void AddPlayer(Guid id, Dictionary<string, object?> extendData);
+    void RemovePlayer(Guid id);
+    bool SetPlayerReady(Guid playerId, bool readyState);
+}
+
+public class TttGamePlayRoomState : ITttGamePlayRoomState
 {
     private OrderedDictionary<Guid, bool> _playerReadyState = new();
     private int _turnIndex = 0;
@@ -39,6 +51,7 @@ public class TttGamePlayRoomState : IPlayRoomCustomState
     private readonly CellInfo[,] _playBoard = new CellInfo[3, 3];
     private const int MaxPlayerNum = 2;
     private Guid _winnerPlayerId = Guid.Empty;
+    private readonly OrderedDictionary<Guid, Dictionary<string, object?>> _playerCustomStates = new();
 
     public Guid WinnerPlayerId
     {
@@ -159,7 +172,6 @@ public class TttGamePlayRoomState : IPlayRoomCustomState
 
     public List<Guid> GetBroadcastTargets() => [.. _playerCustomStates.Select(c => c.Key)];
     
-    private readonly OrderedDictionary<Guid, Dictionary<string, object?>> _playerCustomStates = new();
 
     public void AddPlayer(Guid id, Dictionary<string, object?> extendData)
     {
@@ -228,13 +240,13 @@ public class TttGamePlayRoomCustomBehavior(
     IPlayRoomCustomState playRoomCustomState
     ) : IPlayRoomCustomEventHandler
 {
-    private TttGamePlayRoomState? _tttGamePlayRoomState;
+    private ITttGamePlayRoomState? _tttGamePlayRoomState;
     
     private Dictionary<Guid, Queue<byte[]>> _sendQueue = new();
 
     public Task<IPlayRoomCustomState> OnPlayRoomInitializingAsync()
     {
-        _tttGamePlayRoomState = playRoomCustomState as TttGamePlayRoomState;
+        _tttGamePlayRoomState = playRoomCustomState as ITttGamePlayRoomState;
         
         return Task.FromResult(playRoomCustomState);
     }
