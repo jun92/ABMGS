@@ -25,8 +25,8 @@
 	  <PrivateAssets>all</PrivateAssets>
 	  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	</PackageReference>
-	<PackageReference Include="Microsoft.Orleans.Clustering.Redis" Version="10.2.2" />
-	<PackageReference Include="Microsoft.Orleans.Server" Version="10.2.2" />
+	<PackageReference Include="Microsoft.Orleans.Clustering.Redis" Version="10.3.1" />
+	<PackageReference Include="Microsoft.Orleans.Server" Version="10.3.1" />
 </ItemGroup>
 <ItemGroup>
   <ProjectReference Include="..\Package\Package.csproj" />
