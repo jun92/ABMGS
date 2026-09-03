@@ -324,7 +324,7 @@ public class TttGamePlayRoomCustomBehavior(
             //let's assume 0 means all players are ready and good to start a new game.
             // Use your serializer 
             FlatBufferBuilder builder = new FlatBufferBuilder(128);
-            var offset = TGameNotifyGameStarted.CreateTGameNotifyGameStarted(builder, builder.CreateString(_tttGamePlayRoomState!.GetPlayerIdInTurn().ToString()));
+            Offset<TGameNotifyGameStarted> offset = TGameNotifyGameStarted.CreateTGameNotifyGameStarted(builder, builder.CreateString(_tttGamePlayRoomState!.GetPlayerIdInTurn().ToString()));
             builder.Finish(offset.Value);
             byte[] dataToSend = builder.SizedByteArray();
             // 
