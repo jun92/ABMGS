@@ -90,7 +90,8 @@ public class TttGamePlayerBehavior(IPlayerExtendData playerExtendData) : IPlayer
 
     public Task<bool> OnLogoutAsync(CancellationToken? cancellationToken = null)
     {
-        return Task.FromResult(false);
+        
+        return Task.FromResult(false); // return true if you need to update database.
     }
     
     public void OnJoinPlayRoom(PlayerState playerState, Guid playRoomId, bool isOwner, byte[]? roomState)
