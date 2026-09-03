@@ -339,8 +339,9 @@ public class TttGamePlayRoomCustomBehavior(
         if (isAllReady)
         {
             // Start a new game.
+            return 0;
         }
-        return 0;
+        return -1;
     }
 
     public Task OnTimer(float delta)
