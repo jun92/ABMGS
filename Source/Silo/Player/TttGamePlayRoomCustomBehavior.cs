@@ -282,7 +282,7 @@ public class TttGamePlayRoomCustomBehavior(
                 return Task.FromResult<(Dictionary<Guid, byte[]>?, byte[]?)>((null, _tttGamePlayRoomState!.Serialize()));
             case Command.PutMarker:
                 HandleReqPutMarker(actionParameter, playerId, sendBuffer);
-                break;
+                return Task.FromResult<(Dictionary<Guid, byte[]>?, byte[]?)>((null, _tttGamePlayRoomState!.Serialize()));
         }
         return Task.FromResult<(Dictionary<Guid, byte[]>?, byte[]?)>((null, null));
     }
@@ -290,20 +290,25 @@ public class TttGamePlayRoomCustomBehavior(
     private void HandleReqPutMarker(byte[] parameter, Guid playerId, IPlayRoomSendBuffer sendBuffer)
     {
         TGameReqActionPutItem putItem = TGameReqActionPutItem.GetRootAsTGameReqActionPutItem(new ByteBuffer(parameter));
-        if (_tttGamePlayRoomState!.PutMarket(putItem.X, putItem.Y, playerId))
+        
+        if (!_tttGamePlayRoomState!.PutMarket(putItem.X, putItem.Y, playerId)) return;
+        if (!_tttGamePlayRoomState!.IsGameOver()) return;
+        
+        
+
+        if (_tttGamePlayRoomState.WinnerPlayerId == Guid.Empty)
         {
-            if (_tttGamePlayRoomState.IsGameOver())
-            {
-                if (_tttGamePlayRoomState.WinnerPlayerId == Guid.Empty)
-                {
-                    // Draw
-                }
-                else
-                {
-                    // Winner is : _tttGamePlayRoomState.WinnerPlayerId
-                }
-            }
+            // Draw
         }
+        else
+        {
+            // Winner is : _tttGamePlayRoomState.WinnerPlayerId
+        }
+        FlatBufferBuilder builder = new FlatBufferBuilder(128);
+        StringOffset winnerPlayerId = builder.CreateString(_tttGamePlayRoomState.WinnerPlayerId.ToString());
+        var packetOffset = TGameNotifyGameEnd.CreateTGameNotifyGameEnd(builder, winnerPlayerId);
+        builder.Finish(packetOffset.Value);
+        sendBuffer.BroadcastToAll(builder.SizedByteArray());
     }
 
     private void HandleReqPlayerReady(byte[] parameter, Guid playerId, IPlayRoomSendBuffer sendBuffer)

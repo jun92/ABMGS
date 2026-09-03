@@ -58,3 +58,8 @@ table TGameResActionPutItem {
     error_code: int;
 }
 
+table TGameNotifyGameEnd {
+    winner: string; // Guid.Empty means "draw"
+    
+}
+
