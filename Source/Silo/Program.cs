@@ -47,7 +47,7 @@ builder.ConfigureActor(option =>
 //Custom classes for play room supporting.
 builder.Services.AddTransient<IPlayRoomCustomState, TttGamePlayRoomState>();
 builder.Services.AddTransient<IPlayRoomCustomEventHandler, TttGamePlayRoomCustomBehavior>();
-
+builder.Services.AddTransient<TttGamePacketSerializer>();
 
 
 var SyncnetActorApp = builder.Build();

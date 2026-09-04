@@ -228,7 +228,8 @@ public class TttGamePlayRoomState : ITttGamePlayRoomState
 }
 
 public class TttGamePlayRoomCustomBehavior(
-    IPlayRoomCustomState playRoomCustomState
+    IPlayRoomCustomState playRoomCustomState,
+    TttGamePacketSerializer  tttGamePacketSerializer
     ) : IPlayRoomCustomEventHandler
 {
     private ITttGamePlayRoomState? _tttGamePlayRoomState;
@@ -293,8 +294,6 @@ public class TttGamePlayRoomCustomBehavior(
         
         if (!_tttGamePlayRoomState!.PutMarket(putItem.X, putItem.Y, playerId)) return;
         if (!_tttGamePlayRoomState!.IsGameOver()) return;
-        
-        
 
         if (_tttGamePlayRoomState.WinnerPlayerId == Guid.Empty)
         {
@@ -304,18 +303,15 @@ public class TttGamePlayRoomCustomBehavior(
         {
             // Winner is : _tttGamePlayRoomState.WinnerPlayerId
         }
-        FlatBufferBuilder builder = new FlatBufferBuilder(128);
-        StringOffset winnerPlayerId = builder.CreateString(_tttGamePlayRoomState.WinnerPlayerId.ToString());
-        var packetOffset = TGameNotifyGameEnd.CreateTGameNotifyGameEnd(builder, winnerPlayerId);
-        builder.Finish(packetOffset.Value);
-        sendBuffer.BroadcastToAll(builder.SizedByteArray());
+
+        byte[] gameEndedPacket = tttGamePacketSerializer.SerializeNotiftGameEnded(_tttGamePlayRoomState.WinnerPlayerId);
+        sendBuffer.BroadcastToAll(gameEndedPacket);
     }
 
     private void HandleReqPlayerReady(byte[] parameter, Guid playerId, IPlayRoomSendBuffer sendBuffer)
     {
         // Packet parsing.
-        TGameReqActionSetReady readyState =
-            TGameReqActionSetReady.GetRootAsTGameReqActionSetReady(new ByteBuffer(parameter));
+        TGameReqActionSetReady readyState = tttGamePacketSerializer.DeserializeGameReqActionSetReady(parameter);
         
         // Update play room custom states
         int result = OnReqPlayerReady(new Guid(readyState.PlayerId), readyState.ReadyState);
@@ -323,11 +319,8 @@ public class TttGamePlayRoomCustomBehavior(
         {
             //let's assume 0 means all players are ready and good to start a new game.
             // Use your serializer 
-            FlatBufferBuilder builder = new FlatBufferBuilder(128);
-            Offset<TGameNotifyGameStarted> offset = TGameNotifyGameStarted.CreateTGameNotifyGameStarted(builder, builder.CreateString(_tttGamePlayRoomState!.GetPlayerIdInTurn().ToString()));
-            builder.Finish(offset.Value);
-            byte[] dataToSend = builder.SizedByteArray();
-            // 
+            byte[] dataToSend = tttGamePacketSerializer.SerializeNotiftGameStarted(_tttGamePlayRoomState!.GetPlayerIdInTurn());
+
             List<Guid> players = _tttGamePlayRoomState.GetBroadcastTargets();
             sendBuffer.BroadcastFiltered(players, dataToSend);
         }
@@ -343,6 +336,7 @@ public class TttGamePlayRoomCustomBehavior(
         }
         return -1;
     }
+
 
     public Task OnTimer(float delta)
     {
