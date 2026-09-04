@@ -12,7 +12,7 @@ public class TttGamePacketSerializer
 
     public byte[] SerializeNotiftGameStarted(Guid firstPlayerId)
     {
-        FlatBufferBuilder builder = new FlatBufferBuilder(128);
+        FlatBufferBuilder builder = new(128);
         StringOffset firstPlayerIdOffset = builder.CreateString(firstPlayerId.ToString());
         Offset<TGameNotifyGameStarted> offset = TGameNotifyGameStarted.CreateTGameNotifyGameStarted(builder, firstPlayerIdOffset);
         builder.Finish(offset.Value);
@@ -21,7 +21,7 @@ public class TttGamePacketSerializer
 
     public byte[] SerializeNotiftGameEnded(Guid winnerPlayerId)
     {
-        FlatBufferBuilder builder = new FlatBufferBuilder(128);
+        FlatBufferBuilder builder = new(128);
         StringOffset winnerPlayerIdOffset = builder.CreateString(winnerPlayerId.ToString());
         Offset<TGameNotifyGameEnd> offset = TGameNotifyGameEnd.CreateTGameNotifyGameEnd(builder, winnerPlayerIdOffset);
         builder.Finish(offset.Value);
