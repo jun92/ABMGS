@@ -12,8 +12,8 @@ namespace SyncnetPlatform.Databases;
 
 public interface IPlayerDataExtendCreater
 {
-    //void CreateExtendColumns(EntityTypeBuilder<PlayerData> e);
-    IReadOnlyList<(Type, string, object)> RegisterPlayerCustomData();
+    // TODO: better name? PlayerExtendStat instead of custom data.
+    IReadOnlyList<(Type, string, object)> RegisterPlayerCustomData(); 
 }
 
 public class SyncnetDbContext(
