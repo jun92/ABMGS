@@ -1,4 +1,5 @@
 using Google.FlatBuffers;
+using Silo.Models;
 using TGame.Packets;
 
 namespace Silo.Player;
@@ -131,6 +132,44 @@ public class TttGamePlayRoomState : ITttGamePlayRoomState
     public void RemovePlayer(Guid id)
     {
         _playerCustomStates.Remove(id);
+    }
+
+    private void IncreaseState(string customDataName, Dictionary<string, object?> extendData)
+    {
+        extendData?[customDataName] = (int)(extendData[customDataName] ?? 0) + 1;
+    }
+
+    private Dictionary<string, object?>? GetExtendData(Guid playerId)
+    {
+        if (!_playerCustomStates.TryGetValue(playerId, out Dictionary<string, object?>? extendData))
+        {
+            return null;
+        }
+        return extendData;
+    }
+
+    public void IncreaseWinCount(Guid playerId)
+    {
+        if (GetExtendData(playerId) is { } extendData)
+        {
+            IncreaseState(TttGamePlayerModelExtend.WinCount, extendData);
+        }
+    }
+
+    public void IncreaseLoseCount(Guid playerId)
+    {
+        if (GetExtendData(playerId) is { } extendData)
+        {
+            IncreaseState(TttGamePlayerModelExtend.LoseCount, extendData);
+        }
+    }
+
+    public void IncreasePlayCount(Guid playerId)
+    {
+        if (GetExtendData(playerId) is { } extendData)
+        {
+            IncreaseState(TttGamePlayerModelExtend.PlayCount, extendData);
+        }
     }
     
     // For sharing the data with clients, In this case, I used FlatBuffer, but you can use any serializer you want. JSON, protoBuf.

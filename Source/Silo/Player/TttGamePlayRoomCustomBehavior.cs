@@ -15,7 +15,6 @@ public struct Command
     public const string Ready = "Ready";
     public const string PutMarker = "Put";
 }
-
 public class TttGamePlayRoomCustomBehavior(
     IPlayRoomCustomState playRoomCustomState,
     TttGamePacketSerializer  tttGamePacketSerializer
@@ -83,18 +82,25 @@ public class TttGamePlayRoomCustomBehavior(
         
         if (!_tttGamePlayRoomState!.PutMarket(putItem.X, putItem.Y, playerId)) return;
         if (!_tttGamePlayRoomState!.IsGameOver()) return;
-
-        if (_tttGamePlayRoomState.WinnerPlayerId == Guid.Empty)
-        {
-            // Draw
-        }
-        else
-        {
-            // Winner is : _tttGamePlayRoomState.WinnerPlayerId
-        }
+        
+        // if _tttGamePlayRoomState.WinnerPlayerId is Guid.Empty, it's draw, otherwise the winnner is him.
 
         byte[] gameEndedPacket = tttGamePacketSerializer.SerializeNotiftGameEnded(_tttGamePlayRoomState.WinnerPlayerId);
         sendBuffer.BroadcastToAll(gameEndedPacket);
+        
+        // Update player data. wincount/losecount/playcount
+        if (_tttGamePlayRoomState.WinnerPlayerId != Guid.Empty)
+        {
+            
+        }
+        
+        
+    }
+
+
+    // Flush all delta-ed player custom data to player actors. mostly at the  end of a gameplay.
+    private void FlushPlayerCustomDataToPlayerActor()
+    {
     }
 
     private void HandleReqPlayerReady(byte[] parameter, Guid playerId, IPlayRoomSendBuffer sendBuffer)
