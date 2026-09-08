@@ -21,9 +21,6 @@ public class TttGamePlayRoomCustomBehavior(
     ) : IPlayRoomCustomEventHandler
 {
     private ITttGamePlayRoomState? _tttGamePlayRoomState;
-    
-    private Dictionary<Guid, Queue<byte[]>> _sendQueue = new();
-
     public Task<IPlayRoomCustomState> OnPlayRoomInitializingAsync()
     {
         _tttGamePlayRoomState = playRoomCustomState as ITttGamePlayRoomState;
