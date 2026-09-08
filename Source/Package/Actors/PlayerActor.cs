@@ -97,6 +97,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     private CancellationTokenSource? _ctsForRunRoutingPackets;
     private Task? _runRoutingPackets;
     private ISendDataGrain _sendDataGrain = null!;
+    private bool _isPlayerStatsDelegated = false;
 
     // player data
 
@@ -389,6 +390,16 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         {
             await _sendDataGrain.Send(PacketBuilder.Build(new OnPlayRoomStateUpdateArgs(roomId, customState)));
         }
+    }
+
+    public ValueTask<bool> IsDelegatingPlayerStats()
+    {
+        return ValueTask.FromResult(_isPlayerStatsDelegated);
+    }
+
+    private void SetPlayerStatsDelegated(bool isDelegatingNow)
+    {
+        _isPlayerStatsDelegated = isDelegatingNow;
     }
 
     public async Task<List<PlayRoomMember>> GetPlayerListInPlayRoom(Guid roomId)
