@@ -164,7 +164,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         if(_playRoomCustomEventHandler is not null)
         {
             // Custom processing 
-            (Dictionary<Guid,byte[]> updatedPlayerExtendData, byte[]? updatedPlayRoomCustomState) = 
+            (Dictionary<Guid,byte[]>? updatedPlayerExtendData, byte[]? updatedPlayRoomCustomState) = 
                 await _playRoomCustomEventHandler.OnPlayerActionToPlayRoom(playerId, actionType, actionParameter, _playRoomSendBuffer);
             
             
