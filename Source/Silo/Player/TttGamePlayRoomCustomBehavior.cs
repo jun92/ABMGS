@@ -24,7 +24,6 @@ public class TttGamePlayRoomCustomBehavior(
     public Task<IPlayRoomCustomState> OnPlayRoomInitializingAsync()
     {
         _tttGamePlayRoomState = playRoomCustomState as ITttGamePlayRoomState;
-        
         return Task.FromResult(playRoomCustomState);
     }
 
@@ -39,22 +38,11 @@ public class TttGamePlayRoomCustomBehavior(
             _tttGamePlayRoomState!.AddPlayer(id, new Dictionary<string, object?>(capacity:0));
             return Task.FromResult(0);
         }
-
         if (_tttGamePlayRoomState!.CurrentInCount >= 2)
         {
             return Task.FromResult(-1);
         }
-        
-        // FlatBuffer parsing, use your favorite serialize library. ex) protoBuf, json, etc.
-        TGamePlayerCustomData playerExtendData = 
-            TGamePlayerCustomData.GetRootAsTGamePlayerCustomData(new ByteBuffer(playerExtendDataArray));
-
-        _tttGamePlayRoomState!.AddPlayer(id,new Dictionary<string, object?>
-        {
-            {TttGamePlayerModelExtend.WinCount, playerExtendData.WinCount},
-            {TttGamePlayerModelExtend.LoseCount, playerExtendData.LoseCount},
-            {TttGamePlayerModelExtend.PlayCount, playerExtendData.PlayCount},
-        } );
+        _tttGamePlayRoomState!.AddPlayer(id, tttGamePacketSerializer.DeserializePlayerCustomData(playerExtendDataArray));
         return Task.FromResult(0);
     }
     public Task<(Dictionary<Guid, byte[]>?, byte[]?)> OnPlayerActionToPlayRoom(Guid playerId, string actionType,

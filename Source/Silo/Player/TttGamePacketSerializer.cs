@@ -1,4 +1,5 @@
 using Google.FlatBuffers;
+using Silo.Models;
 using TGame.Packets;
 
 namespace Silo.Player;
@@ -8,6 +9,20 @@ public class TttGamePacketSerializer
     public TGameReqActionSetReady DeserializeGameReqActionSetReady(byte[] parameter)
     {
         return TGameReqActionSetReady.GetRootAsTGameReqActionSetReady(new ByteBuffer(parameter));
+    }
+
+    public Dictionary<string, object?> DeserializePlayerCustomData(byte[] playerExtendDataArray)
+    {
+        // FlatBuffer parsing, use your favorite serialize library. ex) protoBuf, json, etc.
+        TGamePlayerCustomData playerExtendData = 
+            TGamePlayerCustomData.GetRootAsTGamePlayerCustomData(new ByteBuffer(playerExtendDataArray));
+
+        return new Dictionary<string, object?>
+        {
+            { TttGamePlayerModelExtend.WinCount, playerExtendData.WinCount },
+            { TttGamePlayerModelExtend.LoseCount, playerExtendData.LoseCount },
+            { TttGamePlayerModelExtend.PlayCount, playerExtendData.PlayCount }
+        };
     }
 
     public byte[] SerializeNotiftGameStarted(Guid firstPlayerId)
