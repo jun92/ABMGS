@@ -170,9 +170,6 @@ public partial class PlayerActor
             this.GetGrainId().GetGuidKey(), 
             request.ActionType, 
             request.GetActionParameterArray());
-        
-        
-
     }
     
     public async ValueTask InvokeHandler(byte[] data)
