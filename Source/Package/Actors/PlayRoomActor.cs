@@ -15,8 +15,9 @@ namespace SyncnetPlatform.Actors;
 public class PlayRoomActor : Grain, IPlayRoomActor
 {
     private readonly ILogger<PlayRoomActor> _logger;
+    private Guid RoomId => GrainContext.GrainId.GetGuidKey();
 
-    private readonly List<PlayRoomMember> _players = new List<PlayRoomMember>();
+    private readonly List<PlayRoomMember> _players = [];
 
     private int _maxPlayerCapacity = 4;
     private bool _isPrivate = false;
@@ -27,6 +28,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
 
     //Customizations
     private readonly IPlayRoomCustomEventHandler? _playRoomCustomEventHandler = null;
+    
     public PlayRoomActor(
         ILogger<PlayRoomActor> logger,
         IPlayRoomSendBuffer playRoomSendBuffer,
@@ -35,10 +37,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
     {
         _logger = logger;
         _playRoomSendBuffer = playRoomSendBuffer;
-        if( playRoomCustomEventHandler is not null)
-        {
-            _playRoomCustomEventHandler = playRoomCustomEventHandler;
-        }
+        _playRoomCustomEventHandler = playRoomCustomEventHandler;
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
@@ -67,7 +66,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         }
         _playRoomTimer?.Dispose();
     }
-    public Guid RoomId => GrainContext.GrainId.GetGuidKey();
+    
     
     public async Task<(PacketErrorCodes, byte[]?)> SetRoomInformation(string displayName,
         bool isPrivate,
@@ -75,14 +74,14 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         string roomPassword,
         PlayRoomMember owner)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(displayName, nameof(displayName));
+        // ArgumentNullException.ThrowIfNullOrWhiteSpace(displayName, nameof(displayName));
         _playRoomState.DisplayName = displayName;
         _playRoomState.PasswordForEntrance = roomPassword;
         _maxPlayerCapacity = maxCapacity;
         _isPrivate = isPrivate;
         _ownerPlayerId = owner.PlayerId;
 
-        _players.Add(owner);
+        //_players.Add(owner);
 
         if( _playRoomCustomEventHandler is not null)
         {
@@ -91,13 +90,11 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         return (PacketErrorCodes.Success, SerializePlayRoomCustomState());
     }
 
-    public ValueTask<bool> IsValidRoomToJoin() => ValueTask.FromResult<bool>(_ownerPlayerId != Guid.Empty);
-
     public async Task<(PacketErrorCodes, byte[])> JoinPlayer(PlayRoomMember joiner)
     {
         #region Early exit check
-        if(_ownerPlayerId == Guid.Empty) return (PacketErrorCodes.RoomNotFound, []);
-        if(_players.Exists(p => p.PlayerId == joiner.PlayerId)) return (PacketErrorCodes.AlreadyInRoom, []);
+        if (_ownerPlayerId == Guid.Empty) return (PacketErrorCodes.RoomNotFound, []);
+        if (_players.Exists(p => p.PlayerId == joiner.PlayerId)) return (PacketErrorCodes.AlreadyInRoom, []);
         if (_players.Count == _maxPlayerCapacity) return (PacketErrorCodes.RoomFull, []);
         #endregion
 

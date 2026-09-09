@@ -77,19 +77,14 @@ public class PlayRoomMember
 
 public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPacketHandler
 {
-    private readonly struct PendingPacket
+    private readonly struct PendingPacket(byte[] data, Activity? queueActivity)
     {
-        public byte[] Data { get; }
-        public Activity? QueueActivity { get; }
-
-        public PendingPacket(byte[] data, Activity? queueActivity)
-        {
-            Data = data;
-            QueueActivity = queueActivity;
-        }
+        public byte[] Data { get; } = data;
+        public Activity? QueueActivity { get; } = queueActivity;
     }
 
     private readonly ILogger<PlayerActor> _logger;
+    private Guid PlayerId => GrainContext.GrainId.GetGuidKey();
     private readonly IPlayerModelRepository _playerModelRepository;
 
     private readonly IPacketRouter _routeTable;
@@ -106,6 +101,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     /// </summary>
     protected int Dbid;
     protected string _name = String.Empty;
+    
 
     /// <summary>
     /// the platform authenticated from.
@@ -156,8 +152,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     {
         if(isOnline == true )
         {
-            Guid thisPlayerId = GrainContext.GrainId.GetGuidKey();
-            _playerState = await _playerModelRepository.GetOrCreate(thisPlayerId);
+            _playerState = await _playerModelRepository.GetOrCreate(PlayerId);
             Dbid = _playerState.Id;
             _IsOnline = true;
 
@@ -191,11 +186,8 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
 
         _routeTable.BuildParamExtractionFuncs<PacketWrapper>();
         _routeTable.BuildPacketHandlerFunctions<PlayerActor>(this);
-
         
         await base.OnActivateAsync(cancellationToken);
-
-
     }
 
     public override async Task OnDeactivateAsync(DeactivationReason reason, CancellationToken cancellationToken)
@@ -206,7 +198,8 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
             needToUpdateDb = await _playerCustomBehavior.OnLogoutAsync(cancellationToken);
         }
 
-        _ctsForRunRoutingPackets?.Cancel();
+        if (_ctsForRunRoutingPackets is not null) await _ctsForRunRoutingPackets.CancelAsync();
+
         _receiveQueueChannel.Writer.TryComplete();
         if (_runRoutingPackets != null) await _runRoutingPackets;
 
@@ -284,19 +277,13 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         string roomPassword,
         byte[] playerMetadata)
     {
+        PacketErrorCodes errorCode = PacketErrorCodes.Success;
+        byte[]? serializedPlayRoomState = null;
         Guid newPlayRoomId = Guid.NewGuid();
         
-        // Grab a new PlayRoomActor.
-        IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(newPlayRoomId);
-
-        // Supply initial data to play room.
-        (PacketErrorCodes errorCode, byte[]? serializedPlayRoomState) = 
-            await playRoomActor.SetRoomInformation(
-                roomName, 
-                isPrivate, 
-                maxCapacity, 
-                roomPassword, 
-                BuildPlayerRoomMember(newPlayRoomId));
+        (errorCode, serializedPlayRoomState) = await CreatePlayRoom(newPlayRoomId, roomName, isPrivate, maxCapacity, roomPassword);
+        if (errorCode != PacketErrorCodes.Success) return (errorCode, newPlayRoomId, serializedPlayRoomState);
+        
         
         // Just remember rooms I joined.
         _joinedRoomList.Add(newPlayRoomId);
@@ -307,25 +294,46 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         return (errorCode, newPlayRoomId, serializedPlayRoomState);
     }
 
+    protected async Task<(PacketErrorCodes, byte[]?)> CreatePlayRoom(Guid newPlayRoomId, string roomName, bool isPrivate, int maxCapacity, string roomPassword)
+    {
+        IPlayRoomActor newPlayRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(newPlayRoomId);
+
+        PacketErrorCodes errorCode = PacketErrorCodes.Success;
+        byte[]? serializedPlayRoomState = null;
+
+        (errorCode, serializedPlayRoomState) = await newPlayRoomActor.SetRoomInformation(
+            roomName, 
+            isPrivate, 
+            maxCapacity, 
+            roomPassword, 
+            BuildPlayerRoomMember(newPlayRoomId));
+        
+        return (errorCode, serializedPlayRoomState);
+    }
+
+    protected async Task<(PacketErrorCodes, byte[])> JoinRoom(Guid playRoomId)
+    {
+        IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(playRoomId);
+        PacketErrorCodes errorCode = PacketErrorCodes.Success;
+        (errorCode, byte[] playRoomCustomState) = await playRoomActor.JoinPlayer(BuildPlayerRoomMember(playRoomId));
+        
+        if (errorCode == PacketErrorCodes.Success) _joinedRoomList.Add(playRoomId);
+
+        return (errorCode, playRoomCustomState);
+    }
+
     public async Task<(PacketErrorCodes, byte[])> JoinPlayRoom(Guid roomId)
     {
         if(!_IsOnline)
         {
             return (PacketErrorCodes.PlayerOffline, Array.Empty<byte>());
         }
-        IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(roomId);
-        if(!await playRoomActor.IsValidRoomToJoin())
-        {
-            return (PacketErrorCodes.RoomNotFound, Array.Empty<byte>());
-        }
-        var(result, playRoomCustomState) = 
-            await playRoomActor.JoinPlayer(BuildPlayerRoomMember(roomId));
+
+        PacketErrorCodes errorCode = PacketErrorCodes.Success;
+
+        (errorCode, byte[] playRoomCustomState) = await JoinRoom(roomId);
         
-        if(result == PacketErrorCodes.Success)
-        {
-            _joinedRoomList.Add(roomId);
-        }
-        return (result, playRoomCustomState);
+        return (errorCode, playRoomCustomState);
     }
     protected PlayRoomMember BuildPlayerRoomMember(Guid roomId) 
         => new PlayRoomMember(roomId, GrainContext.GrainId.GetGuidKey(), _playerState.PlayerName, SerializePlayerExtendData());
@@ -429,9 +437,6 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(playRoomId);
 
     }
-
-    public Guid PlayerId => GrainContext.GrainId.GetGuidKey();
-    
 }
 
 

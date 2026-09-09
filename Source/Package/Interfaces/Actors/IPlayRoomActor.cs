@@ -12,8 +12,6 @@ public interface IPlayRoomActor : IGrainWithGuidKey
 {
     [Alias("GetPlayersInPlayRoom")]
     Task<List<PlayRoomMember>> GetPlayersInPlayRoom();
-    [Alias("IsValidRoomToJoin")]
-    ValueTask<bool> IsValidRoomToJoin();
     [Alias("JoinPlayer")]
     Task<(PacketErrorCodes, byte[])> JoinPlayer(PlayRoomMember joiner);
     [Alias("LeavePlayer")]
