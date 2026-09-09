@@ -52,27 +52,20 @@ public class PlayerState
 }
 
 [GenerateSerializer] 
-public class PlayRoomMember
+public class PlayRoomMember(Guid roomId, Guid playerId, string playerName, byte[]? playerExtendData)
 {
-    public PlayRoomMember(Guid roomId, Guid playerId, string playerName, byte[]? playerExtendData)
-    {
-        RoomId = roomId;
-        PlayerId = playerId;
-        PlayerName = playerName;
-        PlayerExtendData = playerExtendData;
-    }
-
     [Id(0)]
-    public Guid RoomId { get; set; }
+    public Guid RoomId { get; set; } = roomId;
+
     [Id(1)]
-    public Guid PlayerId { get; set; }
+    public Guid PlayerId { get; set; } = playerId;
+
     [Id(2)]
-    public string PlayerName { get; set; }
+    public string PlayerName { get; set; } = playerName;
+
     // One time use only.
     [Id(3)]
-    public byte[]? PlayerExtendData { get; set; }
-
-
+    public byte[]? PlayerExtendData { get; set; } = playerExtendData;
 }
 
 public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPacketHandler
@@ -271,7 +264,8 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         return PacketErrorCodes.Success;
     }
 
-    public async Task<(PacketErrorCodes ,Guid, byte[]?)> CreateAndJoinPlayRoom(string roomName,
+    public async Task<(PacketErrorCodes ,Guid, byte[]?)> CreateAndJoinPlayRoom(
+        string roomName,
         bool isPrivate,
         int maxCapacity,
         string roomPassword,
@@ -283,7 +277,9 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         
         (errorCode, serializedPlayRoomState) = await CreatePlayRoom(newPlayRoomId, roomName, isPrivate, maxCapacity, roomPassword);
         if (errorCode != PacketErrorCodes.Success) return (errorCode, newPlayRoomId, serializedPlayRoomState);
-        
+
+        (errorCode, serializedPlayRoomState) = await JoinRoom(newPlayRoomId);
+        if (errorCode != PacketErrorCodes.Success) return (errorCode, newPlayRoomId, serializedPlayRoomState);
         
         // Just remember rooms I joined.
         _joinedRoomList.Add(newPlayRoomId);
@@ -307,6 +303,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
             maxCapacity, 
             roomPassword, 
             BuildPlayerRoomMember(newPlayRoomId));
+        
         
         return (errorCode, serializedPlayRoomState);
     }
