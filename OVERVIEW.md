@@ -51,7 +51,12 @@ graph TD
    - Modular authentication supporting **Google Play Games Services**, **Guest Accounts**, with extensibility for **Apple** and **Steam**.
    - Stateless JWT token issuance and policy-based WebSocket authentication (`GameSocketPolicy`).
 
-5. **Cloud-Native & Distributed by Design**:
+5. **Extensible Persistence & Dynamic Relational Schemas**:
+   - PostgreSQL backed by Entity Framework Core (`SyncnetDbContext`).
+   - Dynamic schema extension using EF Core **Indexer Properties**, allowing developers to declare custom database columns on the fly without modifying framework models.
+   - Automated schema migrations on Silo startup (`AutoMigrateDatabase = true`).
+
+6. **Cloud-Native & Distributed by Design**:
    - **.NET Aspire AppHost** configures and launches Postgres, Redis, Silo, and Front in a unified local or cloud topology.
    - Distributed tracing and metrics via **OpenTelemetry** with end-to-end trace propagation across WebSockets and grain calls (`traceparent`).
 
@@ -70,7 +75,7 @@ ABMGS/
 │   │   ├── ApplicationBuilder/ # Fluent builder APIs for Front and Silo applications
 │   │   ├── Authentication/ # Google Play and Guest authentication providers
 │   │   ├── Controllers/   # HTTP and WebSocket endpoints
-│   │   ├── Databases/     # EF Core DbContext & PostgreSQL entities
+│   │   ├── Databases/     # EF Core DbContext & dynamic schema extension hooks
 │   │   ├── fbs/           # FlatBuffers protocol definitions & flatc build targets
 │   │   ├── Network/       # Packet routers, session handlers, and send buffers
 │   │   └── Repositories/  # Data access abstractions & implementations
@@ -80,12 +85,40 @@ ABMGS/
 
 ---
 
-## 4. Extensibility: Creating Custom Game Logic
+## 4. Extensibility: Custom Game Logic & Database Schema
 
-Developers can plug custom gameplay rules directly into the framework without modifying core actor plumbing:
+Developers can extend gameplay rules and persist game-specific data directly without modifying the core framework plumbing:
 
-- **Custom Player Behavior**: Implement `IPlayerCustomBehavior` to define game-specific player actions and state machines.
-- **Custom Room Behavior**: Implement `IPlayRoomCustomEventHandler` and `IPlayRoomCustomState` to implement game rules, turn tracking, and periodic room updates.
+### A. User-Defined Database Schemas (`IPlayerDataExtendCreater`)
+Developers can define and add custom columns to the `player_data` PostgreSQL table without editing framework entity models:
+- Implement `IPlayerDataExtendCreater` to register custom column definitions (type, name, default value).
+- Register via `option.UsePlayerDataExtendCreator<T>()` in the Silo startup builder.
+- Fields are mapped at runtime using EF Core **Indexer Properties** (`playerData[key]`).
+- Enable `option.AutoMigrateDatabase = true` to automatically apply migrations on startup.
+
+```csharp
+// Example: Silo/Models/TttGamePlayerModelExtend.cs
+public class TttGamePlayerModelExtend : IPlayerDataExtendCreater
+{
+    public IReadOnlyList<(Type, string, object)> RegisterPlayerCustomData() =>
+    [
+        (typeof(int), "WinCount", 0),
+        (typeof(int), "LoseCount", 0),
+        (typeof(int), "PlayCount", 0)
+    ];
+}
+
+// In Silo Program.cs:
+builder.ConfigureActor(option =>
+{
+    option.UsePlayerDataExtendCreator<TttGamePlayerModelExtend>();
+    option.AutoMigrateDatabase = true;
+});
+```
+
+### B. Custom Player & Room Behaviors
+- **Player Behavior**: Implement `IPlayerCustomBehavior` to define game-specific player actions, stats delegation, and custom packet handlers.
+- **Room Lifecycle & Rules**: Implement `IPlayRoomCustomEventHandler` and `IPlayRoomCustomState` to manage custom room state, turn progression, and room timer ticks.
 - *Reference Implementation*: See `Source/Silo/Player/` for a complete **Tic-Tac-Toe** (`TttGame*`) implementation showcasing room creation, moves, and win-condition checks.
 
 ---
