@@ -27,7 +27,7 @@ public partial class PlayerActor
         {
             return;
         }
-        PongArgs pongArgs = new PongArgs(request.Seq + 1);
+        PongArgs pongArgs = new(request.Seq + 1);
         byte[] packetToSendBack = PacketBuilder.Build(pongArgs);
         await _sendDataGrain.Send(packetToSendBack);
     }
@@ -35,17 +35,22 @@ public partial class PlayerActor
     [PacketHandler(typeof(ReqUserInfo))]
     public async Task HandleReqUserInfo(ReqUserInfo request)
     {
-        string playerName = await GetPlayerName();
-        byte[] serializedCustomData = SerializePlayerExtendData();
-        await _sendDataGrain.Send(PacketBuilder.Build<ResUserInfoArgs>(new ResUserInfoArgs(PlayerId, playerName, serializedCustomData)));
+        byte[] serializedPlayerExtendData = SerializePlayerExtendData();
+        ResUserInfoArgs resUserInfoArgs = new(PlayerId, _playerState.PlayerName, serializedPlayerExtendData);
+        byte[] packetToSendBack = PacketBuilder.Build(resUserInfoArgs);
+        await _sendDataGrain.Send(packetToSendBack);
     }
 
     [PacketHandler(typeof(ReqUpdatePlayerName))]
     public async Task HandleReqUpdatePlayerName(ReqUpdatePlayerName request)
     {
-        await UpdatePlayerName(request.PlayerName);
-        await _sendDataGrain.Send(PacketBuilder.Build<ResUpdatePlayerNameArgs>(new ResUpdatePlayerNameArgs(PacketErrorCodes.Success)));
+        _playerState.PlayerName = request.PlayerName;
+        _IsDirtyPlayerData = true;
+        ResUpdatePlayerNameArgs resUpdatePlayerNameArgs = new(PacketErrorCodes.Success);
+        byte[] packetToSendBack = PacketBuilder.Build(resUpdatePlayerNameArgs);
+        await _sendDataGrain.Send(packetToSendBack);
     }
+    
     [PacketHandler(typeof(ReqUserActionForUpdatePlayerExtendData))]
     public async Task HandleReqUserActionForUpdatePlayerCustomData(ReqUserActionForUpdatePlayerExtendData request)
     {
@@ -80,7 +85,7 @@ public partial class PlayerActor
     [PacketHandler(typeof(ReqDirectDeliveryData))]
     public async Task HandleReqDirectDeliveryData(ReqDirectDeliveryData request)
     {
-        Guid toPlayerId = default;
+        Guid toPlayerId = Guid.Empty;
         toPlayerId.FromGuidType(request.ToPlayerId);
 
         PacketErrorCodes result = await SendDirectDeliverData(
@@ -95,21 +100,40 @@ public partial class PlayerActor
     public async Task HandleReqCreateRoom(ReqCreateRoom request)
     {
         
-        (PacketErrorCodes errorCode, Guid roomId, byte[]? playRoomCustomState) = await CreateAndJoinPlayRoom(
-            request.Name, 
-            request.Private, 
-            request.MaxCount, 
-            request.Password,
-            SerializePlayerExtendData());
+        PacketErrorCodes errorCode = PacketErrorCodes.Success;
+        byte[]? serializedPlayRoomState = null;
+        Guid newPlayRoomId = Guid.NewGuid();
         
+        (errorCode, serializedPlayRoomState) = await CreatePlayRoom(
+            newPlayRoomId, request.Name, request.Private, request.MaxCount, request.Password);
+        if (errorCode != PacketErrorCodes.Success)
+        {
+            await _sendDataGrain.Send(
+                PacketBuilder.Build(new ResCreateRoomArgs(errorCode, newPlayRoomId, [])));
+            return; 
+        }
+        
+        // // delegating onCreatePlayRoom event.
+        // _playerCustomBehavior?.OnCreatePlayRoom(_playerState, newPlayRoomId, serializedPlayRoomState);
+        //
+        // (errorCode, serializedPlayRoomState) = await JoinRoom(newPlayRoomId);
+        // if (errorCode != PacketErrorCodes.Success)
+        // {
+        //     await _sendDataGrain.Send(
+        //         PacketBuilder.Build(new ResCreateRoomArgs(errorCode, newPlayRoomId, [])));
+        //     return;
+        // }
+        // // Delegating additional process to user's handler.
+        // _playerCustomBehavior?.OnJoinPlayRoom(_playerState, newPlayRoomId, isOwner: true, serializedPlayRoomState);
+        //
         await _sendDataGrain.Send
             (
                 PacketBuilder.Build<ResCreateRoomArgs>
                 (
                     new ResCreateRoomArgs(
                         errorCode, 
-                        roomId, 
-                        playRoomCustomState ?? [])
+                        newPlayRoomId, 
+                        serializedPlayRoomState ?? [])
                 )
             );
     }
@@ -117,13 +141,15 @@ public partial class PlayerActor
     [PacketHandler(typeof(ReqJoinRoom))]
     public async Task HandleReqJoinRoom(ReqJoinRoom request)
     {
-        Guid RoomId = default;
-        RoomId.FromGuidType(request.RoomId);
-        var (resultCode, playRoomCustomState) = await JoinPlayRoom(RoomId);
+        Guid roomId = Guid.Empty;
+        roomId.FromGuidType(request.RoomId);
+        
+        PacketErrorCodes errorCode = PacketErrorCodes.Success;
+        (errorCode, byte[] playRoomCustomState) = await JoinPlayRoom(roomId);
 
         await _sendDataGrain.Send(PacketBuilder.Build<ResJoinRoomArgs>(
             new ResJoinRoomArgs(
-                resultCode, 
+                errorCode, 
                 0, 
                 playRoomCustomState)
             )
@@ -133,14 +159,14 @@ public partial class PlayerActor
     [PacketHandler(typeof(ReqPlayerListInRoom))]
     public async Task HandleReqPlayerListInRoom(ReqPlayerListInRoom request)
     {
-        Guid RoomId = default;
-        RoomId.FromGuidType(request.RoomId);
-        List<PlayRoomMember> Players = await GetPlayerListInPlayRoom(RoomId);
+        Guid roomId = Guid.Empty;
+        roomId.FromGuidType(request.RoomId);
+        List<PlayRoomMember> players = await GetPlayerListInPlayRoom(roomId);
 
         await _sendDataGrain.Send(PacketBuilder.Build<ResPlayerListInRoomArgs>(
             new ResPlayerListInRoomArgs(
-                RoomId, 
-                [.. Players.Select(s => new PlayerInfoInRoomArgs(s.PlayerId, s.PlayerName, s.PlayerExtendData ?? Array.Empty<byte>()))]
+                roomId, 
+                [.. players.Select(s => new PlayerInfoInRoomArgs(s.PlayerId, s.PlayerName, s.PlayerExtendData ?? Array.Empty<byte>()))]
                )));
     }
 

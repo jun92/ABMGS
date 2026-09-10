@@ -12,6 +12,8 @@ public interface IPlayerCustomBehavior
     Task<bool> OnLogoutAsync(CancellationToken? cancellationToken = null);
 
     void UpdatePlayerExtendDataByUserAction(string actionType, byte[] actionParameters, PlayerState playerState);
+
+    void OnCreatePlayRoom(PlayerState playerState, Guid playRoomId, byte[]? roomState);
     void OnJoinPlayRoom(PlayerState playerState, Guid playRoomId, bool isOwner, byte[]? roomState);
     
     IPlayerExtendData GetPlayerCustomState();

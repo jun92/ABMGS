@@ -11,15 +11,8 @@ namespace SyncnetPlatform.Interfaces.Actors;
 [Alias("SyncnetPlatform.Interfaces.Actors.IPlayerActor")]
 public interface IPlayerActor : IGrainWithGuidKey, IPacketHandlerActor
 {
-    [Alias("CreateAndJoinPlayRoom")]
-    Task<(PacketErrorCodes, Guid, byte[]?)> CreateAndJoinPlayRoom(string roomName, bool isPrivate, int maxCapacity, string roomPassword, byte[] playerMetadata);
-    
-     
     [Alias("GetPlayerListInPlayRoom")]
     Task<List<PlayRoomMember>> GetPlayerListInPlayRoom(Guid roomId);
-    
-    [Alias("GetPlayerName")]
-    Task<string> GetPlayerName();
     
     [Alias("JoinPlayRoom")]
     Task<(PacketErrorCodes, byte[])> JoinPlayRoom(Guid playRoomId);
@@ -44,10 +37,7 @@ public interface IPlayerActor : IGrainWithGuidKey, IPacketHandlerActor
     
     [Alias("SetOnline")]
     ValueTask SetOnline(bool isOnline);
-    
-    [Alias("UpdatePlayerName")]
-    Task UpdatePlayerName(string newName);
-    
+
     [Alias("OnUpdatePlayRoomCustomState")]
     ValueTask OnUpdatePlayRoomCustomState(Guid roomId, byte[] customState);
 
