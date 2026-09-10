@@ -106,6 +106,8 @@ public partial class PlayerActor
         byte[]? serializedPlayRoomState = null;
         Guid newPlayRoomId = Guid.NewGuid();
         
+        
+        
         (errorCode, serializedPlayRoomState) = await CreatePlayRoom(
             newPlayRoomId, request.Name, request.Private, request.MaxCount, request.Password);
         if (errorCode != PacketErrorCodes.Success)
