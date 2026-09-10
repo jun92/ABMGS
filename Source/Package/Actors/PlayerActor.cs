@@ -29,47 +29,6 @@ using System.Threading.Tasks;
 
 namespace SyncnetPlatform.Actors;
 
-public enum PlayRoomMemberUpdateReason
-{
-    None = 0,
-    Join = 1,
-    Leave = 2,
-    Vanished = 3,
-}
-
-[GenerateSerializer]
-public class PlayerState
-{
-    [Id(0)] public int Id { get; set; }
-    [Id(1)] public Guid PlayerId { get; set; }
-    [Id(2)] public string PlayerName { get; set; } = String.Empty;
-
-    [Id(3)] public Dictionary<string, object?> Extension { get; set; } = new();
-
-    public object? this[string key]
-    {
-        get => Extension.TryGetValue(key, out var val) ? val : null;
-        set => Extension[key] = value;
-    }
-}
-
-[GenerateSerializer] 
-public class PlayRoomMember(Guid roomId, Guid playerId, string playerName, byte[]? playerExtendData)
-{
-    [Id(0)]
-    public Guid RoomId { get; set; } = roomId;
-
-    [Id(1)]
-    public Guid PlayerId { get; set; } = playerId;
-
-    [Id(2)]
-    public string PlayerName { get; set; } = playerName;
-
-    // One time use only.
-    [Id(3)]
-    public byte[]? PlayerExtendData { get; set; } = playerExtendData;
-}
-
 public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPacketHandler
 {
     private readonly struct PendingPacket(byte[] data, Activity? queueActivity)
@@ -251,6 +210,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         IPlayerActor targetPlayer = GrainFactory.GetGrain<IPlayerActor>(toPlayerId);
         return await targetPlayer.OnDirectDeliveryData(GrainContext.GrainId.GetGuidKey(), message, dataType);
     }
+    
     public async Task<PacketErrorCodes> OnDirectDeliveryData(Guid fromPlayerId, string message, DirectDeliveryDataType dataType)
     {
         if (!_IsOnline || _sendDataGrain == null)
@@ -261,15 +221,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         await _sendDataGrain.Send(PacketBuilder.Build<OnDirectDeliveryDataArgs>(data));
         return PacketErrorCodes.Success;
     }
-    
-    
 
-    /// <summary>
-    /// Be called when members of a room has changed. - in and out.
-    /// </summary>
-    /// <param name="playRoomMember"></param>
-    /// <param name="updateReason"></param>
-    /// <returns></returns>
     [OneWay] 
     public async ValueTask OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember,
         PlayRoomMemberUpdateReason updateReason)
@@ -343,72 +295,6 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(roomId);
         await playRoomActor.OnPlayerActionToPlayRoom(PlayerId, actionType, actionParameter);
     }
-    
-    
-    
-    // protected async Task<(PacketErrorCodes, byte[]?)> CreatePlayRoom(Guid newPlayRoomId, string roomName, bool isPrivate, int maxCapacity, string roomPassword)
-    // {
-    //     #region Early exit check
-    //     if (!_IsOnline) return (PacketErrorCodes.PlayerOffline, []);
-    //     if (_joinedRoomList.Exists(e => e.Equals(newPlayRoomId))) return (PacketErrorCodes.AlreadyInRoom, []);
-    //     #endregion 
-    //     
-    //     IPlayRoomActor newPlayRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(newPlayRoomId);
-    //
-    //     PacketErrorCodes errorCode = PacketErrorCodes.Success;
-    //     byte[]? serializedPlayRoomState = null;
-    //
-    //     (errorCode, serializedPlayRoomState) = await newPlayRoomActor.Create(
-    //         roomName, 
-    //         isPrivate, 
-    //         maxCapacity, 
-    //         roomPassword, 
-    //         BuildPlayerRoomMember(newPlayRoomId));
-    //
-    //     if (errorCode == PacketErrorCodes.Success)
-    //     {
-    //         _joinedRoomList.Add(newPlayRoomId);
-    //     }
-    //     return (errorCode, serializedPlayRoomState);
-    // }
-    
-    // protected async Task<(PacketErrorCodes, byte[])> JoinPlayRoom(Guid roomId)
-    // {
-    //     #region Early exit check
-    //     if(!_IsOnline) return (PacketErrorCodes.PlayerOffline, []);
-    //     if (_joinedRoomList.Exists(e => e.Equals(roomId))) return (PacketErrorCodes.AlreadyInRoom, []);
-    //     #endregion
-    //     
-    //     PacketErrorCodes errorCode = PacketErrorCodes.Success;
-    //     IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(roomId);
-    //
-    //     (errorCode, byte[] playRoomCustomState) = await playRoomActor.JoinPlayer(BuildPlayerRoomMember(roomId));
-    //     if (errorCode == PacketErrorCodes.Success)
-    //     {
-    //         _joinedRoomList.Add(roomId);
-    //     }
-    //     return (errorCode, playRoomCustomState);
-    // }
-    //
-    //
-    // protected async Task<List<PlayRoomMember>> GetPlayerListInPlayRoom(Guid roomId)
-    // {
-    //     IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(roomId);
-    //     List<PlayRoomMember> players = await playRoomActor.GetPlayersInPlayRoom();
-    //     return players;
-    // }
-    //
-    // protected async Task<PacketErrorCodes> LeavePlayRoom(Guid roomId)
-    // {
-    //     IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(roomId);
-    //     PacketErrorCodes result = await playRoomActor.LeavePlayer(BuildPlayerRoomMember(roomId));
-    //     _joinedRoomList.Remove(roomId);
-    //
-    //     return result;
-    // }
-    
-    // protected PlayRoomMember BuildPlayerRoomMember(Guid roomId) 
-    //     => new PlayRoomMember(roomId, PlayerId, _playerState.PlayerName, SerializePlayerExtendData());
 }
 
 

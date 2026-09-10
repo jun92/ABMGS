@@ -67,15 +67,6 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         _playRoomTimer?.Dispose();
     }
     
-    /// <summary>
-    /// Create a new PlayRoom
-    /// </summary>
-    /// <param name="displayName"></param>
-    /// <param name="isPrivate"></param>
-    /// <param name="maxCapacity"></param>
-    /// <param name="roomPassword"></param>
-    /// <param name="owner"></param>
-    /// <returns></returns>
     public async Task<(PacketErrorCodes, byte[]?)> Create(string displayName,
         bool isPrivate,
         int maxCapacity,
