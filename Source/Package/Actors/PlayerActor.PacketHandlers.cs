@@ -23,7 +23,13 @@ public partial class PlayerActor
     [PacketHandler(typeof(Ping))]
     public async Task HandlePing(Ping request)
     {
-        await PingPong(request.Seq);
+        if(!_IsOnline)
+        {
+            return;
+        }
+        PongArgs pongArgs = new PongArgs(request.Seq + 1);
+        byte[] packetToSendBack = PacketBuilder.Build(pongArgs);
+        await _sendDataGrain.Send(packetToSendBack);
     }
 
     [PacketHandler(typeof(ReqUserInfo))]

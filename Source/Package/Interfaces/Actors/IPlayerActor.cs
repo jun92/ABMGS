@@ -14,9 +14,7 @@ public interface IPlayerActor : IGrainWithGuidKey, IPacketHandlerActor
     [Alias("CreateAndJoinPlayRoom")]
     Task<(PacketErrorCodes, Guid, byte[]?)> CreateAndJoinPlayRoom(string roomName, bool isPrivate, int maxCapacity, string roomPassword, byte[] playerMetadata);
     
-    [Alias("Echo")]
-    public Task Echo(int seq);
-    
+     
     [Alias("GetPlayerListInPlayRoom")]
     Task<List<PlayRoomMember>> GetPlayerListInPlayRoom(Guid roomId);
     
@@ -37,9 +35,6 @@ public interface IPlayerActor : IGrainWithGuidKey, IPacketHandlerActor
 
     [Alias("OnUpdatePlayerExtendData")]
     ValueTask OnUpdatePlayerExtendData(byte[] extendData);
-    
-    [Alias("PingPong")]
-    Task PingPong(int seq);
     
     [Alias("SendDirectDeliverData")]
     Task<PacketErrorCodes> SendDirectDeliverData(Guid toPlayerId, string message, DirectDeliveryDataType dataType);

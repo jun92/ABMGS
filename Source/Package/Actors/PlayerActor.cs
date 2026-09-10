@@ -204,19 +204,6 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         await base.OnDeactivateAsync(reason, cancellationToken);
     }
 
-    public Task Echo(int seq)
-    {
-        return Task.CompletedTask;
-    }
-
-    public async Task PingPong(int seq)
-    {
-        if(!_IsOnline)
-        {
-            return;
-        }
-        await _sendDataGrain.Send(PacketBuilder.Build<PongArgs>(new PongArgs(seq + 1)));
-    }
 
     public Task UpdatePlayerName(string newName)
     {
