@@ -113,19 +113,9 @@ public partial class PlayerActor
             return; 
         }
         
-        // // delegating onCreatePlayRoom event.
-        // _playerCustomBehavior?.OnCreatePlayRoom(_playerState, newPlayRoomId, serializedPlayRoomState);
-        //
-        // (errorCode, serializedPlayRoomState) = await JoinRoom(newPlayRoomId);
-        // if (errorCode != PacketErrorCodes.Success)
-        // {
-        //     await _sendDataGrain.Send(
-        //         PacketBuilder.Build(new ResCreateRoomArgs(errorCode, newPlayRoomId, [])));
-        //     return;
-        // }
-        // // Delegating additional process to user's handler.
-        // _playerCustomBehavior?.OnJoinPlayRoom(_playerState, newPlayRoomId, isOwner: true, serializedPlayRoomState);
-        //
+        // delegating onCreatePlayRoom event.
+        _playerCustomBehavior?.OnCreatePlayRoom(_playerState, newPlayRoomId, serializedPlayRoomState);
+        
         await _sendDataGrain.Send
             (
                 PacketBuilder.Build<ResCreateRoomArgs>
@@ -166,16 +156,17 @@ public partial class PlayerActor
         await _sendDataGrain.Send(PacketBuilder.Build<ResPlayerListInRoomArgs>(
             new ResPlayerListInRoomArgs(
                 roomId, 
-                [.. players.Select(s => new PlayerInfoInRoomArgs(s.PlayerId, s.PlayerName, s.PlayerExtendData ?? Array.Empty<byte>()))]
+                [.. players.Select(s => new PlayerInfoInRoomArgs(s.PlayerId, s.PlayerName, s.PlayerExtendData ??
+                    []))]
                )));
     }
 
     [PacketHandler(typeof(ReqLeaveRoom))]
     public async Task HandleReqLeavePlayRoom(ReqLeaveRoom request)
     {
-        Guid RoomId = default;
-        RoomId.FromGuidType(request.RoomId);
-        PacketErrorCodes result = await LeavePlayRoom(RoomId);
+        Guid roomId = Guid.Empty;
+        roomId.FromGuidType(request.RoomId);
+        PacketErrorCodes result = await LeavePlayRoom(roomId);
 
         await _sendDataGrain.Send(PacketBuilder.Build<ResLeaveRoomArgs>(
             new ResLeaveRoomArgs(result)

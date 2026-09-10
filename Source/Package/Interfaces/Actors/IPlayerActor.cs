@@ -11,15 +11,6 @@ namespace SyncnetPlatform.Interfaces.Actors;
 [Alias("SyncnetPlatform.Interfaces.Actors.IPlayerActor")]
 public interface IPlayerActor : IGrainWithGuidKey, IPacketHandlerActor
 {
-    [Alias("GetPlayerListInPlayRoom")]
-    Task<List<PlayRoomMember>> GetPlayerListInPlayRoom(Guid roomId);
-    
-    [Alias("JoinPlayRoom")]
-    Task<(PacketErrorCodes, byte[])> JoinPlayRoom(Guid playRoomId);
-    
-    [Alias("LeavePlayRoom")]
-    Task<PacketErrorCodes> LeavePlayRoom(Guid playRoomId);
-    
     [Alias("OnDirectDeliveryData")]
     Task<PacketErrorCodes> OnDirectDeliveryData(Guid fromPlayerId, string message, DirectDeliveryDataType dataType);
     
