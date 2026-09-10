@@ -108,7 +108,7 @@ public partial class PlayerActor
         
         
         
-        (errorCode, serializedPlayRoomState) = await CreatePlayRoom(
+        (errorCode, serializedPlayRoomState) = await _playRoomComponent.CreatePlayRoom(
             newPlayRoomId, request.Name, request.Private, request.MaxCount, request.Password);
         if (errorCode != PacketErrorCodes.Success)
         {
@@ -139,7 +139,7 @@ public partial class PlayerActor
         roomId.FromGuidType(request.RoomId);
         
         PacketErrorCodes errorCode = PacketErrorCodes.Success;
-        (errorCode, byte[] playRoomCustomState) = await JoinPlayRoom(roomId);
+        (errorCode, byte[] playRoomCustomState) = await _playRoomComponent.JoinPlayRoom(roomId);
 
         await _sendDataGrain.Send(PacketBuilder.Build<ResJoinRoomArgs>(
             new ResJoinRoomArgs(
@@ -155,7 +155,7 @@ public partial class PlayerActor
     {
         Guid roomId = Guid.Empty;
         roomId.FromGuidType(request.RoomId);
-        List<PlayRoomMember> players = await GetPlayerListInPlayRoom(roomId);
+        List<PlayRoomMember> players = await _playRoomComponent.GetPlayerListInPlayRoom(roomId);
 
         await _sendDataGrain.Send(PacketBuilder.Build<ResPlayerListInRoomArgs>(
             new ResPlayerListInRoomArgs(
@@ -170,7 +170,7 @@ public partial class PlayerActor
     {
         Guid roomId = Guid.Empty;
         roomId.FromGuidType(request.RoomId);
-        PacketErrorCodes result = await LeavePlayRoom(roomId);
+        PacketErrorCodes result = await _playRoomComponent.LeavePlayRoom(roomId);
 
         await _sendDataGrain.Send(PacketBuilder.Build<ResLeaveRoomArgs>(
             new ResLeaveRoomArgs(result)
