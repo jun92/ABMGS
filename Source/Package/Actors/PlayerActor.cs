@@ -42,13 +42,17 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     private Guid PlayerId => GrainContext.GrainId.GetGuidKey();
     private readonly IPlayerModelRepository _playerModelRepository;
 
+    // Components
     private IPlayRoomComponent? _playRoomComponent = null;
 
+    // Session Service
     private readonly IPacketRouter _routeTable;
     private readonly Channel<PendingPacket> _receiveQueueChannel;
     private CancellationTokenSource? _ctsForRunRoutingPackets;
     private Task? _runRoutingPackets;
     private ISendDataGrain _sendDataGrain = null!;
+    
+    
     private bool _isPlayerStatsDelegated = false;
 
     // player data
@@ -78,7 +82,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
     /// <summary>
     /// Player can join multiple rooms at the same time.
     /// </summary>
-    protected List<Guid> _joinedRoomList = new();
+    // protected List<Guid> _joinedRoomList = new();
 
     // Custom behavior supporting
     private readonly IPlayerCustomBehavior? _playerCustomBehavior;

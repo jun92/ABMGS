@@ -183,7 +183,7 @@ public partial class PlayerActor
         Guid roomId = Guid.Empty;
         roomId.FromGuidType(request.RoomId);
 
-        if (!_joinedRoomList.Contains(roomId))
+        if (!_playRoomComponent.IsAlreadyInRoom(roomId))
         {
             ResPlayerActionToPlayRoomArgs packetArgs = new (PacketErrorCodes.YoureNotInTheRoom, 0);
             byte[] sendData = PacketBuilder.Build(packetArgs);

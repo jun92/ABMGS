@@ -10,6 +10,7 @@ public interface IPlayRoomComponent
     Task<(PacketErrorCodes, byte[])> JoinPlayRoom(Guid roomId);
     Task<List<PlayRoomMember>> GetPlayerListInPlayRoom(Guid roomId);
     Task<PacketErrorCodes> LeavePlayRoom(Guid roomId);
+    bool IsAlreadyInRoom(Guid roomId);
 }
 
 public class PlayRoomComponent(
@@ -87,6 +88,9 @@ public class PlayRoomComponent(
 
         return result;
     }
+
+    public bool IsAlreadyInRoom(Guid roomId) => _joinedRoomList.Contains(roomId);
+    
     
     private PlayRoomMember BuildPlayerRoomMember(Guid roomId) 
         => new PlayRoomMember(roomId, _playerId, _playerState.PlayerName, SerializePlayerExtendData());
