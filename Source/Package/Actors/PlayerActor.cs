@@ -237,33 +237,6 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         await _sendDataGrain.Send(PacketBuilder.Build<OnDirectDeliveryDataArgs>(data));
         return PacketErrorCodes.Success;
     }
-
-    // public async Task<(PacketErrorCodes ,Guid, byte[]?)> CreateAndJoinPlayRoom(
-    //     string roomName,
-    //     bool isPrivate,
-    //     int maxCapacity,
-    //     string roomPassword,
-    //     byte[] playerMetadata)
-    // {
-    //     PacketErrorCodes errorCode = PacketErrorCodes.Success;
-    //     byte[]? serializedPlayRoomState = null;
-    //     Guid newPlayRoomId = Guid.NewGuid();
-    //     
-    //     (errorCode, serializedPlayRoomState) = await CreatePlayRoom(newPlayRoomId, roomName, isPrivate, maxCapacity, roomPassword);
-    //     if (errorCode != PacketErrorCodes.Success) return (errorCode, newPlayRoomId, serializedPlayRoomState);
-    //
-    //     (errorCode, serializedPlayRoomState) = await JoinRoom(newPlayRoomId);
-    //     if (errorCode != PacketErrorCodes.Success) return (errorCode, newPlayRoomId, serializedPlayRoomState);
-    //     
-    //     // Just remember rooms I joined.
-    //     _joinedRoomList.Add(newPlayRoomId);
-    //
-    //     // Delegating additional process to user's handler.
-    //     _playerCustomBehavior?.OnJoinPlayRoom(_playerState, newPlayRoomId, isOwner: true, serializedPlayRoomState);
-    //     
-    //     return (errorCode, newPlayRoomId, serializedPlayRoomState);
-    // }
-
     protected async Task<(PacketErrorCodes, byte[]?)> CreatePlayRoom(Guid newPlayRoomId, string roomName, bool isPrivate, int maxCapacity, string roomPassword)
     {
         #region Early exit check
@@ -290,7 +263,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         return (errorCode, serializedPlayRoomState);
     }
     
-    public async Task<(PacketErrorCodes, byte[])> JoinPlayRoom(Guid roomId)
+    protected async Task<(PacketErrorCodes, byte[])> JoinPlayRoom(Guid roomId)
     {
         #region Early exit check
         if(!_IsOnline) return (PacketErrorCodes.PlayerOffline, []);
@@ -382,7 +355,7 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         _isPlayerStatsDelegated = isDelegatingNow;
     }
 
-    public async Task<List<PlayRoomMember>> GetPlayerListInPlayRoom(Guid roomId)
+    protected async Task<List<PlayRoomMember>> GetPlayerListInPlayRoom(Guid roomId)
     {
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(roomId);
         List<PlayRoomMember> players = await playRoomActor.GetPlayersInPlayRoom();
@@ -395,19 +368,13 @@ public partial class PlayerActor : Grain, IPlayerActor, IPacketHandlerActor, IPa
         await playRoomActor.OnPlayerActionToPlayRoom(PlayerId, actionType, actionParameter);
     }
 
-    public async Task<PacketErrorCodes> LeavePlayRoom(Guid roomId)
+    protected async Task<PacketErrorCodes> LeavePlayRoom(Guid roomId)
     {
         IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(roomId);
         PacketErrorCodes result = await playRoomActor.LeavePlayer(BuildPlayerRoomMember(roomId));
         _joinedRoomList.Remove(roomId);
 
         return result;
-    }
-
-    public async Task Broadcast(Guid playRoomId, string message)
-    {
-        IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(playRoomId);
-
     }
 }
 

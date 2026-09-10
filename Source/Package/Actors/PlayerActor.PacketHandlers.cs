@@ -23,10 +23,8 @@ public partial class PlayerActor
     [PacketHandler(typeof(Ping))]
     public async Task HandlePing(Ping request)
     {
-        if(!_IsOnline)
-        {
-            return;
-        }
+        if (!_IsOnline) return;
+        
         PongArgs pongArgs = new(request.Seq + 1);
         byte[] packetToSendBack = PacketBuilder.Build(pongArgs);
         await _sendDataGrain.Send(packetToSendBack);
@@ -35,6 +33,8 @@ public partial class PlayerActor
     [PacketHandler(typeof(ReqUserInfo))]
     public async Task HandleReqUserInfo(ReqUserInfo request)
     {
+        if (!_IsOnline) return;
+        
         byte[] serializedPlayerExtendData = SerializePlayerExtendData();
         ResUserInfoArgs resUserInfoArgs = new(PlayerId, _playerState.PlayerName, serializedPlayerExtendData);
         byte[] packetToSendBack = PacketBuilder.Build(resUserInfoArgs);
@@ -44,6 +44,8 @@ public partial class PlayerActor
     [PacketHandler(typeof(ReqUpdatePlayerName))]
     public async Task HandleReqUpdatePlayerName(ReqUpdatePlayerName request)
     {
+        if (!_IsOnline) return;
+        
         _playerState.PlayerName = request.PlayerName;
         _IsDirtyPlayerData = true;
         ResUpdatePlayerNameArgs resUpdatePlayerNameArgs = new(PacketErrorCodes.Success);
