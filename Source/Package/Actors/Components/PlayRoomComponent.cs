@@ -12,21 +12,23 @@ public interface IPlayRoomComponent
     Task<PacketErrorCodes> LeavePlayRoom(Guid roomId);
     bool IsAlreadyInRoom(Guid roomId);
     Task<PacketErrorCodes> PlayerActionToPlayRoom(Guid roomId, Guid playerId, string actionType, byte[] actionParameters);
+    void SetPlayerCustomBehavior(IPlayerCustomBehavior? playerCustomBehavior);
 }
 
 public class PlayRoomComponent(
     ILogger<PlayRoomComponent> logger, 
     IGrainFactory grainFactory, 
     Guid playerId, 
-    PlayerState playerState,
-    IPlayerCustomBehavior? playerCustomBehavior) : IPlayRoomComponent
+    PlayerState playerState) : IPlayRoomComponent
 {
-    private readonly ILogger<PlayRoomComponent> _logger = logger;
     private readonly List<Guid> _joinedRoomList = new List<Guid>();
-    private readonly IGrainFactory _grainFactory = grainFactory;
-    private readonly Guid _playerId = playerId;
-    private readonly PlayerState _playerState = playerState;
-    private readonly IPlayerCustomBehavior? _playerCustomBehavior = playerCustomBehavior;
+    private IPlayerCustomBehavior? _playerCustomBehavior = null;
+
+
+    public void SetPlayerCustomBehavior(IPlayerCustomBehavior? playerCustomBehavior)
+    {
+        _playerCustomBehavior = playerCustomBehavior;
+    }
 
 
     public async Task<(PacketErrorCodes, byte[]?)> CreatePlayRoom(Guid newPlayRoomId, string roomName, bool isPrivate, int maxCapacity, string roomPassword)
@@ -36,7 +38,7 @@ public class PlayRoomComponent(
         if (_joinedRoomList.Exists(e => e.Equals(newPlayRoomId))) return (PacketErrorCodes.AlreadyInRoom, []);
         #endregion 
         
-        IPlayRoomActor newPlayRoomActor = _grainFactory.GetGrain<IPlayRoomActor>(newPlayRoomId);
+        IPlayRoomActor newPlayRoomActor = grainFactory.GetGrain<IPlayRoomActor>(newPlayRoomId);
 
         PacketErrorCodes errorCode = PacketErrorCodes.Success;
         byte[]? serializedPlayRoomState = null;
@@ -52,6 +54,8 @@ public class PlayRoomComponent(
         {
             _joinedRoomList.Add(newPlayRoomId);
         }
+        
+        logger.LogInformation("new room[{roomId}] created by Player[{playerId}]", newPlayRoomId.ToString(), playerId.ToString());
         return (errorCode, serializedPlayRoomState);
     }
     
@@ -63,7 +67,7 @@ public class PlayRoomComponent(
         #endregion
         
         PacketErrorCodes errorCode = PacketErrorCodes.Success;
-        IPlayRoomActor playRoomActor = _grainFactory.GetGrain<IPlayRoomActor>(roomId);
+        IPlayRoomActor playRoomActor = grainFactory.GetGrain<IPlayRoomActor>(roomId);
 
         (errorCode, byte[] playRoomCustomState) = await playRoomActor.JoinPlayer(BuildPlayerRoomMember(roomId));
         if (errorCode == PacketErrorCodes.Success)
@@ -77,21 +81,21 @@ public class PlayRoomComponent(
     {
         if (!_joinedRoomList.Contains(roomId)) return PacketErrorCodes.YoureNotInTheRoom;
         
-        IPlayRoomActor playRoomActor = _grainFactory.GetGrain<IPlayRoomActor>(roomId);
+        IPlayRoomActor playRoomActor = grainFactory.GetGrain<IPlayRoomActor>(roomId);
         return await playRoomActor.OnPlayerActionToPlayRoom(playerId, actionType, actionParameters);
     }
     
     
     public async Task<List<PlayRoomMember>> GetPlayerListInPlayRoom(Guid roomId)
     {
-        IPlayRoomActor playRoomActor = _grainFactory.GetGrain<IPlayRoomActor>(roomId);
+        IPlayRoomActor playRoomActor = grainFactory.GetGrain<IPlayRoomActor>(roomId);
         List<PlayRoomMember> players = await playRoomActor.GetPlayersInPlayRoom();
         return players;
     }
 
     public async Task<PacketErrorCodes> LeavePlayRoom(Guid roomId)
     {
-        IPlayRoomActor playRoomActor = _grainFactory.GetGrain<IPlayRoomActor>(roomId);
+        IPlayRoomActor playRoomActor = grainFactory.GetGrain<IPlayRoomActor>(roomId);
         PacketErrorCodes result = await playRoomActor.LeavePlayer(BuildPlayerRoomMember(roomId));
         _joinedRoomList.Remove(roomId);
 
@@ -102,11 +106,11 @@ public class PlayRoomComponent(
     
     
     private PlayRoomMember BuildPlayerRoomMember(Guid roomId) 
-        => new PlayRoomMember(roomId, _playerId, _playerState.PlayerName, SerializePlayerExtendData());
+        => new PlayRoomMember(roomId, playerId, playerState.PlayerName, SerializePlayerExtendData());
 
     private byte[] SerializePlayerExtendData()
         => _playerCustomBehavior != null
-            ? _playerCustomBehavior.GetPlayerCustomState().Serialize(_playerState.Extension)
+            ? _playerCustomBehavior.GetPlayerCustomState().Serialize(playerState.Extension)
             : [];
 
     

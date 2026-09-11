@@ -69,10 +69,9 @@ public partial class PlayerActor(
 
     private void InitializeComponents()
     {
-        _playRoomComponent = ActivatorUtilities.CreateInstance<IPlayRoomComponent>(serviceProvider, 
-            PlayerId,
-            _playerState, 
-            playerCustomBehavior!);
+        _playRoomComponent = ActivatorUtilities.CreateInstance<PlayRoomComponent>(serviceProvider, PlayerId,_playerState);
+        if(playerCustomBehavior is not null) _playRoomComponent.SetPlayerCustomBehavior(playerCustomBehavior);
+        
     }
 
     private void DeinitializeComponents()
@@ -143,7 +142,7 @@ public partial class PlayerActor(
         }
         return [];
     }
-
+    
     private Dictionary<string, object?> DeserializePlayerExtendData(byte[] data)
     {
         if(playerCustomBehavior is not null)
