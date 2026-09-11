@@ -36,7 +36,9 @@ public partial class PlayerActor
     {
         if (!_isOnline) return;
         
-        byte[] serializedPlayerExtendData = SerializePlayerExtendData();
+        //byte[] serializedPlayerExtendData = SerializePlayerExtendData();
+        byte[] serializedPlayerExtendData = playerCustomBehavior != null ? playerCustomBehavior.Serialize(_playerState.Extension) : [];
+        
         ResUserInfoArgs resUserInfoArgs = new(PlayerId, _playerState.PlayerName, serializedPlayerExtendData);
         byte[] packetToSendBack = PacketBuilder.Build(resUserInfoArgs);
         await _sendDataGrain.Send(packetToSendBack);
@@ -70,7 +72,8 @@ public partial class PlayerActor
                     new ResUserActionForUpdatePlayerExtendDataArgs(
                         PacketErrorCodes.Success,
                         PacketErrorCodes.Success.ToString(),
-                        SerializePlayerExtendData()
+                        playerCustomBehavior != null ? playerCustomBehavior.Serialize(_playerState.Extension) : []
+                        //SerializePlayerExtendData()
                         )));
         }
         else

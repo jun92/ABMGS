@@ -18,6 +18,11 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
     {
     }
 
+    public byte[] Serialize(IReadOnlyDictionary<string, object?> playerState)
+    {
+        throw new NotImplementedException();
+    }
+
     public IPlayerExtendData GetPlayerCustomState()
     {
         throw new NotImplementedException();

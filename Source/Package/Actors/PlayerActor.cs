@@ -134,14 +134,14 @@ public partial class PlayerActor(
         await base.OnDeactivateAsync(reason, cancellationToken);
     }
 
-    private byte[] SerializePlayerExtendData()
-    {
-        if(playerCustomBehavior is not null)
-        {
-            return playerCustomBehavior.GetPlayerCustomState().Serialize(_playerState.Extension);
-        }
-        return [];
-    }
+    // private byte[] SerializePlayerExtendData()
+    // {
+    //     if(playerCustomBehavior is not null)
+    //     {
+    //         return playerCustomBehavior.GetPlayerCustomState().Serialize(_playerState.Extension);
+    //     }
+    //     return [];
+    // }
     
     private Dictionary<string, object?> DeserializePlayerExtendData(byte[] data)
     {

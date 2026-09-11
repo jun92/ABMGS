@@ -76,6 +76,11 @@ public static class ActionCommand
 // TGame means Tic-Tac-Toe Game.
 public class TttGamePlayerBehavior(IPlayerExtendData playerExtendData) : IPlayerCustomBehavior
 {
+    public byte[] Serialize(IReadOnlyDictionary<string, object?> playerState)
+    {
+        return GetPlayerCustomState().Serialize(playerState);
+    }
+
     public IPlayerExtendData GetPlayerCustomState() => playerExtendData; 
 
     public Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null)

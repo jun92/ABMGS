@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using OrleansCodeGen.SyncnetPlatform.Actors;
 using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Protocols.Generated;
 
@@ -106,13 +107,7 @@ public class PlayRoomComponent(
     
     
     private PlayRoomMember BuildPlayerRoomMember(Guid roomId) 
-        => new PlayRoomMember(roomId, playerId, playerState.PlayerName, SerializePlayerExtendData());
-
-    private byte[] SerializePlayerExtendData()
-        => _playerCustomBehavior != null
-            ? _playerCustomBehavior.GetPlayerCustomState().Serialize(playerState.Extension)
-            : [];
-
-    
+        => new PlayRoomMember(roomId, playerId, playerState.PlayerName, 
+            _playerCustomBehavior == null ? [] : _playerCustomBehavior.Serialize(playerState.Extension));
 }
 
