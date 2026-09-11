@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Logging;
-using OrleansCodeGen.SyncnetPlatform.Actors;
+using SyncnetPlatform.Actors;
 using SyncnetPlatform.Interfaces.Actors;
 using SyncnetPlatform.Protocols.Generated;
 
@@ -35,8 +35,7 @@ public class PlayRoomComponent(
     public async Task<(PacketErrorCodes, byte[]?)> CreatePlayRoom(Guid newPlayRoomId, string roomName, bool isPrivate, int maxCapacity, string roomPassword)
     {
         #region Early exit check
-        // if (!_IsOnline) return (PacketErrorCodes.PlayerOffline, []);
-        if (_joinedRoomList.Exists(e => e.Equals(newPlayRoomId))) return (PacketErrorCodes.AlreadyInRoom, []);
+        if(_joinedRoomList.Contains(newPlayRoomId)) return (PacketErrorCodes.AlreadyInRoom, []);
         #endregion 
         
         IPlayRoomActor newPlayRoomActor = grainFactory.GetGrain<IPlayRoomActor>(newPlayRoomId);
@@ -63,8 +62,7 @@ public class PlayRoomComponent(
     public async Task<(PacketErrorCodes, byte[])> JoinPlayRoom(Guid roomId)
     {
         #region Early exit check
-        // if(!_IsOnline) return (PacketErrorCodes.PlayerOffline, []);
-        if (_joinedRoomList.Exists(e => e.Equals(roomId))) return (PacketErrorCodes.AlreadyInRoom, []);
+        if (_joinedRoomList.Contains(roomId)) return (PacketErrorCodes.AlreadyInRoom, []);
         #endregion
         
         PacketErrorCodes errorCode = PacketErrorCodes.Success;
