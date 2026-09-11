@@ -37,7 +37,6 @@ public partial class PlayerActor(
     IPlayerCustomBehavior? playerCustomBehavior = null)
     : Grain, IPlayerActor, IPacketHandlerActor, IPacketHandler
 {
-    
 
     private Guid PlayerId => GrainContext.GrainId.GetGuidKey();
 
@@ -242,14 +241,6 @@ public partial class PlayerActor(
     private void SetPlayerStatsDelegated(bool isDelegatingNow)
     {
         _isPlayerStatsDelegated = isDelegatingNow;
-    }
-
-    
-    
-    public async Task PlayerActionToPlayRoom(Guid roomId, string actionType, byte[] actionParameter)
-    {
-        IPlayRoomActor playRoomActor = GrainFactory.GetGrain<IPlayRoomActor>(roomId);
-        await playRoomActor.OnPlayerActionToPlayRoom(PlayerId, actionType, actionParameter);
     }
     
     private readonly struct PendingPacket(byte[] data, Activity? queueActivity)
