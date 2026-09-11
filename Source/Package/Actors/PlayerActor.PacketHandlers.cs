@@ -12,6 +12,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using PacketBuilder = SyncnetPlatform.Network.Utils.SyncnetPacketBuilder;
 using SyncnetPlatform.Interfaces.Actors;
+using SyncnetPlatform.Interfaces.Network.Sessions;
 using SyncnetPlatform.Utils.Telemetry;
 using System.Diagnostics;
 using System.Threading;
@@ -106,14 +107,14 @@ public partial class PlayerActor
             PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data)));
     }
 
-    public async ValueTask PushRecievedData(byte[] Data)
+    public async ValueTask PushRecievedData(byte[] data)
     {
         var currentActivity = Activity.Current;
         Activity.Current = null;
         try
         {
             var queueActivity = SyncnetTelemetry.Trace.StartActivity("InReceiveQueue", ActivityKind.Internal);
-            await _receiveQueueChannel.Writer.WriteAsync(new PendingPacket(Data, queueActivity));
+            await _receiveQueueChannel.Writer.WriteAsync(new PendingPacket(data, queueActivity));
         }
         finally
         {
@@ -121,7 +122,19 @@ public partial class PlayerActor
         }
     }
 
-    public async Task RunRoutingPackets(CancellationToken shutdownToken)
+    private void SetupNetworkProcessingUnits()
+    {
+        _sendDataGrain = GrainFactory.GetGrain<ISendDataGrain>(this.GetGrainId().GetGuidKey());
+        
+        // Keep pumping up packets 
+        _ctsForRunRoutingPackets = new CancellationTokenSource();
+        _runRoutingPackets = RunRoutingPackets(_ctsForRunRoutingPackets.Token);
+        
+        routeTable.BuildParamExtractionFuncs<PacketWrapper>();
+        routeTable.BuildPacketHandlerFunctions<PlayerActor>(this);
+    }
+
+    private async Task RunRoutingPackets(CancellationToken shutdownToken)
     {
         try
         {

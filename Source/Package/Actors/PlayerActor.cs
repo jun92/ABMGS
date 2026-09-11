@@ -110,14 +110,7 @@ public partial class PlayerActor(
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
-        _ctsForRunRoutingPackets = new CancellationTokenSource();
-        _sendDataGrain = GrainFactory.GetGrain<ISendDataGrain>(this.GetGrainId().GetGuidKey());
-
-        _runRoutingPackets = RunRoutingPackets(_ctsForRunRoutingPackets.Token);
-
-        routeTable.BuildParamExtractionFuncs<PacketWrapper>();
-        routeTable.BuildPacketHandlerFunctions<PlayerActor>(this);
-        
+        SetupNetworkProcessingUnits();
         await base.OnActivateAsync(cancellationToken);
     }
 
