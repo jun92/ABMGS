@@ -22,10 +22,7 @@ public interface IPlayerActor : IGrainWithGuidKey, IPacketHandlerActor
     
     [Alias("SendDirectDeliverData")]
     Task<PacketErrorCodes> SendDirectDeliverData(Guid toPlayerId, string message, DirectDeliveryDataType dataType);
-    
-    [Alias("SetIdProvider")]
-    ValueTask SetIdProvider(SupportedPlatformType idpFrom);
-    
+     
     [Alias("SetOnline")]
     ValueTask SetOnline(bool isOnline);
 

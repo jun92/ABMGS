@@ -1,0 +1,101 @@
+using SyncnetPlatform.Extensions;
+using SyncnetPlatform.Interfaces.Actors;
+using SyncnetPlatform.Network.Attributes;
+using SyncnetPlatform.Network.Utils;
+using SyncnetPlatform.Protocols.Generated;
+
+namespace SyncnetPlatform.Actors;
+public partial class PlayerActor
+{
+    [PacketHandler(typeof(ReqCreateRoom))]
+    public async Task HandleReqCreateRoom(ReqCreateRoom request)
+    {
+        
+        PacketErrorCodes errorCode = PacketErrorCodes.Success;
+        byte[]? serializedPlayRoomState = null;
+        Guid newPlayRoomId = Guid.NewGuid();
+
+        if (!_isOnline) return;
+        
+        (errorCode, serializedPlayRoomState) = await _playRoomComponent!.CreatePlayRoom(
+            newPlayRoomId, request.Name, request.Private, request.MaxCount, request.Password);
+        if (errorCode != PacketErrorCodes.Success)
+        {
+            await _sendDataGrain.Send(
+                SyncnetPacketBuilder.Build(new ResCreateRoomArgs(errorCode, newPlayRoomId, [])));
+            return; 
+        }
+        
+        // delegating onCreatePlayRoom event.
+        playerCustomBehavior?.OnCreatePlayRoom(_playerState, newPlayRoomId, serializedPlayRoomState);
+        
+        await _sendDataGrain.Send
+            (
+                SyncnetPacketBuilder.Build<ResCreateRoomArgs>
+                (
+                    new ResCreateRoomArgs(
+                        errorCode, 
+                        newPlayRoomId, 
+                        serializedPlayRoomState ?? [])
+                )
+            );
+    }
+
+    [PacketHandler(typeof(ReqJoinRoom))]
+    public async Task HandleReqJoinRoom(ReqJoinRoom request)
+    {
+        Guid roomId = Guid.Empty;
+        roomId.FromGuidType(request.RoomId);
+        
+        PacketErrorCodes errorCode = PacketErrorCodes.Success;
+        (errorCode, byte[] playRoomCustomState) = await _playRoomComponent!.JoinPlayRoom(roomId);
+
+        await _sendDataGrain.Send(SyncnetPacketBuilder.Build<ResJoinRoomArgs>(
+            new ResJoinRoomArgs(
+                errorCode, 
+                0, 
+                playRoomCustomState)
+            )
+            );
+    }
+
+    [PacketHandler(typeof(ReqPlayerListInRoom))]
+    public async Task HandleReqPlayerListInRoom(ReqPlayerListInRoom request)
+    {
+        Guid roomId = Guid.Empty;
+        roomId.FromGuidType(request.RoomId);
+        List<PlayRoomMember> players = await _playRoomComponent!.GetPlayerListInPlayRoom(roomId);
+
+        await _sendDataGrain.Send(SyncnetPacketBuilder.Build<ResPlayerListInRoomArgs>(
+            new ResPlayerListInRoomArgs(
+                roomId, 
+                [.. players.Select(s => new PlayerInfoInRoomArgs(s.PlayerId, s.PlayerName, s.PlayerExtendData ??
+                    []))]
+               )));
+    }
+
+    [PacketHandler(typeof(ReqLeaveRoom))]
+    public async Task HandleReqLeavePlayRoom(ReqLeaveRoom request)
+    {
+        Guid roomId = Guid.Empty;
+        roomId.FromGuidType(request.RoomId);
+        PacketErrorCodes result = await _playRoomComponent!.LeavePlayRoom(roomId);
+
+        await _sendDataGrain.Send(SyncnetPacketBuilder.Build<ResLeaveRoomArgs>(
+            new ResLeaveRoomArgs(result)
+            ));
+    }
+    
+    [PacketHandler(typeof(ReqPlayerActionToPlayRoom))]
+    public async Task HandleReqPlayerActionToPlayRoom(ReqPlayerActionToPlayRoom request)
+    {
+        Guid roomId = Guid.Empty;
+        roomId.FromGuidType(request.RoomId);
+
+        PacketErrorCodes errorCode = await _playRoomComponent!.PlayerActionToPlayRoom(roomId, PlayerId, request.ActionType,
+            request.GetActionParameterArray());
+        ResPlayerActionToPlayRoomArgs resPlayerActionToPlayRoomArgs = new(errorCode, 0);
+        byte[] packetToSendBack = SyncnetPacketBuilder.Build(resPlayerActionToPlayRoomArgs);
+        await _sendDataGrain.Send(packetToSendBack);
+    }
+}

@@ -11,6 +11,7 @@ public interface IPlayRoomComponent
     Task<List<PlayRoomMember>> GetPlayerListInPlayRoom(Guid roomId);
     Task<PacketErrorCodes> LeavePlayRoom(Guid roomId);
     bool IsAlreadyInRoom(Guid roomId);
+    Task<PacketErrorCodes> PlayerActionToPlayRoom(Guid roomId, Guid playerId, string actionType, byte[] actionParameters);
 }
 
 public class PlayRoomComponent(
@@ -70,6 +71,14 @@ public class PlayRoomComponent(
             _joinedRoomList.Add(roomId);
         }
         return (errorCode, playRoomCustomState);
+    }
+
+    public async Task<PacketErrorCodes> PlayerActionToPlayRoom(Guid roomId, Guid playerId, string actionType, byte[] actionParameters)
+    {
+        if (!_joinedRoomList.Contains(roomId)) return PacketErrorCodes.YoureNotInTheRoom;
+        
+        IPlayRoomActor playRoomActor = _grainFactory.GetGrain<IPlayRoomActor>(roomId);
+        return await playRoomActor.OnPlayerActionToPlayRoom(playerId, actionType, actionParameters);
     }
     
     
