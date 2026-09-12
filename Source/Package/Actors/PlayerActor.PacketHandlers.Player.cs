@@ -57,7 +57,7 @@ public partial class PlayerActor
                 SyncnetPacketBuilder.Build<ResUserActionForUpdatePlayerExtendDataArgs>(
                     new ResUserActionForUpdatePlayerExtendDataArgs(
                         PacketErrorCodes.Success,
-                        PacketErrorCodes.Success.ToString(),
+                        nameof(PacketErrorCodes.Success),
                         playerCustomBehavior != null ? playerCustomBehavior.Serialize(_playerState.Extension) : []
                         //SerializePlayerExtendData()
                         )));
@@ -68,7 +68,7 @@ public partial class PlayerActor
                 SyncnetPacketBuilder.Build<ResUserActionForUpdatePlayerExtendDataArgs>(
                     new ResUserActionForUpdatePlayerExtendDataArgs(
                         PacketErrorCodes.InterfaceNotImplemented,
-                        PacketErrorCodes.InterfaceNotImplemented.ToString(),
+                        nameof(PacketErrorCodes.InterfaceNotImplemented),
                         Array.Empty<byte>()
                         )));
         }
