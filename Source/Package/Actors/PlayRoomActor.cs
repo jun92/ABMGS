@@ -40,7 +40,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         _playRoomCustomEventHandler = playRoomCustomEventHandler;
     }
 
-    public override async Task OnActivateAsync(CancellationToken cancellationToken)
+    public override Task OnActivateAsync(CancellationToken cancellationToken)
     {
         if (_playRoomCustomEventHandler is not null)
         {
@@ -112,7 +112,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         return (PacketErrorCodes.Success, SerializePlayRoomCustomState());
     }
 
-    protected byte[] SerializePlayRoomCustomState() =>
+    private byte[] SerializePlayRoomCustomState() =>
         _playRoomState.PlayRoomCustomState is not null ? _playRoomState.PlayRoomCustomState.Serialize() : [];
 
     public Task<List<PlayRoomMember>> GetPlayersInPlayRoom()
