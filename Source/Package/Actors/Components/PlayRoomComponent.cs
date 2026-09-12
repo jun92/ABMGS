@@ -81,7 +81,7 @@ public class PlayRoomComponent(
         if (!_joinedRoomList.Contains(roomId)) return PacketErrorCodes.YoureNotInTheRoom;
         
         IPlayRoomActor playRoomActor = grainFactory.GetGrain<IPlayRoomActor>(roomId);
-        return await playRoomActor.OnPlayerActionToPlayRoom(playerId, actionType, actionParameters);
+        return await playRoomActor.ReqPlayerActionToPlayRoom(playerId, actionType, actionParameters);
     }
     
     

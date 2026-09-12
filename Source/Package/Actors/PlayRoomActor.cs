@@ -155,33 +155,32 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         _players.Clear();
     }
 
-    public async Task<PacketErrorCodes> OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
+    public async Task<PacketErrorCodes> ReqPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
     {
-        if(_playRoomCustomEventHandler is not null)
+        if (_playRoomCustomEventHandler is null) return PacketErrorCodes.InterfaceNotImplemented;
+        
+        // Custom processing 
+        (Dictionary<Guid,byte[]>? updatedPlayerExtendData, byte[]? updatedPlayRoomCustomState) = 
+            await _playRoomCustomEventHandler.OnPlayerActionToPlayRoom(playerId, actionType, actionParameter, _playRoomSendBuffer);
+        
+        
+        if( updatedPlayRoomCustomState is not null)
         {
-            // Custom processing 
-            (Dictionary<Guid,byte[]>? updatedPlayerExtendData, byte[]? updatedPlayRoomCustomState) = 
-                await _playRoomCustomEventHandler.OnPlayerActionToPlayRoom(playerId, actionType, actionParameter, _playRoomSendBuffer);
-            
-            
-            if( updatedPlayRoomCustomState is not null)
+            // Broadcasting to all players due to playroom state changed.
+            foreach (PlayRoomMember member in _players)
             {
-                // Broadcasting to all players due to playroom state changed.
-                foreach (PlayRoomMember member in _players)
-                {
-                    IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(member.PlayerId);
-                    await p.OnUpdatePlayRoomCustomState(RoomId, updatedPlayRoomCustomState);
-                }
+                IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(member.PlayerId);
+                await p.OnUpdatePlayRoomCustomState(RoomId, updatedPlayRoomCustomState);
             }
-            
-            foreach(KeyValuePair<Guid, byte[]> playerExtendData in updatedPlayerExtendData)
+        }
+        
+        foreach(KeyValuePair<Guid, byte[]> playerExtendData in updatedPlayerExtendData)
+        {
+            PlayRoomMember? updatedMember = _players.Find(p => p.PlayerId == playerExtendData.Key);
+            if (updatedMember is not null)
             {
-                PlayRoomMember? updatedMember = _players.Find(p => p.PlayerId == playerExtendData.Key);
-                if (updatedMember is not null)
-                {
-                    IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(updatedMember.PlayerId);
-                    await p.OnUpdatePlayerExtendData(playerExtendData.Value);
-                }
+                IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(updatedMember.PlayerId);
+                await p.OnUpdatePlayerExtendData(playerExtendData.Value);
             }
         }
         return PacketErrorCodes.Success;
