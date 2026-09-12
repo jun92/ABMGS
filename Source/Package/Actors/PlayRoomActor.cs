@@ -163,17 +163,14 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         
         // Custom processing 
         (Dictionary<Guid,byte[]>? updatedPlayerExtendData, byte[]? updatedPlayRoomCustomState) = 
-            await _playRoomCustomEventHandler.OnPlayerActionToPlayRoom(playerId, actionType, actionParameter, _playRoomSendBuffer);
+            await _playRoomCustomEventHandler.ReqPlayerActionToPlayRoom(playerId, actionType, actionParameter, _playRoomSendBuffer);
         
         
         if( updatedPlayRoomCustomState is not null)
         {
+            _playRoomState.PlayRoomCustomState?.Deserialize(updatedPlayRoomCustomState);
             // Broadcasting to all players due to playroom state changed.
-            foreach (PlayRoomMember member in _players)
-            {
-                IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(member.PlayerId);
-                await p.OnUpdatePlayRoomCustomState(RoomId, updatedPlayRoomCustomState);
-            }
+            await BroadcastPlayRoomCustomState(updatedPlayRoomCustomState, m => true);
         }
         
         foreach(KeyValuePair<Guid, byte[]> playerExtendData in updatedPlayerExtendData)
@@ -186,5 +183,15 @@ public class PlayRoomActor : Grain, IPlayRoomActor
             }
         }
         return PacketErrorCodes.Success;
+    }
+
+    private async Task BroadcastPlayRoomCustomState(byte[] updatedData, Func<PlayRoomMember, bool> filterFunc)
+    {
+        foreach (PlayRoomMember member in _players)
+        {
+            if (!filterFunc(member)) continue;
+            IPlayerActor  playerActor = GrainFactory.GetGrain<IPlayerActor>(member.PlayerId);
+            await playerActor.OnUpdatePlayRoomCustomState(member.RoomId, updatedData);
+        }
     }
 }
