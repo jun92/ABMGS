@@ -40,7 +40,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         _playRoomCustomEventHandler = playRoomCustomEventHandler;
     }
 
-    public override Task OnActivateAsync(CancellationToken cancellationToken)
+    public override async Task OnActivateAsync(CancellationToken cancellationToken)
     {
         if (_playRoomCustomEventHandler is not null)
         {
@@ -157,7 +157,9 @@ public class PlayRoomActor : Grain, IPlayRoomActor
 
     public async Task<PacketErrorCodes> ReqPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
     {
+        #region Early exit check
         if (_playRoomCustomEventHandler is null) return PacketErrorCodes.InterfaceNotImplemented;
+        #endregion 
         
         // Custom processing 
         (Dictionary<Guid,byte[]>? updatedPlayerExtendData, byte[]? updatedPlayRoomCustomState) = 
