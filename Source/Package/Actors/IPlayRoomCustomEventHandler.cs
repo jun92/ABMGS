@@ -13,6 +13,6 @@ public interface IPlayRoomCustomEventHandler
 
     Task<int> AddPlayerToPlayRoom(Guid id, byte[] playerExtendData);
 
-    Task<(Dictionary<Guid, byte[]>?, byte[]?)> OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter, IPlayRoomSendBuffer sendBuffer);
+    Task<(Dictionary<Guid, byte[]>?, byte[]?)> ReqPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter, IPlayRoomSendBuffer sendBuffer);
     Task OnTimer(float delta);
 }

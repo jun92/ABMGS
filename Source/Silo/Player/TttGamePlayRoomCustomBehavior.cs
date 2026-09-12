@@ -45,7 +45,7 @@ public class TttGamePlayRoomCustomBehavior(
         _tttGamePlayRoomState!.AddPlayer(id, tttGamePacketSerializer.DeserializePlayerCustomData(playerExtendDataArray));
         return Task.FromResult(0);
     }
-    public Task<(Dictionary<Guid, byte[]>?, byte[]?)> OnPlayerActionToPlayRoom(Guid playerId, string actionType,
+    public Task<(Dictionary<Guid, byte[]>?, byte[]?)> ReqPlayerActionToPlayRoom(Guid playerId, string actionType,
         byte[] actionParameter, IPlayRoomSendBuffer sendBuffer)
     {
         switch (actionType)
