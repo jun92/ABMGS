@@ -102,9 +102,20 @@ public class PlayRoomComponent(
     }
 
     public bool IsAlreadyInRoom(Guid roomId) => _joinedRoomList.Contains(roomId);
-    
-    
-    private PlayRoomMember BuildPlayerRoomMember(Guid roomId) 
+
+
+    private PlayRoomMember BuildPlayerRoomMember(Guid roomId)
+    // {
+    //     PlayRoomMember newOne = new();
+    //     newOne.RoomId = roomId;
+    //     newOne.PlayerId = playerId;
+    //     newOne.PlayerName = playerState.PlayerName;
+    //     newOne.PlayerExtendData =
+    //         _playerCustomBehavior == null ? [] : _playerCustomBehavior.Serialize(playerState.Extension);
+    //     newOne.PlayerStateForPlayRoom =
+    //         _playerCustomBehavior == null?[] : _playerCustomBehavior.
+    //
+    // }
         => new PlayRoomMember(roomId, playerId, playerState.PlayerName, 
             _playerCustomBehavior == null ? [] : _playerCustomBehavior.Serialize(playerState.Extension));
 }
