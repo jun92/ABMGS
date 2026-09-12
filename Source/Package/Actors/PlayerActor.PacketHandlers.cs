@@ -21,11 +21,18 @@ namespace SyncnetPlatform.Actors;
 
 public partial class PlayerActor
 {
-    
-
-    
-    
-    public async ValueTask InvokeHandler(byte[] data)
+    private void SetupNetworkProcessingUnits()
+    {
+        _sendDataGrain = GrainFactory.GetGrain<ISendDataGrain>(this.GetGrainId().GetGuidKey());
+        
+        // Keep pumping up packets 
+        _ctsForRunRoutingPackets = new CancellationTokenSource();
+        _runRoutingPackets = RunRoutingPackets(_ctsForRunRoutingPackets.Token);
+        
+        routeTable.BuildParamExtractionFuncs<PacketWrapper>();
+        routeTable.BuildPacketHandlerFunctions<PlayerActor>(this);
+    }
+    private async ValueTask InvokeHandler(byte[] data)
     {
         await routeTable.Execute(
             PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(data)));
@@ -45,19 +52,6 @@ public partial class PlayerActor
             Activity.Current = currentActivity;
         }
     }
-
-    private void SetupNetworkProcessingUnits()
-    {
-        _sendDataGrain = GrainFactory.GetGrain<ISendDataGrain>(this.GetGrainId().GetGuidKey());
-        
-        // Keep pumping up packets 
-        _ctsForRunRoutingPackets = new CancellationTokenSource();
-        _runRoutingPackets = RunRoutingPackets(_ctsForRunRoutingPackets.Token);
-        
-        routeTable.BuildParamExtractionFuncs<PacketWrapper>();
-        routeTable.BuildPacketHandlerFunctions<PlayerActor>(this);
-    }
-
     private async Task RunRoutingPackets(CancellationToken shutdownToken)
     {
         try
