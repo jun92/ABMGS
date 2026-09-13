@@ -172,16 +172,40 @@ public class PlayRoomActor : Grain, IPlayRoomActor
             // Broadcasting to all players due to playroom state changed.
             await BroadcastPlayRoomCustomState(updatedPlayRoomCustomState, m => true);
         }
-        
-        foreach(KeyValuePair<Guid, byte[]> playerExtendData in updatedPlayerExtendData)
+
+        if (updatedPlayerExtendData is not null)
         {
-            PlayRoomMember? updatedMember = _players.Find(p => p.PlayerId == playerExtendData.Key);
-            if (updatedMember is not null)
+            foreach(KeyValuePair<Guid, byte[]> playerExtendData in updatedPlayerExtendData)
             {
+                PlayRoomMember? updatedMember = _players.Find(p => p.PlayerId == playerExtendData.Key);
+                if (updatedMember is null) continue;
                 IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(updatedMember.PlayerId);
                 await p.OnUpdatePlayerExtendData(playerExtendData.Value);
             }
         }
+        
+        
+        while( _playRoomSendBuffer.GetBufferForAllPlayers() is var (resultType, parameters) &&  
+               (resultType != null && parameters != null))
+        {
+            _players.ForEach(p =>
+            {
+                IPlayerActor playActor = GrainFactory.GetGrain<IPlayerActor>(p.PlayerId);
+                playActor.OnPlayerActionToPlayRoomResult(RoomId, resultType, parameters);
+            });
+        }
+        
+        _players.ForEach(member =>
+        {
+            IPlayerActor playerActor = GrainFactory.GetGrain<IPlayerActor>(member.PlayerId);
+            
+            while (_playRoomSendBuffer.PopBuffer(member.PlayerId) is var (resultType, parameters) &&
+                   (resultType != null && parameters != null))
+            {
+                playerActor.OnPlayerActionToPlayRoomResult(RoomId, resultType, parameters);
+            }
+        });
+
         return PacketErrorCodes.Success;
     }
 

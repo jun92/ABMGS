@@ -29,6 +29,9 @@ public interface IPlayerActor : IGrainWithGuidKey, IPacketHandlerActor
     [Alias("OnUpdatePlayRoomCustomState")]
     ValueTask OnUpdatePlayRoomCustomState(Guid roomId, byte[] customState);
 
+    [Alias("OnPlayerActionToPlayRoomResult")]
+    ValueTask OnPlayerActionToPlayRoomResult(Guid roomId, string resultType, byte[] resultParameters);
+
     // have given the authority for player stats to somebody(ex: Playroom) 
     // potentially corupt your manual changes to player stats when it is returning true
     [Alias("IsDelegatingPlayerStats")]

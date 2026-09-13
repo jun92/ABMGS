@@ -71,7 +71,7 @@ public class TttGamePlayRoomCustomBehavior(
         // if _tttGamePlayRoomState.WinnerPlayerId is Guid.Empty, it's draw, otherwise the winnner is him.
 
         byte[] gameEndedPacket = tttGamePacketSerializer.SerializeNotiftGameEnded(_tttGamePlayRoomState.WinnerPlayerId);
-        sendBuffer.BroadcastToAll(gameEndedPacket);
+        sendBuffer.BroadcastToAll("gameend", gameEndedPacket);
         
         // Update player data. wincount/losecount/playcount
         if (_tttGamePlayRoomState.WinnerPlayerId != Guid.Empty)
@@ -102,7 +102,7 @@ public class TttGamePlayRoomCustomBehavior(
             byte[] dataToSend = tttGamePacketSerializer.SerializeNotiftGameStarted(_tttGamePlayRoomState!.GetPlayerIdInTurn());
 
             List<Guid> players = _tttGamePlayRoomState.GetBroadcastTargets();
-            sendBuffer.BroadcastFiltered(players, dataToSend);
+            sendBuffer.BroadcastFiltered(players, "gamestart", dataToSend);
         }
     }
 
