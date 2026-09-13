@@ -5,7 +5,7 @@ using SyncnetPlatform.Protocols.Generated;
 
 namespace SyncnetPlatform.Actors.Components;
 
-public interface IPlayRoomComponent
+public interface IPlayRoomSession
 {
     Task<(PacketErrorCodes, byte[]?)> CreatePlayRoom(Guid newPlayRoomId, string roomName, bool isPrivate, int maxCapacity, string roomPassword);
     Task<(PacketErrorCodes, byte[])> JoinPlayRoom(Guid roomId);
@@ -16,11 +16,11 @@ public interface IPlayRoomComponent
     void SetPlayerCustomBehavior(IPlayerCustomBehavior? playerCustomBehavior);
 }
 
-public class PlayRoomComponent(
-    ILogger<PlayRoomComponent> logger, 
+public class PlayRoomSession(
+    ILogger<PlayRoomSession> logger, 
     IGrainFactory grainFactory, 
     Guid playerId, 
-    PlayerState playerState) : IPlayRoomComponent
+    PlayerState playerState) : IPlayRoomSession
 {
     private readonly List<Guid> _joinedRoomList = new List<Guid>();
     private IPlayerCustomBehavior? _playerCustomBehavior = null;

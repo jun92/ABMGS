@@ -41,7 +41,7 @@ public partial class PlayerActor(
     private Guid PlayerId => GrainContext.GrainId.GetGuidKey();
 
     // Components
-    private IPlayRoomComponent? _playRoomComponent = null;
+    private IPlayRoomSession? _playRoomSession = null;
 
     // Session Service
     private readonly Channel<PendingPacket> _receiveQueueChannel = Channel.CreateBounded<PendingPacket>(new BoundedChannelOptions(150)
@@ -53,7 +53,7 @@ public partial class PlayerActor(
     });
     private CancellationTokenSource? _ctsForRunRoutingPackets;
     private Task? _runRoutingPackets;
-    private ISendDataGrain _sendDataGrain = null!;
+    private ISendDataGrain? _sendDataGrain = null!;
     
     
     private bool _isPlayerStatsDelegated = false;
@@ -69,14 +69,14 @@ public partial class PlayerActor(
 
     private void InitializeComponents()
     {
-        _playRoomComponent = ActivatorUtilities.CreateInstance<PlayRoomComponent>(serviceProvider, PlayerId,_playerState);
-        if(playerCustomBehavior is not null) _playRoomComponent.SetPlayerCustomBehavior(playerCustomBehavior);
+        _playRoomSession = ActivatorUtilities.CreateInstance<PlayRoomSession>(serviceProvider, PlayerId,_playerState);
+        if(playerCustomBehavior is not null) _playRoomSession.SetPlayerCustomBehavior(playerCustomBehavior);
         
     }
 
     private void DeinitializeComponents()
     {
-        _playRoomComponent = null;
+        _playRoomSession = null;
     }
 
     public async ValueTask SetOnline(bool isOnline)
@@ -210,10 +210,15 @@ public partial class PlayerActor(
     [OneWay]
     public async ValueTask OnUpdatePlayRoomCustomState(Guid roomId, byte[] customState)
     {
-        if (_isOnline && _sendDataGrain != null)
-        {
-            await _sendDataGrain.Send(PacketBuilder.Build(new OnPlayRoomStateUpdateArgs(roomId, customState)));
-        }
+        if (!_isOnline || _sendDataGrain == null) return;
+        await _sendDataGrain.Send(PacketBuilder.Build(new OnPlayRoomStateUpdateArgs(roomId, customState)));
+    }
+
+    [OneWay]
+    public async ValueTask OnPlayerActionToPlayRoomResult(Guid roomId, string resultType, byte[] resultParameters)
+    {
+        if (!_isOnline || _sendDataGrain == null) return;
+        await _sendDataGrain.Send(PacketBuilder.Build(new OnPlayerActionToPlayRoomResultArgs(resultType, resultParameters)));
     }
 
     public ValueTask<bool> IsDelegatingPlayerStats()
