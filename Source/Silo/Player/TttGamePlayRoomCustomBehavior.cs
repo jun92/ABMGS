@@ -120,6 +120,6 @@ public class TttGamePlayRoomCustomBehavior(
 
     public Task OnTimer(float delta)
     {
-        throw new NotImplementedException();
+        return Task.CompletedTask;
     }
 }
