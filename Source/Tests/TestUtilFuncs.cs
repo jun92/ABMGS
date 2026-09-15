@@ -14,12 +14,12 @@ namespace SyncnetPlatform.Tests;
 public partial class ABMGS_TestMain : IAsyncLifetime
 {
 
-    protected async Task<(WebSocketReceiveResult, PacketWrapper)> SendAndReceive(ClientWebSocket client, byte[] packet)
+    private async Task<(WebSocketReceiveResult, PacketWrapper)> SendAndReceive(ClientWebSocket client, byte[] packet)
     {
         await SendDataAsync(client, packet);
         return await ReceiveAsync(client);
     }
-    protected async Task<(WebSocketReceiveResult, PacketWrapper)> ReceiveAsync(ClientWebSocket client)
+    private async Task<(WebSocketReceiveResult, PacketWrapper)> ReceiveAsync(ClientWebSocket client)
     {
         byte[] receiveBuffer = new byte[4096];
         WebSocketReceiveResult result = await client.ReceiveAsync(new ArraySegment<byte>(receiveBuffer), defaultTimeoutToken.Token);
@@ -30,7 +30,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         return (result, packetWrapper);
     }
 
-    protected async Task<ClientWebSocket> OpenAuthoredWebSocket(Uri wsUri, string token)
+    private async Task<ClientWebSocket> OpenAuthoredWebSocket(Uri wsUri, string token)
     {
         var wsClient = new ClientWebSocket();
         wsClient.Options.SetRequestHeader("Authorization", $"Bearer {token}");
@@ -38,12 +38,12 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         Assert.Equal(WebSocketState.Open, wsClient.State);
         return wsClient;
     }
-    protected async Task CloseAuthoredWebSocket(ClientWebSocket socket)
+    private async Task CloseAuthoredWebSocket(ClientWebSocket socket)
     {
         await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Good Bye", CancellationToken.None);
     }
 
-    protected async Task<ClientWebSocket> CreateAuthoredWebSocket(string? id = null)
+    private async Task<ClientWebSocket> CreateAuthoredWebSocket(string? id = null)
     {
         var wsUri = new UriBuilder(_frontendHttpClient.BaseAddress!)
         {
@@ -54,9 +54,9 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         return await OpenAuthoredWebSocket(wsUri, token);
     }
 
-    protected async Task<string> GetGuestAuthToken(string? id = null)
+    private async Task<string> GetGuestAuthToken(string? id = null)
     {
-        string guestId = id == null ? CreateRandomString(6) : id;
+        string guestId = id ?? CreateRandomString(6);
 
         var response = await _frontendHttpClient.PostAsync($"/api/auth/token/guest/{guestId}", null);
         response.EnsureSuccessStatusCode();
@@ -64,7 +64,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
 
         return JsonSerializer.Deserialize<string>(token) ?? throw new InvalidOperationException("Received null or invalid token from authentication service.");
     }
-    protected string CreateRandomString(int length)
+    private string CreateRandomString(int length)
     {
         return new string(
             Enumerable
@@ -74,12 +74,12 @@ public partial class ABMGS_TestMain : IAsyncLifetime
     }
 
 
-    protected async Task SendDataAsync(ClientWebSocket client, byte[] dataToSend)
+    private async Task SendDataAsync(ClientWebSocket client, byte[] dataToSend)
     {
         await client.SendAsync(new ArraySegment<byte>(dataToSend), WebSocketMessageType.Binary, true, CancellationToken.None);
     }
 
-    protected PacketWrapper AsPacketWrapper(byte[] receiveBuffer, int count)
+    private PacketWrapper AsPacketWrapper(byte[] receiveBuffer, int count)
     {
         return PacketWrapper.GetRootAsPacketWrapper(new ByteBuffer(receiveBuffer.Take(count).ToArray()));
     }

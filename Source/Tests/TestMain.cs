@@ -32,7 +32,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
     private readonly ITestOutputHelper _output;
     private readonly Random _random = new Random();
     private HttpClient _frontendHttpClient = null!;
-    protected CancellationTokenSource defaultTimeoutToken = new CancellationTokenSource(TimeSpan.FromSeconds(100000));
+    private CancellationTokenSource defaultTimeoutToken = new CancellationTokenSource(TimeSpan.FromSeconds(100000));
 
     public ABMGS_TestMain(AspireAppFixture fixture, ITestOutputHelper output)
     {

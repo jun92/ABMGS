@@ -69,13 +69,13 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         // Owner info.
         (result, packetWrapper) = await SendAndReceive(wsClientOwner, ReqUserInfoPacket);
         Assert.Equal(SystemPacket.ResUserInfo, packetWrapper.SystemPacketType);
-        Guid OwnerPlayerId = default;
+        Guid OwnerPlayerId = Guid.Empty;
         OwnerPlayerId.FromGuidType(packetWrapper.SystemPacketAsResUserInfo().Id);
 
         // Joiner info.
         (result, packetWrapper) = await SendAndReceive(wsClientJoiner, ReqUserInfoPacket);
         Assert.Equal(SystemPacket.ResUserInfo, packetWrapper.SystemPacketType);
-        Guid JoinerPlayerId = default;
+        Guid JoinerPlayerId = Guid.Empty;
         JoinerPlayerId.FromGuidType(packetWrapper.SystemPacketAsResUserInfo().Id);
 
         // Owner creates a room.
@@ -84,7 +84,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
 
         Assert.Equal(SystemPacket.ResCreateRoom, packetWrapper.SystemPacketType);
         Assert.Equal(PacketErrorCodes.Success, packetWrapper.SystemPacketAsResCreateRoom().Result);
-        Guid roomId = default;
+        Guid roomId = Guid.Empty;
         roomId.FromGuidType(packetWrapper.SystemPacketAsResCreateRoom().RoomId);
 
         // Joiner trys to join.
