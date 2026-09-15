@@ -53,7 +53,7 @@ public partial class PlayerActor(
     });
     private CancellationTokenSource? _ctsForRunRoutingPackets;
     private Task? _runRoutingPackets;
-    private ISendDataGrain? _sendDataGrain = null!;
+    private ISendQueueActor? _sendQueueActor = null!;
     
     
     private bool _isPlayerStatsDelegated = false;
@@ -151,12 +151,12 @@ public partial class PlayerActor(
     
     public async Task<PacketErrorCodes> OnDirectDeliveryData(Guid fromPlayerId, string message, DirectDeliveryDataType dataType)
     {
-        if (!_isOnline || _sendDataGrain == null)
+        if (!_isOnline || _sendQueueActor == null)
         {
             return PacketErrorCodes.PlayerOffline;
         }
         OnDirectDeliveryDataArgs data = new OnDirectDeliveryDataArgs(fromPlayerId, message, dataType);
-        await _sendDataGrain.Send(PacketBuilder.Build<OnDirectDeliveryDataArgs>(data));
+        await _sendQueueActor.Push(PacketBuilder.Build<OnDirectDeliveryDataArgs>(data));
         return PacketErrorCodes.Success;
     }
 
@@ -164,12 +164,12 @@ public partial class PlayerActor(
     public async ValueTask OnUpdateForPlayRoomMembers(PlayRoomMember playRoomMember,
         PlayRoomMemberUpdateReason updateReason)
     {
-        if (!_isOnline || _sendDataGrain == null) return;
+        if (!_isOnline || _sendQueueActor == null) return;
 
         switch (updateReason)
         {
             case PlayRoomMemberUpdateReason.Join:
-                await _sendDataGrain.Send(PacketBuilder.Build<OnPlayerJoinRoomArgs>(
+                await _sendQueueActor.Push(PacketBuilder.Build<OnPlayerJoinRoomArgs>(
                     new OnPlayerJoinRoomArgs(
                         playRoomMember.RoomId,
                         playRoomMember.PlayerId,
@@ -179,7 +179,7 @@ public partial class PlayerActor(
                     ));
                 break;
             case PlayRoomMemberUpdateReason.Leave:
-                await _sendDataGrain.Send(PacketBuilder.Build<OnPlayerLeaveRoomArgs>(
+                await _sendQueueActor.Push(PacketBuilder.Build<OnPlayerLeaveRoomArgs>(
                     new OnPlayerLeaveRoomArgs(
                         playRoomMember.RoomId,
                         playRoomMember.PlayerId,
@@ -192,12 +192,12 @@ public partial class PlayerActor(
     [OneWay]
     public async ValueTask OnUpdatePlayerExtendData(byte[] extendData)
     {
-        if( !_isOnline || _sendDataGrain == null) return; 
+        if( !_isOnline || _sendQueueActor == null) return; 
         
         if(playerCustomBehavior is not null)
         {
             _playerState.Extension = DeserializePlayerExtendData(extendData);
-            await _sendDataGrain.Send
+            await _sendQueueActor.Push
             (
                 PacketBuilder.Build
                 (
@@ -210,15 +210,15 @@ public partial class PlayerActor(
     [OneWay]
     public async ValueTask OnUpdatePlayRoomCustomState(Guid roomId, byte[] customState)
     {
-        if (!_isOnline || _sendDataGrain == null) return;
-        await _sendDataGrain.Send(PacketBuilder.Build(new OnPlayRoomStateUpdateArgs(roomId, customState)));
+        if (!_isOnline || _sendQueueActor == null) return;
+        await _sendQueueActor.Push(PacketBuilder.Build(new OnPlayRoomStateUpdateArgs(roomId, customState)));
     }
 
     [OneWay]
     public async ValueTask OnPlayerActionToPlayRoomResult(Guid roomId, string resultType, byte[] resultParameters)
     {
-        if (!_isOnline || _sendDataGrain == null) return;
-        await _sendDataGrain.Send(PacketBuilder.Build(new OnPlayerActionToPlayRoomResultArgs(resultType, resultParameters)));
+        if (!_isOnline || _sendQueueActor == null) return;
+        await _sendQueueActor.Push(PacketBuilder.Build(new OnPlayerActionToPlayRoomResultArgs(resultType, resultParameters)));
     }
 
     public ValueTask<bool> IsDelegatingPlayerStats()

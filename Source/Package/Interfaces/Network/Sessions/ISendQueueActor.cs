@@ -3,10 +3,10 @@ using System.Threading.Tasks;
 
 namespace SyncnetPlatform.Interfaces.Network.Sessions;
 
-public interface ISendDataGrain : IGrainWithGuidKey
+public interface ISendQueueActor : IGrainWithGuidKey
 {
-    Task Register(ISendDataObserver observer);
+    Task Register(ISendQueueObserver observer);
     Task Unregister();
-    Task Send(byte[] data);
+    Task Push(byte[] data);
     Task IsValid();
 }

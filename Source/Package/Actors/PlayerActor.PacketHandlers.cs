@@ -23,7 +23,7 @@ public partial class PlayerActor
 {
     private void SetupNetworkProcessingUnits()
     {
-        _sendDataGrain = GrainFactory.GetGrain<ISendDataGrain>(this.GetGrainId().GetGuidKey());
+        _sendQueueActor = GrainFactory.GetGrain<ISendQueueActor>(this.GetGrainId().GetGuidKey());
         
         // Keep pumping up packets 
         _ctsForRunRoutingPackets = new CancellationTokenSource();

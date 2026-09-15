@@ -13,7 +13,7 @@ using SyncnetPlatform.Utils.Telemetry;
 
 namespace SyncnetPlatform.Network.Sessions;
 
-public class GameSessionService : IGameSessionService, ISendDataObserver
+public class GameSessionService : IGameSessionService, ISendQueueObserver
 {
     protected readonly struct PendingSendPacket
     {
@@ -31,7 +31,7 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
     private readonly IClusterClient _clusterClient;
 
     private readonly Channel<PendingSendPacket> _sendingQueueChannel;
-    private ISendDataObserver? _sendDataObserver;
+    private ISendQueueObserver? _sendDataObserver;
     private Task? _sendLoopTask;
 
     public GameSessionService(
@@ -54,7 +54,7 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
         _syncnetMetricsService = syncnetMetricsService;
     }
 
-    public async Task SendDataAsync(byte[] data)
+    public async Task PushDataAsync(byte[] data)
     {
         ActivityContext parentContext = default;
         if( RequestContext.Get("traceparent") is string traceparent && ActivityContext.TryParse(traceparent, null, out var parsedContext))
@@ -120,15 +120,15 @@ public class GameSessionService : IGameSessionService, ISendDataObserver
 
     protected async Task RegisterObserverForSendDataEvent(Guid playerId)
     {
-        _sendDataObserver = _clusterClient.CreateObjectReference<ISendDataObserver>(this);
-        var sendDataGrain = _clusterClient.GetGrain<ISendDataGrain>(playerId);
+        _sendDataObserver = _clusterClient.CreateObjectReference<ISendQueueObserver>(this);
+        var sendDataGrain = _clusterClient.GetGrain<ISendQueueActor>(playerId);
         await sendDataGrain.Register(_sendDataObserver);
     }
     protected async Task UnregisterObserver(Guid playerId)
     {
-        var sendDataGrain = _clusterClient.GetGrain<ISendDataGrain>(playerId);
+        var sendDataGrain = _clusterClient.GetGrain<ISendQueueActor>(playerId);
         await sendDataGrain.Unregister();
-        if (_sendDataObserver is { } sdo) _clusterClient.DeleteObjectReference<ISendDataObserver>(sdo);
+        if (_sendDataObserver is { } sdo) _clusterClient.DeleteObjectReference<ISendQueueObserver>(sdo);
         _sendDataObserver = null;
 
     }

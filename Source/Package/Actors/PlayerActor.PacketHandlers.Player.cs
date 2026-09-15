@@ -14,7 +14,7 @@ public partial class PlayerActor
         
         PongArgs pongArgs = new(request.Seq + 1);
         byte[] packetToSendBack = SyncnetPacketBuilder.Build(pongArgs);
-        await _sendDataGrain!.Send(packetToSendBack);
+        await _sendQueueActor!.Push(packetToSendBack);
     }
 
     [PacketHandler(typeof(ReqUserInfo))]
@@ -26,7 +26,7 @@ public partial class PlayerActor
         
         ResUserInfoArgs resUserInfoArgs = new(PlayerId, _playerState.PlayerName, serializedPlayerExtendData);
         byte[] packetToSendBack = SyncnetPacketBuilder.Build(resUserInfoArgs);
-        await _sendDataGrain!.Send(packetToSendBack);
+        await _sendQueueActor!.Push(packetToSendBack);
     }
 
     [PacketHandler(typeof(ReqUpdatePlayerName))]
@@ -38,7 +38,7 @@ public partial class PlayerActor
         _isDirtyPlayerData = true;
         ResUpdatePlayerNameArgs resUpdatePlayerNameArgs = new(PacketErrorCodes.Success);
         byte[] packetToSendBack = SyncnetPacketBuilder.Build(resUpdatePlayerNameArgs);
-        await _sendDataGrain!.Send(packetToSendBack);
+        await _sendQueueActor!.Push(packetToSendBack);
     }
     
     [PacketHandler(typeof(ReqUserActionForUpdatePlayerExtendData))]
@@ -52,7 +52,7 @@ public partial class PlayerActor
                 _playerState
                 );
             _isDirtyPlayerData = true;
-            await _sendDataGrain!.Send(
+            await _sendQueueActor!.Push(
                 SyncnetPacketBuilder.Build<ResUserActionForUpdatePlayerExtendDataArgs>(
                     new ResUserActionForUpdatePlayerExtendDataArgs(
                         PacketErrorCodes.Success,
@@ -63,7 +63,7 @@ public partial class PlayerActor
         }
         else
         {
-            await _sendDataGrain!.Send(
+            await _sendQueueActor!.Push(
                 SyncnetPacketBuilder.Build<ResUserActionForUpdatePlayerExtendDataArgs>(
                     new ResUserActionForUpdatePlayerExtendDataArgs(
                         PacketErrorCodes.InterfaceNotImplemented,
@@ -84,6 +84,6 @@ public partial class PlayerActor
             request.Data, 
             request.DataType);
 
-        await _sendDataGrain!.Send(SyncnetPacketBuilder.Build<ResDirectDeliveryDataArgs>(new ResDirectDeliveryDataArgs(result)));
+        await _sendQueueActor!.Push(SyncnetPacketBuilder.Build<ResDirectDeliveryDataArgs>(new ResDirectDeliveryDataArgs(result)));
     }
 }
