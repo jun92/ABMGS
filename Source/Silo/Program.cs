@@ -46,6 +46,7 @@ builder.ConfigureActor(option =>
 
 //Custom classes for play room supporting.
 builder.Services.AddTransient<IPlayRoomCustomState, TttGamePlayRoomState>();
+builder.Services.AddTransient<IPlayerExtendData, TttGamePlayerExtendData>();
 builder.Services.AddTransient<IPlayRoomCustomEventHandler, TttGamePlayRoomCustomBehavior>();
 builder.Services.AddTransient<TttGamePacketSerializer>();
 
