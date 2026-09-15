@@ -197,7 +197,7 @@ public class TttGamePlayRoomState : ITttGamePlayRoomState
             TGameCellInfo.StartTGameCellInfo(builder);
             TGameCellInfo.AddMarkedPlayerId(builder, markedPlayerIdOffset);
             TGameCellInfo.AddMarkedTime(builder, markedTimeOffset);
-            TGameCellInfo.AddMark(builder, Int32.Parse(b.State.ToString()) );
+            TGameCellInfo.AddMark(builder, (int)Enum.Parse<CellState>(b.State.ToString()));
             Offset<TGameCellInfo> cellInfoOffset = TGameCellInfo.EndTGameCellInfo(builder);
             boradStates.Add(cellInfoOffset);
         }
