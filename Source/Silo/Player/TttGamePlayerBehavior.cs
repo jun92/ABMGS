@@ -101,7 +101,6 @@ public class TttGamePlayerBehavior(IPlayerExtendData playerExtendData) : IPlayer
 
     public void OnCreatePlayRoom(PlayerState playerState, Guid playRoomId, byte[]? roomState)
     {
-        throw new NotImplementedException();
     }
 
     public void OnJoinPlayRoom(PlayerState playerState, Guid playRoomId, bool isOwner, byte[]? roomState)
