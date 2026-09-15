@@ -20,7 +20,7 @@ public partial class PlayerActor
             newPlayRoomId, request.Name, request.Private, request.MaxCount, request.Password);
         if (errorCode != PacketErrorCodes.Success)
         {
-            await _sendDataGrain.Send(
+            await _sendDataGrain!.Send(
                 SyncnetPacketBuilder.Build(new ResCreateRoomArgs(errorCode, newPlayRoomId, [])));
             return; 
         }
@@ -28,7 +28,7 @@ public partial class PlayerActor
         // delegating onCreatePlayRoom event.
         playerCustomBehavior?.OnCreatePlayRoom(_playerState, newPlayRoomId, serializedPlayRoomState);
         
-        await _sendDataGrain.Send
+        await _sendDataGrain!.Send
             (
                 SyncnetPacketBuilder.Build<ResCreateRoomArgs>
                 (
@@ -52,7 +52,7 @@ public partial class PlayerActor
         PacketErrorCodes errorCode = PacketErrorCodes.Success;
         (errorCode, byte[] playRoomCustomState) = await _playRoomSession.JoinPlayRoom(roomId);
 
-        await _sendDataGrain.Send(SyncnetPacketBuilder.Build<ResJoinRoomArgs>(
+        await _sendDataGrain!.Send(SyncnetPacketBuilder.Build<ResJoinRoomArgs>(
             new ResJoinRoomArgs(
                 errorCode, 
                 0, 
@@ -71,7 +71,7 @@ public partial class PlayerActor
         roomId.FromGuidType(request.RoomId);
         List<PlayRoomMember> players = await _playRoomSession!.GetPlayerListInPlayRoom(roomId);
 
-        await _sendDataGrain.Send(SyncnetPacketBuilder.Build<ResPlayerListInRoomArgs>(
+        await _sendDataGrain!.Send(SyncnetPacketBuilder.Build<ResPlayerListInRoomArgs>(
             new ResPlayerListInRoomArgs(
                 roomId, 
                 [.. players.Select(s => new PlayerInfoInRoomArgs(s.PlayerId, s.PlayerName, s.PlayerExtendData ??
@@ -88,7 +88,7 @@ public partial class PlayerActor
         roomId.FromGuidType(request.RoomId);
         PacketErrorCodes result = await _playRoomSession!.LeavePlayRoom(roomId);
 
-        await _sendDataGrain.Send(SyncnetPacketBuilder.Build<ResLeaveRoomArgs>(
+        await _sendDataGrain!.Send(SyncnetPacketBuilder.Build<ResLeaveRoomArgs>(
             new ResLeaveRoomArgs(result)
             ));
     }
@@ -105,6 +105,6 @@ public partial class PlayerActor
             request.GetActionParameterArray());
         ResPlayerActionToPlayRoomArgs resPlayerActionToPlayRoomArgs = new(errorCode, 0);
         byte[] packetToSendBack = SyncnetPacketBuilder.Build(resPlayerActionToPlayRoomArgs);
-        await _sendDataGrain.Send(packetToSendBack);
+        await _sendDataGrain!.Send(packetToSendBack);
     }
 }
