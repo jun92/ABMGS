@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="definitions\" />
+      <PackageReference Include="Google.FlatBuffers" Version="25.2.10" />
+      
+  </ItemGroup>
+    
+<Target Name="FlatcGenerate" BeforeTargets="BeforeCompile">
+    <Message Text="Running flatc code generator" Importance="high" />
+    <RemoveDir Directories="./generated" />
+    <Exec Command="flatc -n -o ./generated ./definitions/Types.fbs" />
+    <Exec Command="flatc -n -o ./generated ./definitions/ErrorCodes.fbs" />
+    <Exec Command="flatc -n -o ./generated ./definitions/System.fbs" />
+    <Exec Command="flatc -n -o ./generated ./definitions/Player.fbs" />
+    <Exec Command="flatc -n -o ./generated ./definitions/Playroom.fbs" />
+    <ItemGroup>
+        <NewGeneratedFiles Include="generated/**/*.cs" />
+        <NewGeneratedFiles Remove="@(Compile)" />
+        <Compile Include="@(NewGeneratedFiles)" />
+    </ItemGroup>
+</Target>
+
+</Project>
