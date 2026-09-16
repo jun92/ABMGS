@@ -13,8 +13,25 @@ public partial class ABMGS_TestMain
         var player01 = await CreateAuthoredWebSocket();
         var player02 = await CreateAuthoredWebSocket();
         var playerCannotJoin = await CreateAuthoredWebSocket();
+
+        Guid player1Id = Guid.Empty;
+        Guid player2Id = Guid.Empty;
         WebSocketReceiveResult result;
         PacketWrapper packetWrapper;
+
+        // Get player1 Id
+        (result, packetWrapper) = await SendAndReceive(player01, BuildReqUserInfoPacket());
+        Assert.Equal(SystemPacket.ResUserInfo, packetWrapper.SystemPacketType);
+        ResUserInfo player1Info = packetWrapper.SystemPacketAsResUserInfo();
+        player1Id.FromGuidType(player1Info.Id);
+        Assert.NotEqual(Guid.Empty, player1Id);
+        
+        // Get player2 Id
+        (result, packetWrapper) = await SendAndReceive(player02, BuildReqUserInfoPacket());
+        Assert.Equal(SystemPacket.ResUserInfo, packetWrapper.SystemPacketType);
+        ResUserInfo player2Info = packetWrapper.SystemPacketAsResUserInfo();
+        player2Id.FromGuidType(player2Info.Id);
+        Assert.NotEqual(Guid.Empty, player2Id);
 
         // Player01 creates a play room.
         (result, packetWrapper) = await SendAndReceive(player01, BuildReqCreatePlayRoomPacket("TestRoom", false, "", 2, null));
@@ -37,11 +54,17 @@ public partial class ABMGS_TestMain
         Assert.Equal(PacketErrorCodes.RoomFull, resJoinRoomFail.Result);
 
 
-        // player01 starts a play - put a mark 
-        byte[] reqPlayerActionToPlayRoom = BuildReqPlayerActionToPlayRoom(roomId, "PutMarker", []);
+        (result, packetWrapper) = await ReceiveAsync(player01);
+        Assert.Equal(SystemPacket.OnPlayerJoinRoom, packetWrapper.SystemPacketType);
+        OnPlayerJoinRoom onPlayerJoinRoom = packetWrapper.SystemPacketAsOnPlayerJoinRoom();
 
-        (result, packetWrapper) = await SendAndReceive(player01, reqPlayerActionToPlayRoom);
-        
+
+
+        // player01 starts a play - put a mark 
+        // byte[] reqPlayerActionToPlayRoom = BuildReqPlayerActionToPlayRoom(roomId, "PutMarker", []);
+        //
+        // (result, packetWrapper) = await SendAndReceive(player01, reqPlayerActionToPlayRoom);
+
 
 
 
