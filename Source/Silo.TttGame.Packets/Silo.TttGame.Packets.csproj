@@ -5,26 +5,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
   <ItemGroup>
-    <Folder Include="definitions\" />
-      <PackageReference Include="Google.FlatBuffers" Version="25.2.10" />
-      
+    <PackageReference Include="Google.FlatBuffers" Version="25.2.10" />
   </ItemGroup>
-    
-<Target Name="FlatcGenerate" BeforeTargets="BeforeCompile">
+  <Target Name="FlatcGenerate" BeforeTargets="BeforeCompile">
     <Message Text="Running flatc code generator" Importance="high" />
     <RemoveDir Directories="./generated" />
-    <Exec Command="flatc -n -o ./generated ./definitions/Types.fbs" />
-    <Exec Command="flatc -n -o ./generated ./definitions/ErrorCodes.fbs" />
-    <Exec Command="flatc -n -o ./generated ./definitions/System.fbs" />
-    <Exec Command="flatc -n -o ./generated ./definitions/Player.fbs" />
-    <Exec Command="flatc -n -o ./generated ./definitions/Playroom.fbs" />
+    <Exec Command="flatc -n -o ./generated ./PacketDefinitions/Player.fbs" />
+    <Exec Command="flatc -n -o ./generated ./PacketDefinitions/TGame.fbs" />
     <ItemGroup>
         <NewGeneratedFiles Include="generated/**/*.cs" />
         <NewGeneratedFiles Remove="@(Compile)" />
         <Compile Include="@(NewGeneratedFiles)" />
     </ItemGroup>
 </Target>
-
 </Project>
