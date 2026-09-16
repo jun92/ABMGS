@@ -205,13 +205,9 @@ public class TttGamePlayRoomState : ITttGamePlayRoomState
         VectorOffset readyStateOffset = TGamePlayRoomState.CreateReadyStateVector(builder, [.. readyStates]);
         VectorOffset boardStateOffset = TGamePlayRoomState.CreateBoardStateVector(builder, [.. boradStates]);
         
-        
-        
         TGamePlayRoomState.StartTGamePlayRoomState(builder);
         TGamePlayRoomState.AddReadyState(builder, readyStateOffset);
         TGamePlayRoomState.AddBoardState(builder, boardStateOffset);
-        // TGamePlayRoomState.CreateReadyStateVector(builder, [.. readyStates]);
-        // TGamePlayRoomState.CreateBoardStateVector(builder, [.. boradStates]);
         TGamePlayRoomState.AddCurrentTurnPlayerId(builder, currentTurnPlayerIdOffset);
 
         Offset<TGamePlayRoomState> offset = TGamePlayRoomState.EndTGamePlayRoomState(builder);
