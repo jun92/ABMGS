@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Migrations", "Migrations\Mi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Package.Packets", "Package.Packets\Package.Packets.csproj", "{19F1A913-CD77-4884-A2F4-4CFE7EFCC4A8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Silo.TttGame.Packets", "Silo.TttGame.Packets\Silo.TttGame.Packets.csproj", "{162FAA3D-5988-405E-8F67-8F388A182F83}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,6 +58,10 @@ Global
 		{19F1A913-CD77-4884-A2F4-4CFE7EFCC4A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19F1A913-CD77-4884-A2F4-4CFE7EFCC4A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{19F1A913-CD77-4884-A2F4-4CFE7EFCC4A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{162FAA3D-5988-405E-8F67-8F388A182F83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{162FAA3D-5988-405E-8F67-8F388A182F83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{162FAA3D-5988-405E-8F67-8F388A182F83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{162FAA3D-5988-405E-8F67-8F388A182F83}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

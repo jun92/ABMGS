@@ -1,4 +1,5 @@
 using Google.FlatBuffers;
+using Silo.TestPackets;
 using SyncnetPlatform.Actors;
 using SyncnetPlatform.Databases;
 
