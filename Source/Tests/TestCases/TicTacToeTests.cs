@@ -21,6 +21,7 @@ public partial class ABMGS_TestMain
 
         // Get player1 Id
         (result, packetWrapper) = await SendAndReceive(player01, BuildReqUserInfoPacket());
+        Assert.NotEqual(0, result.Count);
         Assert.Equal(SystemPacket.ResUserInfo, packetWrapper.SystemPacketType);
         ResUserInfo player1Info = packetWrapper.SystemPacketAsResUserInfo();
         player1Id.FromGuidType(player1Info.Id);
@@ -28,6 +29,7 @@ public partial class ABMGS_TestMain
         
         // Get player2 Id
         (result, packetWrapper) = await SendAndReceive(player02, BuildReqUserInfoPacket());
+        Assert.NotEqual(0, result.Count);
         Assert.Equal(SystemPacket.ResUserInfo, packetWrapper.SystemPacketType);
         ResUserInfo player2Info = packetWrapper.SystemPacketAsResUserInfo();
         player2Id.FromGuidType(player2Info.Id);
@@ -35,6 +37,7 @@ public partial class ABMGS_TestMain
 
         // Player01 creates a play room.
         (result, packetWrapper) = await SendAndReceive(player01, BuildReqCreatePlayRoomPacket("TestRoom", false, "", 2, null));
+        Assert.NotEqual(0, result.Count);
         Assert.Equal(SystemPacket.ResCreateRoom, packetWrapper.SystemPacketType);
         ResCreateRoom resCreateRoom = packetWrapper.SystemPacketAsResCreateRoom();
         Assert.Equal(PacketErrorCodes.Success, resCreateRoom.Result);
@@ -43,18 +46,21 @@ public partial class ABMGS_TestMain
 
         // player02 joins the play room.
         (result, packetWrapper) = await SendAndReceive(player02, BuildReqJoinPlayRoomPacket(roomId));
+        Assert.NotEqual(0, result.Count);
         Assert.Equal(SystemPacket.ResJoinRoom, packetWrapper.SystemPacketType);
         ResJoinRoom resJoinRoom = packetWrapper.SystemPacketAsResJoinRoom();
         Assert.Equal(PacketErrorCodes.Success, resJoinRoom.Result);
         
         // Player3 can't join
         (result, packetWrapper) = await SendAndReceive(playerCannotJoin, BuildReqJoinPlayRoomPacket(roomId));
+        Assert.NotEqual(0, result.Count);
         Assert.Equal(SystemPacket.ResJoinRoom, packetWrapper.SystemPacketType);
         ResJoinRoom resJoinRoomFail = packetWrapper.SystemPacketAsResJoinRoom();
         Assert.Equal(PacketErrorCodes.RoomFull, resJoinRoomFail.Result);
 
 
         (result, packetWrapper) = await ReceiveAsync(player01);
+        Assert.NotEqual(0, result.Count);
         Assert.Equal(SystemPacket.OnPlayerJoinRoom, packetWrapper.SystemPacketType);
         OnPlayerJoinRoom onPlayerJoinRoom = packetWrapper.SystemPacketAsOnPlayerJoinRoom();
 
