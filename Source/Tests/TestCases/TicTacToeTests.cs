@@ -12,6 +12,7 @@ public partial class ABMGS_TestMain
     {
         var player01 = await CreateAuthoredWebSocket();
         var player02 = await CreateAuthoredWebSocket();
+        var playerCannotJoin = await CreateAuthoredWebSocket();
         WebSocketReceiveResult result;
         PacketWrapper packetWrapper;
 
@@ -24,14 +25,26 @@ public partial class ABMGS_TestMain
         roomId.FromGuidType(resCreateRoom.RoomId);
 
         // player02 joins the play room.
-        (result, packetWrapper) = await SendAndReceive(player01, BuildReqJoinPlayRoomPacket(roomId));
+        (result, packetWrapper) = await SendAndReceive(player02, BuildReqJoinPlayRoomPacket(roomId));
         Assert.Equal(SystemPacket.ResJoinRoom, packetWrapper.SystemPacketType);
         ResJoinRoom resJoinRoom = packetWrapper.SystemPacketAsResJoinRoom();
         Assert.Equal(PacketErrorCodes.Success, resJoinRoom.Result);
         
+        // Player3 can't join
+        (result, packetWrapper) = await SendAndReceive(playerCannotJoin, BuildReqJoinPlayRoomPacket(roomId));
+        Assert.Equal(SystemPacket.ResJoinRoom, packetWrapper.SystemPacketType);
+        ResJoinRoom resJoinRoomFail = packetWrapper.SystemPacketAsResJoinRoom();
+        Assert.Equal(PacketErrorCodes.RoomFull, resJoinRoomFail.Result);
+
+
         // player01 starts a play - put a mark 
+        byte[] reqPlayerActionToPlayRoom = BuildReqPlayerActionToPlayRoom(roomId, "PutMarker", []);
+
+        (result, packetWrapper) = await SendAndReceive(player01, reqPlayerActionToPlayRoom);
         
-        
+
+
+
 
 
     }
