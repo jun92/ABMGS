@@ -63,7 +63,7 @@ public class TttGamePlayRoomState : ITttGamePlayRoomState
         _playBoard[x,y] = new CellInfo
         {
              PlayerId = playerId,
-             MarkedTime = DateTime.UtcNow,
+             MarkedTime = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
              State = thisPlayerMark
         };
         return true;
@@ -193,7 +193,7 @@ public class TttGamePlayRoomState : ITttGamePlayRoomState
         foreach (var b in _playBoard)
         {
             StringOffset markedPlayerIdOffset = builder.CreateString(b.PlayerId.ToString());
-            StringOffset markedTimeOffset = builder.CreateString(b.MarkedTime.ToString());
+            StringOffset markedTimeOffset = builder.CreateString(b.MarkedTime);
             TGameCellInfo.StartTGameCellInfo(builder);
             TGameCellInfo.AddMarkedPlayerId(builder, markedPlayerIdOffset);
             TGameCellInfo.AddMarkedTime(builder, markedTimeOffset);
@@ -218,7 +218,41 @@ public class TttGamePlayRoomState : ITttGamePlayRoomState
 
     public void Deserialize(byte[] serialized)
     {
-        throw new NotImplementedException();
+        TGamePlayRoomState tgamePlayRoomState = TGamePlayRoomState.GetRootAsTGamePlayRoomState(new ByteBuffer(serialized));
+
+        _currentTurnPlayerId = new Guid(tgamePlayRoomState.CurrentTurnPlayerId);
+
+        //_playerReadyState.Clear();
+        
+        for (int i = 0; i < tgamePlayRoomState.ReadyStateLength; i++)
+        {
+            ReadyState? rs = tgamePlayRoomState.ReadyState(i);
+            if (rs != null)
+            {
+                Guid id = new Guid(rs.Value.PlayerId);
+                bool isReady = rs.Value.IsReady;
+                _playerReadyState[id] = isReady;
+            }
+        }
+
+        List<(int, int)> index1DTo2D =
+        [
+            (0, 0), (0, 1), (0, 2),
+            (1, 0), (1, 1), (1, 2),
+            (2, 0), (2, 1), (2, 2)
+        ];
+
+        for (int i = 0; i < tgamePlayRoomState.BoardStateLength; i++)
+        {
+            TGameCellInfo? gci = tgamePlayRoomState.BoardState(i);
+            if (gci != null)
+            {
+                (int posX, int posY) = index1DTo2D[i];
+                _playBoard[posX,posY].PlayerId = new Guid(gci.Value.MarkedPlayerId);
+                _playBoard[posX,posY].MarkedTime = gci.Value.MarkedTime;
+                _playBoard[posX,posY].State = (CellState)gci.Value.Mark;
+            }
+        }
     }
 
     public bool SetPlayerReady(Guid playerId, bool  readyState)
