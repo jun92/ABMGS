@@ -22,6 +22,7 @@
     <ProjectReference Include="..\Package\Package.csproj" />
     <ProjectReference Include="..\AppHost\AppHost.csproj" />
     <ProjectReference Include="..\Silo.TttGame.Packets\Silo.TttGame.Packets.csproj" />
+<!--      <ProjectReference Include="..\Silo\Silo.csproj" />-->
   </ItemGroup>
 
   <ItemGroup>

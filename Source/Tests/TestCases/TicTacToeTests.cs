@@ -64,7 +64,26 @@ public partial class ABMGS_TestMain
         Assert.Equal(SystemPacket.OnPlayerJoinRoom, packetWrapper.SystemPacketType);
         OnPlayerJoinRoom onPlayerJoinRoom = packetWrapper.SystemPacketAsOnPlayerJoinRoom();
 
+        byte[] setRedayParameters = BuildTGameReqActionSetReady(player1Id, true);
+        byte[] reqPlayerActionToPlayRoom = BuildReqPlayerActionToPlayRoom(roomId, "Ready", setRedayParameters);
 
+        (result, packetWrapper) = await SendAndReceive(player01, reqPlayerActionToPlayRoom);
+        Assert.NotEqual(0, result.Count);
+        Assert.Equal(SystemPacket.OnPlayRoomStateUpdate, packetWrapper.SystemPacketType);
+        OnPlayRoomStateUpdate onPlayRoomStateUpdate01 = packetWrapper.SystemPacketAsOnPlayRoomStateUpdate();
+
+        byte[] serailizedPlayRoomState = onPlayRoomStateUpdate01.GetUpdatedRoomStateArray();
+        
+        //onPlayRoomStateUpdate01.GetUpdatedRoomStateArray()
+        // _output.WriteLine(packetWrapper.SystemPacketType.ToString());
+
+        (result, packetWrapper) = await ReceiveAsync(player02);
+        Assert.NotEqual(0, result.Count);
+        Assert.Equal(SystemPacket.OnPlayRoomStateUpdate, packetWrapper.SystemPacketType);
+        // _output.WriteLine(packetWrapper.SystemPacketType.ToString());
+        
+        
+        
 
         // player01 starts a play - put a mark 
         // byte[] reqPlayerActionToPlayRoom = BuildReqPlayerActionToPlayRoom(roomId, "PutMarker", []);
