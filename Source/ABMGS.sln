@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Package.Packets", "Package.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Silo.TttGame.Packets", "Silo.TttGame.Packets\Silo.TttGame.Packets.csproj", "{162FAA3D-5988-405E-8F67-8F388A182F83}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Silo.TttGame", "Silo.TttGame\Silo.TttGame.csproj", "{882C0379-B3DF-4BC0-8F1B-DA75DEFD2C3A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,6 +64,10 @@ Global
 		{162FAA3D-5988-405E-8F67-8F388A182F83}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{162FAA3D-5988-405E-8F67-8F388A182F83}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{162FAA3D-5988-405E-8F67-8F388A182F83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{882C0379-B3DF-4BC0-8F1B-DA75DEFD2C3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{882C0379-B3DF-4BC0-8F1B-DA75DEFD2C3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{882C0379-B3DF-4BC0-8F1B-DA75DEFD2C3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{882C0379-B3DF-4BC0-8F1B-DA75DEFD2C3A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,3 +1,4 @@
+using Silo.Player;
 using SyncnetPlatform.Extensions;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Protocols.Generated;
@@ -73,16 +74,21 @@ public partial class ABMGS_TestMain
         OnPlayRoomStateUpdate onPlayRoomStateUpdate01 = packetWrapper.SystemPacketAsOnPlayRoomStateUpdate();
 
         byte[] serailizedPlayRoomState = onPlayRoomStateUpdate01.GetUpdatedRoomStateArray();
-        
-        //onPlayRoomStateUpdate01.GetUpdatedRoomStateArray()
+
         // _output.WriteLine(packetWrapper.SystemPacketType.ToString());
 
+        TttGamePlayRoomState playRoomState = new TttGamePlayRoomState();
+        playRoomState.Deserialize(serailizedPlayRoomState);
+        
+        Assert.True(playRoomState.PlayerReadyState.TryGetValue(player1Id, out bool isReadyPlayer01));
+        Assert.True(isReadyPlayer01);
+        
         (result, packetWrapper) = await ReceiveAsync(player02);
         Assert.NotEqual(0, result.Count);
         Assert.Equal(SystemPacket.OnPlayRoomStateUpdate, packetWrapper.SystemPacketType);
         // _output.WriteLine(packetWrapper.SystemPacketType.ToString());
-        
-        
+
+
         
 
         // player01 starts a play - put a mark 
