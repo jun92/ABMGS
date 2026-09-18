@@ -59,20 +59,21 @@ public partial class ABMGS_TestMain
         ResJoinRoom resJoinRoomFail = packetWrapper.SystemPacketAsResJoinRoom();
         Assert.Equal(PacketErrorCodes.RoomFull, resJoinRoomFail.Result);
 
-
+        // player01 gets the nofitication of player02 in.
         (result, packetWrapper) = await ReceiveAsync(player01);
         Assert.NotEqual(0, result.Count);
         Assert.Equal(SystemPacket.OnPlayerJoinRoom, packetWrapper.SystemPacketType);
         OnPlayerJoinRoom onPlayerJoinRoom = packetWrapper.SystemPacketAsOnPlayerJoinRoom();
 
-        byte[] setRedayParameters = BuildTGameReqActionSetReady(player1Id, true);
-        byte[] reqPlayerActionToPlayRoom = BuildReqPlayerActionToPlayRoom(roomId, Command.Ready, setRedayParameters);
+        
+        // Player1 sends ready packet
+        byte[] setRedayParameters01 = BuildTGameReqActionSetReady(player1Id, true);
+        byte[] reqPlayerActionToPlayRoom01 = BuildReqPlayerActionToPlayRoom(roomId, Command.Ready, setRedayParameters01);
 
-        (result, packetWrapper) = await SendAndReceive(player01, reqPlayerActionToPlayRoom);
+        (result, packetWrapper) = await SendAndReceive(player01, reqPlayerActionToPlayRoom01);
         Assert.NotEqual(0, result.Count);
         Assert.Equal(SystemPacket.OnPlayRoomStateUpdate, packetWrapper.SystemPacketType);
         OnPlayRoomStateUpdate onPlayRoomStateUpdate01 = packetWrapper.SystemPacketAsOnPlayRoomStateUpdate();
-
         byte[] serailizedPlayRoomState = onPlayRoomStateUpdate01.GetUpdatedRoomStateArray();
 
         TttGamePlayRoomState playRoomState = new TttGamePlayRoomState();
@@ -86,7 +87,7 @@ public partial class ABMGS_TestMain
         Assert.True(playRoomState.PlayerReadyState.TryGetValue(player2Id, out isPlayerReady));
         Assert.False(isPlayerReady);
 
-        // check the same playroom states are delivered or not.
+        // check the same playroom states are delivered to player02.
         (result, packetWrapper) = await ReceiveAsync(player02);
         Assert.NotEqual(0, result.Count);
         Assert.Equal(SystemPacket.OnPlayRoomStateUpdate, packetWrapper.SystemPacketType);
@@ -97,9 +98,23 @@ public partial class ABMGS_TestMain
         Assert.True(isPlayerReady);
         
         
-
-
+        // player02 sends ready as well.
+        byte[] setRedayParameters02 = BuildTGameReqActionSetReady(player2Id, true);
+        byte[] reqPlayerActionToPlayRoom02 = BuildReqPlayerActionToPlayRoom(roomId, Command.Ready, setRedayParameters02);
+        (result, packetWrapper) = await SendAndReceive(player02, reqPlayerActionToPlayRoom02);
+        Assert.NotEqual(0, result.Count);
+        Assert.Equal(SystemPacket.OnPlayRoomStateUpdate, packetWrapper.SystemPacketType);
+        OnPlayRoomStateUpdate onPlayRoomStateUpdate02 = packetWrapper.SystemPacketAsOnPlayRoomStateUpdate();
+        serailizedPlayRoomState = onPlayRoomStateUpdate02.GetUpdatedRoomStateArray();
+        playRoomState.Deserialize(serailizedPlayRoomState);
         
+        Assert.True(playRoomState.PlayerReadyState.TryGetValue(player1Id, out isPlayerReady));
+        Assert.True(isPlayerReady);
+        
+        Assert.True(playRoomState.PlayerReadyState.TryGetValue(player2Id, out isPlayerReady));
+        Assert.True(isPlayerReady);
+
+
 
         // player01 starts a play - put a mark 
         // byte[] reqPlayerActionToPlayRoom = BuildReqPlayerActionToPlayRoom(roomId, "PutMarker", []);
