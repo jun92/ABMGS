@@ -14,8 +14,12 @@ public class TttGamePlayRoomState : ITttGamePlayRoomState
     private Guid _winnerPlayerId = Guid.Empty;
     private readonly OrderedDictionary<Guid, Dictionary<string, object?>> _playerCustomStates = new();
 
+    #region For Test verification
+    public CellInfo[,] BoardState => _playBoard;
+    public OrderedDictionary<Guid, bool> PlayerReadyState => _playerReadyState;
     public int CurrentInCount { get => _playerCustomStates.Count; }
     public Guid WinnerPlayerId { get => _winnerPlayerId; }
+    #endregion
 
     public TttGamePlayRoomState()
     {
@@ -244,13 +248,13 @@ public class TttGamePlayRoomState : ITttGamePlayRoomState
 
         for (int i = 0; i < tgamePlayRoomState.BoardStateLength; i++)
         {
-            TGameCellInfo? gci = tgamePlayRoomState.BoardState(i);
-            if (gci != null)
+            TGameCellInfo? gameCellInfo = tgamePlayRoomState.BoardState(i);
+            if (gameCellInfo != null)
             {
                 (int posX, int posY) = index1DTo2D[i];
-                _playBoard[posX,posY].PlayerId = new Guid(gci.Value.MarkedPlayerId);
-                _playBoard[posX,posY].MarkedTime = gci.Value.MarkedTime;
-                _playBoard[posX,posY].State = (CellState)gci.Value.Mark;
+                _playBoard[posX,posY].PlayerId = new Guid(gameCellInfo.Value.MarkedPlayerId);
+                _playBoard[posX,posY].MarkedTime = gameCellInfo.Value.MarkedTime;
+                _playBoard[posX,posY].State = (CellState)gameCellInfo.Value.Mark;
             }
         }
     }

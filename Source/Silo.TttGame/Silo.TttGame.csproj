@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Package.Packets\Package.Packets.csproj" />
+    <ProjectReference Include="..\Package\Package.csproj" />
+    <ProjectReference Include="..\Silo.TttGame.Packets\Silo.TttGame.Packets.csproj" />
+  </ItemGroup>
+
+</Project>
