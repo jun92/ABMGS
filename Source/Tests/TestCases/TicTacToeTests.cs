@@ -66,7 +66,7 @@ public partial class ABMGS_TestMain
         OnPlayerJoinRoom onPlayerJoinRoom = packetWrapper.SystemPacketAsOnPlayerJoinRoom();
 
         byte[] setRedayParameters = BuildTGameReqActionSetReady(player1Id, true);
-        byte[] reqPlayerActionToPlayRoom = BuildReqPlayerActionToPlayRoom(roomId, "Ready", setRedayParameters);
+        byte[] reqPlayerActionToPlayRoom = BuildReqPlayerActionToPlayRoom(roomId, Command.Ready, setRedayParameters);
 
         (result, packetWrapper) = await SendAndReceive(player01, reqPlayerActionToPlayRoom);
         Assert.NotEqual(0, result.Count);
@@ -75,18 +75,28 @@ public partial class ABMGS_TestMain
 
         byte[] serailizedPlayRoomState = onPlayRoomStateUpdate01.GetUpdatedRoomStateArray();
 
-        // _output.WriteLine(packetWrapper.SystemPacketType.ToString());
-
         TttGamePlayRoomState playRoomState = new TttGamePlayRoomState();
         playRoomState.Deserialize(serailizedPlayRoomState);
+
+        bool isPlayerReady = false;
         
-        Assert.True(playRoomState.PlayerReadyState.TryGetValue(player1Id, out bool isReadyPlayer01));
-        Assert.True(isReadyPlayer01);
+        Assert.True(playRoomState.PlayerReadyState.TryGetValue(player1Id, out isPlayerReady));
+        Assert.True(isPlayerReady);
         
+        Assert.True(playRoomState.PlayerReadyState.TryGetValue(player2Id, out isPlayerReady));
+        Assert.False(isPlayerReady);
+
+        // check the same playroom states are delivered or not.
         (result, packetWrapper) = await ReceiveAsync(player02);
         Assert.NotEqual(0, result.Count);
         Assert.Equal(SystemPacket.OnPlayRoomStateUpdate, packetWrapper.SystemPacketType);
-        // _output.WriteLine(packetWrapper.SystemPacketType.ToString());
+        OnPlayRoomStateUpdate onPlayerRoomStateUpdate02 = packetWrapper.SystemPacketAsOnPlayRoomStateUpdate();
+        
+        playRoomState.Deserialize(onPlayerRoomStateUpdate02.GetUpdatedRoomStateArray());
+        Assert.True(playRoomState.PlayerReadyState.TryGetValue(player1Id, out  isPlayerReady));
+        Assert.True(isPlayerReady);
+        
+        
 
 
         
