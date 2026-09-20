@@ -79,9 +79,9 @@ public partial class ABMGS_TestMain
         TttGamePlayRoomState playRoomState = new TttGamePlayRoomState();
         playRoomState.Deserialize(serailizedPlayRoomState);
 
-        bool isPlayerReady = false;
+        // bool isPlayerReady = false;
         
-        Assert.True(playRoomState.PlayerReadyState.TryGetValue(player1Id, out isPlayerReady));
+        Assert.True(playRoomState.PlayerReadyState.TryGetValue(player1Id, out bool isPlayerReady));
         Assert.True(isPlayerReady);
         
         Assert.True(playRoomState.PlayerReadyState.TryGetValue(player2Id, out isPlayerReady));
@@ -98,7 +98,7 @@ public partial class ABMGS_TestMain
         Assert.True(isPlayerReady);
         
         
-        // player02 sends ready as well.
+        // player02 sends ready packet as well.
         byte[] setRedayParameters02 = BuildTGameReqActionSetReady(player2Id, true);
         byte[] reqPlayerActionToPlayRoom02 = BuildReqPlayerActionToPlayRoom(roomId, Command.Ready, setRedayParameters02);
         (result, packetWrapper) = await SendAndReceive(player02, reqPlayerActionToPlayRoom02);
@@ -114,18 +114,22 @@ public partial class ABMGS_TestMain
         Assert.True(playRoomState.PlayerReadyState.TryGetValue(player2Id, out isPlayerReady));
         Assert.True(isPlayerReady);
 
+        await PutMarkerOnBoardTest(player01, player1Id, 0, 0, playRoomState);
+        await PutMarkerOnBoardTest(player02, player2Id, 1, 1, playRoomState);
 
+        
+    }
 
-        // player01 starts a play - put a mark 
-        // byte[] reqPlayerActionToPlayRoom = BuildReqPlayerActionToPlayRoom(roomId, "PutMarker", []);
-        //
-        // (result, packetWrapper) = await SendAndReceive(player01, reqPlayerActionToPlayRoom);
-
-
-
-
-
-
+    private async Task PutMarkerOnBoardTest(ClientWebSocket playerConn, Guid playerId, int x, int y, TttGamePlayRoomState tttGamePlayRoomState)
+    {
+        byte[] reqPlayerActionToPlayRoom = BuildTGameReqActionPutMarker(playerId, x, y);
+        (WebSocketReceiveResult result, PacketWrapper packetWrapper) = await SendAndReceive(playerConn, reqPlayerActionToPlayRoom);
+        Assert.NotEqual(0, result.Count);
+        Assert.Equal(SystemPacket.OnPlayRoomStateUpdate, packetWrapper.SystemPacketType);
+        OnPlayRoomStateUpdate onPlayRoomStateUpdate = packetWrapper.SystemPacketAsOnPlayRoomStateUpdate();
+        
+        tttGamePlayRoomState.Deserialize(onPlayRoomStateUpdate.GetUpdatedRoomStateArray());
+        Assert.Equal(tttGamePlayRoomState.BoardState[x, y].PlayerId, playerId);
     }
     
 }

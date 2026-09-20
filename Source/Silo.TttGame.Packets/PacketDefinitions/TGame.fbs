@@ -49,6 +49,7 @@ table TGameResActionSetReady {
 }
 
 table TGameReqActionPutItem {
+    player_id: string;
     x:int;
     y:int;
 }

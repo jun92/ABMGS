@@ -1,4 +1,5 @@
 using Google.FlatBuffers;
+using Microsoft.Extensions.Logging;
 using Silo.Models;
 using SyncnetPlatform.Actors;
 using SyncnetPlatform.Network.Buffers;
@@ -17,7 +18,8 @@ public struct Command
 }
 public class TttGamePlayRoomCustomBehavior(
     IPlayRoomCustomState playRoomCustomState,
-    TttGamePacketSerializer  tttGamePacketSerializer
+    TttGamePacketSerializer  tttGamePacketSerializer,
+    ILogger<TttGamePlayRoomCustomBehavior> logger
     ) : IPlayRoomCustomEventHandler
 {
     private ITttGamePlayRoomState? _tttGamePlayRoomState;
@@ -65,8 +67,16 @@ public class TttGamePlayRoomCustomBehavior(
     {
         TGameReqActionPutItem putItem = TGameReqActionPutItem.GetRootAsTGameReqActionPutItem(new ByteBuffer(parameter));
         
-        if (!_tttGamePlayRoomState!.PutMarket(putItem.X, putItem.Y, playerId)) return;
-        if (!_tttGamePlayRoomState!.IsGameOver()) return;
+        if (!_tttGamePlayRoomState!.PutMarket(putItem.X, putItem.Y, playerId))
+        {
+            logger.LogError("PutMaker returns Error");
+            return;
+        }
+        if (!_tttGamePlayRoomState!.IsGameOver())
+        {
+            logger.LogInformation("not game over");
+            return;
+        }
         
         // if _tttGamePlayRoomState.WinnerPlayerId is Guid.Empty, it's draw, otherwise the winnner is him.
 
