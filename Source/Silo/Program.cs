@@ -47,10 +47,5 @@ builder.ConfigureActor(option =>
     }
 });
 
-//Custom classes for play room supporting.
-
-builder.Services.AddTransient<TttGamePacketSerializer>();
-
-
 var SyncnetActorApp = builder.Build();
 await SyncnetActorApp.RunAsync();
