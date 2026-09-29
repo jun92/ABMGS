@@ -11,16 +11,13 @@ public class SyncnetBuilderOptions
     public Action<SyncnetLoggerOption>? LoggerConfigure { get; set; } = null;
     public bool AutoMigrateDatabase { get; set; } = false;
 
-    // For creation of player extend data.
     public Type? PlayerDataExtendDefinitionType { get; private set; } = null;
-    
-    // For player custom action handler
-    public Type? PlayerCustomBehaviorType { get; private set; } = null;
     public Type? PlayerDataExtendType { get; private set; } = null;
+    public Type? PlayerCustomBehaviorType { get; private set; } = null;
 
     public void UsePlayerDataExtend<TExtendDefinitionType, TExtendDataStateType, TExtendDataBehaviorType>() 
         where TExtendDefinitionType : class, IPlayerDataExtendDefinition
-        where TExtendDataStateType : class, IPlayerExtendData
+        where TExtendDataStateType : class, IPlayerDataExtend
         where TExtendDataBehaviorType : class, IPlayerCustomBehavior
     {
         PlayerDataExtendDefinitionType = typeof(TExtendDefinitionType);

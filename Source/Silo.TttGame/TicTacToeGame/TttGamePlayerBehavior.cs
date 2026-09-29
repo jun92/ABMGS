@@ -11,7 +11,7 @@ using Silo.TttGame.Models;
 
 namespace Silo.Player;
 
-public class TttGamePlayerExtendData : IPlayerExtendData
+public class TttGamePlayerExtendData : IPlayerDataExtend
 {
     private int _winCount = 0;
     private int _loseCount = 0;
@@ -74,14 +74,14 @@ public static class ActionCommand
 }
 
 // TGame means Tic-Tac-Toe Game.
-public class TttGamePlayerBehavior(IPlayerExtendData playerExtendData) : IPlayerCustomBehavior
+public class TttGamePlayerBehavior(IPlayerDataExtend playerExtendData) : IPlayerCustomBehavior
 {
     public byte[] Serialize(IReadOnlyDictionary<string, object?> playerState)
     {
         return GetPlayerCustomState().Serialize(playerState);
     }
 
-    public IPlayerExtendData GetPlayerCustomState() => playerExtendData; 
+    public IPlayerDataExtend GetPlayerCustomState() => playerExtendData; 
 
     public Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null)
     {

@@ -24,7 +24,7 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
         throw new NotImplementedException();
     }
 
-    public IPlayerExtendData GetPlayerCustomState()
+    public IPlayerDataExtend GetPlayerCustomState()
     {
         throw new NotImplementedException();
     }

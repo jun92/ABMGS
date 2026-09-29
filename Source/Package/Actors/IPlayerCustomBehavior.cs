@@ -18,10 +18,10 @@ public interface IPlayerCustomBehavior
     
     byte[] Serialize(IReadOnlyDictionary<string, object?> playerState);
     
-    IPlayerExtendData GetPlayerCustomState();
+    IPlayerDataExtend GetPlayerCustomState();
 }
 
-public interface IPlayerExtendData
+public interface IPlayerDataExtend
 {
     void Initialize(IReadOnlyDictionary<string, object?> state);
     byte[] Serialize(IReadOnlyDictionary<string, object?> playerState);

@@ -37,7 +37,7 @@ public class SyncnetActorApplicationBuilder : SyncnetBaseApplicationBuilder<Sync
         {
             Builder.Services.AddTransient(typeof(IPlayerDataExtendDefinition), playerDataExtendDefinitionType);
             Builder.Services.AddTransient(typeof(IPlayerCustomBehavior), playerCustomBehaviorType);
-            Builder.Services.AddTransient(typeof(IPlayerExtendData), playerDataExtendType);
+            Builder.Services.AddTransient(typeof(IPlayerDataExtend), playerDataExtendType);
         }
         else
         {
