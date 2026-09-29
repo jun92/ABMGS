@@ -1,5 +1,6 @@
 using Google.FlatBuffers;
-using Silo.Models;
+using Silo.TttGame.Models;
+using Silo.TttGame.TicTacToeGame;
 using TGame.Packets;
 
 namespace Silo.Player;
@@ -156,7 +157,7 @@ public class TttGamePlayRoomState : ITttGamePlayRoomState
     {
         if (GetExtendData(playerId) is { } extendData)
         {
-            IncreaseState(TttGamePlayerModelExtend.WinCount, extendData);
+            IncreaseState(TttGamePlayerDataExtendDefinition.WinCount, extendData);
         }
     }
 
@@ -164,7 +165,7 @@ public class TttGamePlayRoomState : ITttGamePlayRoomState
     {
         if (GetExtendData(playerId) is { } extendData)
         {
-            IncreaseState(TttGamePlayerModelExtend.LoseCount, extendData);
+            IncreaseState(TttGamePlayerDataExtendDefinition.LoseCount, extendData);
         }
     }
 
@@ -172,7 +173,7 @@ public class TttGamePlayRoomState : ITttGamePlayRoomState
     {
         if (GetExtendData(playerId) is { } extendData)
         {
-            IncreaseState(TttGamePlayerModelExtend.PlayCount, extendData);
+            IncreaseState(TttGamePlayerDataExtendDefinition.PlayCount, extendData);
         }
     }
     

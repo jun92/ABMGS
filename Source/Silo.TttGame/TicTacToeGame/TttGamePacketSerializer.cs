@@ -1,5 +1,5 @@
 using Google.FlatBuffers;
-using Silo.Models;
+using Silo.TttGame.Models;
 using TGame.Packets;
 
 namespace Silo.Player;
@@ -19,9 +19,9 @@ public class TttGamePacketSerializer
 
         return new Dictionary<string, object?>
         {
-            { TttGamePlayerModelExtend.WinCount, playerExtendData.WinCount },
-            { TttGamePlayerModelExtend.LoseCount, playerExtendData.LoseCount },
-            { TttGamePlayerModelExtend.PlayCount, playerExtendData.PlayCount }
+            { TttGamePlayerDataExtendDefinition.WinCount, playerExtendData.WinCount },
+            { TttGamePlayerDataExtendDefinition.LoseCount, playerExtendData.LoseCount },
+            { TttGamePlayerDataExtendDefinition.PlayCount, playerExtendData.PlayCount }
         };
     }
 

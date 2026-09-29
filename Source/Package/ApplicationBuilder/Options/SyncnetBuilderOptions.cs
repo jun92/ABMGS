@@ -11,14 +11,32 @@ public class SyncnetBuilderOptions
     public Action<SyncnetLoggerOption>? LoggerConfigure { get; set; } = null;
     public bool AutoMigrateDatabase { get; set; } = false;
 
-    public Type? PlayerDataExtendCreateType { get; private set; } = null;
+    // For creation of player extend data.
+    public Type? PlayerDataExtendDefinitionType { get; private set; } = null;
+    
+    // For player custom action handler
     public Type? PlayerCustomBehaviorType { get; private set; } = null;
-    public void UsePlayerDataExtendCreator<T>() where T: class, IPlayerDataExtendCreater
+    public Type? PlayerDataExtendType { get; private set; } = null;
+
+    public void UsePlayerDataExtend<TExtendDefinitionType, TExtendDataStateType, TExtendDataBehaviorType>() 
+        where TExtendDefinitionType : class, IPlayerDataExtendDefinition
+        where TExtendDataStateType : class, IPlayerExtendData
+        where TExtendDataBehaviorType : class, IPlayerCustomBehavior
     {
-        PlayerDataExtendCreateType = typeof(T);
+        PlayerDataExtendDefinitionType = typeof(TExtendDefinitionType);
+        PlayerDataExtendType = typeof(TExtendDataBehaviorType);
+        PlayerCustomBehaviorType = typeof(TExtendDataStateType);
     }
-    public void UsePlayerCustomBehavior<T>() where T: class, IPlayerCustomBehavior
+    
+    // play room's custom state
+    public Type? PlayRoomCustomStateType { get; private set; } = null;
+    public Type? PlayRoomCustomEventHandlerType { get; private set; } = null;
+    public void UsePlayRoom<TPlayRoomCustomStateType, TPlayRoomCustomEventHandlerType>() 
+        where TPlayRoomCustomStateType : class, IPlayRoomCustomState
+        where TPlayRoomCustomEventHandlerType : class, IPlayRoomCustomEventHandler
     {
-        PlayerCustomBehaviorType = typeof(T);
+        PlayRoomCustomStateType = typeof(TPlayRoomCustomStateType);
+        PlayRoomCustomEventHandlerType = typeof(TPlayRoomCustomEventHandlerType);
     }
+
 }

@@ -1,6 +1,6 @@
 using SyncnetPlatform.Actors;
 
-namespace Silo.Player;
+namespace Silo.TttGame.TicTacToeGame;
 
 public interface ITttGamePlayRoomState : IPlayRoomCustomState
 {

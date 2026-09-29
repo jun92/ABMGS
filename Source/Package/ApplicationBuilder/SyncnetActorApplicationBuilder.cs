@@ -30,11 +30,19 @@ public class SyncnetActorApplicationBuilder : SyncnetBaseApplicationBuilder<Sync
         }
         Builder.AddSyncnetPlatformSilo(_options.LoggerConfigure, _options.TelemetryConfigure, entryAssembly.GetName().Name);
 
-        if(_options.PlayerDataExtendCreateType is { } playerDataExtendType )
-            Builder.Services.AddTransient(typeof(IPlayerDataExtendCreater), playerDataExtendType);
-        if (_options.PlayerCustomBehaviorType is { } playerCustomBehaviorType)
+        // Player data extend feature enabled.
+        if(_options.PlayerDataExtendDefinitionType is { } playerDataExtendDefinitionType &&
+           _options.PlayerDataExtendType is { } playerDataExtendType &&
+           _options.PlayerCustomBehaviorType is { } playerCustomBehaviorType)
+        {
+            Builder.Services.AddTransient(typeof(IPlayerDataExtendDefinition), playerDataExtendDefinitionType);
             Builder.Services.AddTransient(typeof(IPlayerCustomBehavior), playerCustomBehaviorType);
-
+            Builder.Services.AddTransient(typeof(IPlayerExtendData), playerDataExtendType);
+        }
+        else
+        {
+            throw new InvalidOperationException("Player extend data types are not configured. Please call UsePlayerExtendData<TExtendDefinitionType, TExtendDataStateType, TExtendDataBehaviorType>() to configure them.");
+        }
         var webApp = Builder.Build();
         return new SyncnetActorApplication(webApp, _options);
     }

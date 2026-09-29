@@ -10,15 +10,14 @@ using Npgsql.EntityFrameworkCore.PostgreSQL;
 
 namespace SyncnetPlatform.Databases;
 
-public interface IPlayerDataExtendCreater
+public interface IPlayerDataExtendDefinition
 {
-    // TODO: better name? PlayerExtendStat instead of custom data.
-    IReadOnlyList<(Type, string, object)> RegisterPlayerCustomData(); 
+    IReadOnlyList<(Type, string, object)> GetExtendDataDefinitions(); 
 }
 
 public class SyncnetDbContext(
     DbContextOptions options, 
-    IPlayerDataExtendCreater? playerDataExtendCreater = null
+    IPlayerDataExtendDefinition? playerDataExtendDefinition = null
     ) : DbContext(options)
 {
     public DbSet<PlayerData> Players { get; set; }
@@ -42,9 +41,9 @@ public class SyncnetDbContext(
             e.Property(p => p.Id).ValueGeneratedOnAdd();
 
             e.HasIndex(p => p.PlayerId).IsUnique();
-            if(playerDataExtendCreater is not null)
+            if(playerDataExtendDefinition is not null)
             {
-                var customData = playerDataExtendCreater.RegisterPlayerCustomData();
+                var customData = playerDataExtendDefinition.GetExtendDataDefinitions();
                 foreach( var (dataType, name, defaultValue) in customData)
                 {
                     e.IndexerProperty(dataType, name).HasDefaultValue(defaultValue);

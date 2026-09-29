@@ -1,12 +1,8 @@
 using Google.FlatBuffers;
 using Microsoft.Extensions.Logging;
-using Silo.Models;
+using Silo.TttGame.TicTacToeGame;
 using SyncnetPlatform.Actors;
 using SyncnetPlatform.Network.Buffers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using TGame.Packets;
 
 namespace Silo.Player;

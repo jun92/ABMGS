@@ -1,9 +1,9 @@
 using OpenTelemetry.Exporter;
 using Silo.Player;
-using Silo.Models;
 using SyncnetPlatform.Actors;
 using SyncnetPlatform.ApplicationBuilder;
 using SyncnetPlatform.Extensions.Options;
+using Silo.TttGame.Models;
 
 string? EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
 
@@ -11,8 +11,12 @@ string? EnvironmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRON
 var builder = SyncnetApplicationBuilder.CreateActorBuilder(args);
 builder.ConfigureActor(option =>
 {
-    option.UsePlayerCustomBehavior<TttGamePlayerBehavior>();
-    option.UsePlayerDataExtendCreator<TttGamePlayerModelExtend>();
+    
+    // TttGamePlayerDataExtendCreater : Player extend data creation on the database
+    // TttGamePlayerExtendData
+    
+    option.UsePlayerDataExtend<TttGamePlayerDataExtendDefinition, TttGamePlayerExtendData, TttGamePlayerBehavior>();
+    option.UsePlayRoom<TttGamePlayRoomState, TttGamePlayRoomCustomBehavior>();
     
     option.AutoMigrateDatabase = true;
     if(false)
@@ -44,8 +48,7 @@ builder.ConfigureActor(option =>
 });
 
 //Custom classes for play room supporting.
-builder.Services.AddTransient<IPlayRoomCustomState, TttGamePlayRoomState>();
-builder.Services.AddTransient<IPlayerExtendData, TttGamePlayerExtendData>();
+builder.Services.AddTransient<IPlayRoomCustomState, TttGamePlayRoomState>(); // 
 builder.Services.AddTransient<IPlayRoomCustomEventHandler, TttGamePlayRoomCustomBehavior>();
 builder.Services.AddTransient<TttGamePacketSerializer>();
 
