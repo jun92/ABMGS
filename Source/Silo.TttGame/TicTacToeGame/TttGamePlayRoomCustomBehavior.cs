@@ -14,7 +14,6 @@ public struct Command
 }
 public class TttGamePlayRoomCustomBehavior(
     IPlayRoomCustomState playRoomCustomState,
-    TttGamePacketSerializer  tttGamePacketSerializer,
     ILogger<TttGamePlayRoomCustomBehavior> logger
     ) : IPlayRoomCustomEventHandler
 {
@@ -40,7 +39,7 @@ public class TttGamePlayRoomCustomBehavior(
         {
             return Task.FromResult(-1);
         }
-        _tttGamePlayRoomState!.AddPlayer(id, tttGamePacketSerializer.DeserializePlayerCustomData(playerExtendDataArray));
+        _tttGamePlayRoomState!.AddPlayer(id, TttGamePacketSerializer.DeserializePlayerCustomData(playerExtendDataArray));
         return Task.FromResult(0);
     }
     public Task<(Dictionary<Guid, byte[]>?, byte[]?)> ReqPlayerActionToPlayRoom(Guid playerId, string actionType,
@@ -76,7 +75,7 @@ public class TttGamePlayRoomCustomBehavior(
         
         // if _tttGamePlayRoomState.WinnerPlayerId is Guid.Empty, it's draw, otherwise the winnner is him.
 
-        byte[] gameEndedPacket = tttGamePacketSerializer.SerializeNotiftGameEnded(_tttGamePlayRoomState.WinnerPlayerId);
+        byte[] gameEndedPacket = TttGamePacketSerializer.SerializeNotifyGameEnded(_tttGamePlayRoomState.WinnerPlayerId);
         sendBuffer.BroadcastToAll("gameend", gameEndedPacket);
         
         // Update player data. wincount/losecount/playcount
@@ -97,7 +96,7 @@ public class TttGamePlayRoomCustomBehavior(
     private void HandleReqPlayerReady(byte[] parameter, Guid playerId, IPlayRoomSendBuffer sendBuffer)
     {
         // Packet parsing.
-        TGameReqActionSetReady readyState = tttGamePacketSerializer.DeserializeGameReqActionSetReady(parameter);
+        TGameReqActionSetReady readyState = TttGamePacketSerializer.DeserializeGameReqActionSetReady(parameter);
         
         // Update play room custom states
         int result = OnReqPlayerReady(new Guid(readyState.PlayerId), readyState.ReadyState);
@@ -105,7 +104,7 @@ public class TttGamePlayRoomCustomBehavior(
         {
             //let's assume 0 means all players are ready and good to start a new game.
             // Use your serializer 
-            byte[] dataToSend = tttGamePacketSerializer.SerializeNotiftGameStarted(_tttGamePlayRoomState!.GetPlayerIdInTurn());
+            byte[] dataToSend = TttGamePacketSerializer.SerializeNotifyGameStarted(_tttGamePlayRoomState!.GetPlayerIdInTurn());
 
             List<Guid> players = _tttGamePlayRoomState.GetBroadcastTargets();
             sendBuffer.BroadcastFiltered(players, "gamestart", dataToSend);
