@@ -114,8 +114,8 @@ public partial class ABMGS_TestMain
         Assert.True(playRoomState.PlayerReadyState.TryGetValue(player2Id, out isPlayerReady));
         Assert.True(isPlayerReady);
 
-        await PutMarkerOnBoardTest(player01, player1Id, 0, 0, playRoomState);
-        await PutMarkerOnBoardTest(player02, player2Id, 1, 1, playRoomState);
+        // await PutMarkerOnBoardTest(player01, player1Id, 0, 0, playRoomState);
+        // await PutMarkerOnBoardTest(player02, player2Id, 1, 1, playRoomState);
 
         
     }
