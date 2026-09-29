@@ -31,17 +31,27 @@ public class SyncnetActorApplicationBuilder : SyncnetBaseApplicationBuilder<Sync
         Builder.AddSyncnetPlatformSilo(_options.LoggerConfigure, _options.TelemetryConfigure, entryAssembly.GetName().Name);
 
         // Player data extend feature enabled.
-        if(_options.PlayerDataExtendDefinitionType is { } playerDataExtendDefinitionType &&
-           _options.PlayerDataExtendType is { } playerDataExtendType &&
-           _options.PlayerCustomBehaviorType is { } playerCustomBehaviorType)
+        if(_options is
+           {
+               PlayerDataExtendDefinitionType: { } playerDataExtendDefinitionType, 
+               PlayerDataExtendType: { } playerDataExtendType, 
+               PlayerCustomBehaviorType: { } playerCustomBehaviorType
+           })
         {
             Builder.Services.AddTransient(typeof(IPlayerDataExtendDefinition), playerDataExtendDefinitionType);
             Builder.Services.AddTransient(typeof(IPlayerCustomBehavior), playerCustomBehaviorType);
             Builder.Services.AddTransient(typeof(IPlayerDataExtend), playerDataExtendType);
         }
-        else
+        
+        // Play room feature enabled
+        if (_options is
+            {
+                PlayRoomCustomStateType: { } playRoomCustomStateType, 
+                PlayRoomCustomEventHandlerType: { } playRoomCustomEventHandlerType
+            })
         {
-            throw new InvalidOperationException("Player extend data types are not configured. Please call UsePlayerExtendData<TExtendDefinitionType, TExtendDataStateType, TExtendDataBehaviorType>() to configure them.");
+            Builder.Services.AddTransient(typeof(IPlayRoomCustomEventHandler), playRoomCustomEventHandlerType);
+            Builder.Services.AddTransient(typeof(IPlayRoomCustomState), playRoomCustomStateType);
         }
         var webApp = Builder.Build();
         return new SyncnetActorApplication(webApp, _options);
