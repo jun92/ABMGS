@@ -6,12 +6,12 @@ namespace Silo.Player;
 public class TttGamePacketSerializer
 {
 
-    public TGameReqActionSetReady DeserializeGameReqActionSetReady(byte[] parameter)
+    public static TGameReqActionSetReady DeserializeGameReqActionSetReady(byte[] parameter)
     {
         return TGameReqActionSetReady.GetRootAsTGameReqActionSetReady(new ByteBuffer(parameter));
     }
 
-    public Dictionary<string, object?> DeserializePlayerCustomData(byte[] playerExtendDataArray)
+    public static Dictionary<string, object?> DeserializePlayerCustomData(byte[] playerExtendDataArray)
     {
         // FlatBuffer parsing, use your favorite serialize library. ex) protoBuf, json, etc.
         TGamePlayerCustomData playerExtendData = 
@@ -25,7 +25,7 @@ public class TttGamePacketSerializer
         };
     }
 
-    public byte[] SerializeNotiftGameStarted(Guid firstPlayerId)
+    public static byte[] SerializeNotifyGameStarted(Guid firstPlayerId)
     {
         FlatBufferBuilder builder = new(128);
         StringOffset firstPlayerIdOffset = builder.CreateString(firstPlayerId.ToString());
@@ -34,7 +34,7 @@ public class TttGamePacketSerializer
         return builder.SizedByteArray();
     }
 
-    public byte[] SerializeNotiftGameEnded(Guid winnerPlayerId)
+    public static byte[] SerializeNotifyGameEnded(Guid winnerPlayerId)
     {
         FlatBufferBuilder builder = new(128);
         StringOffset winnerPlayerIdOffset = builder.CreateString(winnerPlayerId.ToString());
