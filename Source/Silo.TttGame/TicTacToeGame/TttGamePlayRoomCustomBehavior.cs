@@ -17,10 +17,9 @@ public class TttGamePlayRoomCustomBehavior(
     ILogger<TttGamePlayRoomCustomBehavior> logger
     ) : IPlayRoomCustomEventHandler
 {
-    private ITttGamePlayRoomState? _tttGamePlayRoomState;
+    private readonly ITttGamePlayRoomState? _tttGamePlayRoomState = playRoomCustomState as ITttGamePlayRoomState;
     public Task<IPlayRoomCustomState> OnPlayRoomInitializingAsync()
     {
-        _tttGamePlayRoomState = playRoomCustomState as ITttGamePlayRoomState;
         return Task.FromResult(playRoomCustomState);
     }
 
@@ -42,7 +41,7 @@ public class TttGamePlayRoomCustomBehavior(
         _tttGamePlayRoomState!.AddPlayer(id, TttGamePacketSerializer.DeserializePlayerCustomData(playerExtendDataArray));
         return Task.FromResult(0);
     }
-    public Task<(Dictionary<Guid, byte[]>?, byte[]?)> ReqPlayerActionToPlayRoom(Guid playerId, string actionType,
+    public Task<(PlayerActionResult?, PlayRoomActionResult?)> ReqPlayerActionToPlayRoom(Guid playerId, string actionType,
         byte[] actionParameter, IPlayRoomSendBuffer sendBuffer)
     {
         switch (actionType)
@@ -50,12 +49,12 @@ public class TttGamePlayRoomCustomBehavior(
             case Command.Ready:
                 HandleReqPlayerReady(actionParameter, playerId, sendBuffer);
                 // play room state has changed. not player state
-                return Task.FromResult<(Dictionary<Guid, byte[]>?, byte[]?)>((null, _tttGamePlayRoomState!.Serialize()));
+                return Task.FromResult<(PlayerActionResult?, PlayRoomActionResult?)>((null, new PlayRoomActionResult(_tttGamePlayRoomState!.Serialize())));
             case Command.PutMarker:
                 HandleReqPutMarker(actionParameter, playerId, sendBuffer);
-                return Task.FromResult<(Dictionary<Guid, byte[]>?, byte[]?)>((null, _tttGamePlayRoomState!.Serialize()));
+                return Task.FromResult<(PlayerActionResult?, PlayRoomActionResult?)>((null, new PlayRoomActionResult(_tttGamePlayRoomState!.Serialize())));
         }
-        return Task.FromResult<(Dictionary<Guid, byte[]>?, byte[]?)>((null, null));
+        return Task.FromResult<(PlayerActionResult?, PlayRoomActionResult?)>((null, null));
     }
 
     private void HandleReqPutMarker(byte[] parameter, Guid playerId, IPlayRoomSendBuffer sendBuffer)

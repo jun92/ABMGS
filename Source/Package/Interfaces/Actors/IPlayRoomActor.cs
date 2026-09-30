@@ -16,7 +16,7 @@ public interface IPlayRoomActor : IGrainWithGuidKey
     Task<(PacketErrorCodes, byte[])> JoinPlayer(PlayRoomMember joiner);
     [Alias("LeavePlayer")]
     Task<PacketErrorCodes> LeavePlayer(PlayRoomMember leaver);
-    [Alias("SetRoomInformation")]
+    [Alias("Create")]
     Task<(PacketErrorCodes, byte[]?)> Create(string displayName, bool isPrivate, int maxCapacity, string roomPassword, PlayRoomMember owner);
     [Alias("ReqPlayerActionToPlayRoom")]
     Task<PacketErrorCodes> ReqPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter);

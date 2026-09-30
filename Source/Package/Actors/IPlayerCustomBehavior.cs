@@ -25,8 +25,8 @@ public interface IPlayerDataExtend
 {
     void Initialize(IReadOnlyDictionary<string, object?> state);
     byte[] Serialize(IReadOnlyDictionary<string, object?> playerState);
-    Dictionary<string, object?> Deserialize(byte[] data);
-    Dictionary<string, object?> Deserialize();
+    Dictionary<string, object?> ToDictionary(byte[] data);
+    Dictionary<string, object?> ToDictionary();
 }
 
 

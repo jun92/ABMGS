@@ -13,7 +13,8 @@ builder.ConfigureActor(option =>
 {
     
     // TttGamePlayerDataExtendCreater : Player extend data creation on the database
-    // TttGamePlayerExtendData
+    // TttGamePlayerExtendData: Extended player data for user's needs.
+    // TttGamePlayerBehavior: Player logic for user game.
     
     option.UsePlayerDataExtend<TttGamePlayerDataExtendDefinition, TttGamePlayerExtendData, TttGamePlayerBehavior>();
     option.UsePlayRoom<TttGamePlayRoomState, TttGamePlayRoomCustomBehavior>();

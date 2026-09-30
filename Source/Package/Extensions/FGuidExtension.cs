@@ -19,13 +19,20 @@ public static class FGuidExtension
 
         return GuidType.CreateGuidType(builder, low, high);
     }
-    public static void FromGuidType(ref this Guid guid, GuidType? guidType)
+
+    public static Guid ToGuid(this GuidType guidType)
     {
-        if (!guidType.HasValue ) return;
-        Span<byte> guidBytes = MemoryMarshal.AsBytes(MemoryMarshal.CreateSpan(ref guid, 1));
-        BitConverter.TryWriteBytes(guidBytes.Slice(0, 8), guidType.Value.Low);
-        BitConverter.TryWriteBytes(guidBytes.Slice(8, 8), guidType.Value.High);
+        Span<byte> guidBytes = stackalloc byte[16];
+        BitConverter.TryWriteBytes(guidBytes.Slice(0, 8), guidType.Low);
+        BitConverter.TryWriteBytes(guidBytes.Slice(8, 8), guidType.High);
+        return MemoryMarshal.Read<Guid>(guidBytes);
     }
+
+    public static Guid ToGuid(this GuidType? guidType)
+    {
+        return guidType?.ToGuid() ?? Guid.Empty;
+    }
+    
     public static void ThrowIfInvalidGuid(this Guid guid)
     {
         if(guid == Guid.Empty)

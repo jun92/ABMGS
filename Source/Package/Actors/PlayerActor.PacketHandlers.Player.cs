@@ -76,8 +76,7 @@ public partial class PlayerActor
     [PacketHandler(typeof(ReqDirectDeliveryData))]
     public async Task HandleReqDirectDeliveryData(ReqDirectDeliveryData request)
     {
-        Guid toPlayerId = Guid.Empty;
-        toPlayerId.FromGuidType(request.ToPlayerId);
+        Guid toPlayerId = request.ToPlayerId.ToGuid();
 
         PacketErrorCodes result = await SendDirectDeliverData(
             toPlayerId,

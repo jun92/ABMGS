@@ -5,6 +5,10 @@ using System.Threading.Tasks;
 
 namespace SyncnetPlatform.Actors;
 
+public record PlayerActionResult(Dictionary<Guid, byte[]> PlayerUpdatedStats);
+
+public record PlayRoomActionResult(byte[] PlayRoomUpdatedStat);
+
 public interface IPlayRoomCustomEventHandler
 {
     Task<IPlayRoomCustomState> OnPlayRoomInitializingAsync();
@@ -13,6 +17,6 @@ public interface IPlayRoomCustomEventHandler
 
     Task<int> AddPlayerToPlayRoom(Guid id, byte[] playerExtendData);
 
-    Task<(Dictionary<Guid, byte[]>?, byte[]?)> ReqPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter, IPlayRoomSendBuffer sendBuffer);
+    Task<(PlayerActionResult?, PlayRoomActionResult?)> ReqPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter, IPlayRoomSendBuffer sendBuffer);
     Task OnTimer(float delta);
 }

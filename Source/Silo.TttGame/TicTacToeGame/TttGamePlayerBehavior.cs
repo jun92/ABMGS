@@ -37,7 +37,7 @@ public class TttGamePlayerExtendData : IPlayerDataExtend
             );
     }
    
-    public Dictionary<string, object?> Deserialize(byte[] data)
+    public Dictionary<string, object?> ToDictionary(byte[] data)
     {
         TGamePlayerCustomData customData = TGamePlayerCustomData.GetRootAsTGamePlayerCustomData(new ByteBuffer(data));
         FillInnerState(customData.WinCount, customData.LoseCount, customData.PlayCount);
@@ -49,7 +49,7 @@ public class TttGamePlayerExtendData : IPlayerDataExtend
         };
     }
 
-    public Dictionary<string, object?> Deserialize()
+    public Dictionary<string, object?> ToDictionary()
     {
         return new Dictionary<string, object?>
         {

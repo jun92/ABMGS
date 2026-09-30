@@ -162,20 +162,20 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         #endregion 
         
         // Custom processing 
-        (Dictionary<Guid,byte[]>? updatedPlayerExtendData, byte[]? updatedPlayRoomCustomState) = 
+        (PlayerActionResult? updatedPlayerExtendData, PlayRoomActionResult? updatedPlayRoomCustomState) = 
             await _playRoomCustomEventHandler.ReqPlayerActionToPlayRoom(playerId, actionType, actionParameter, _playRoomSendBuffer);
         
         
         if( updatedPlayRoomCustomState is not null)
         {
-            _playRoomState.PlayRoomCustomState?.Deserialize(updatedPlayRoomCustomState);
+            // _playRoomState.PlayRoomCustomState?.ToDictionary(updatedPlayRoomCustomState);
             // Broadcasting to all players due to playroom state changed.
-            await BroadcastPlayRoomCustomState(updatedPlayRoomCustomState, m => true);
+            await BroadcastPlayRoomCustomState(updatedPlayRoomCustomState.PlayRoomUpdatedStat, m => true);
         }
 
         if (updatedPlayerExtendData is not null)
         {
-            foreach(KeyValuePair<Guid, byte[]> playerExtendData in updatedPlayerExtendData)
+            foreach(KeyValuePair<Guid, byte[]> playerExtendData in updatedPlayerExtendData.PlayerUpdatedStats)
             {
                 PlayRoomMember? updatedMember = _players.Find(p => p.PlayerId == playerExtendData.Key);
                 if (updatedMember is null) continue;

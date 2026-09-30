@@ -15,8 +15,6 @@ public partial class ABMGS_TestMain
         var player02 = await CreateAuthoredWebSocket();
         var playerCannotJoin = await CreateAuthoredWebSocket();
 
-        Guid player1Id = Guid.Empty;
-        Guid player2Id = Guid.Empty;
         WebSocketReceiveResult result;
         PacketWrapper packetWrapper;
 
@@ -25,7 +23,7 @@ public partial class ABMGS_TestMain
         Assert.NotEqual(0, result.Count);
         Assert.Equal(SystemPacket.ResUserInfo, packetWrapper.SystemPacketType);
         ResUserInfo player1Info = packetWrapper.SystemPacketAsResUserInfo();
-        player1Id.FromGuidType(player1Info.Id);
+        Guid player1Id = player1Info.Id.ToGuid();
         Assert.NotEqual(Guid.Empty, player1Id);
         
         // Get player2 Id
@@ -33,7 +31,7 @@ public partial class ABMGS_TestMain
         Assert.NotEqual(0, result.Count);
         Assert.Equal(SystemPacket.ResUserInfo, packetWrapper.SystemPacketType);
         ResUserInfo player2Info = packetWrapper.SystemPacketAsResUserInfo();
-        player2Id.FromGuidType(player2Info.Id);
+        Guid player2Id = player2Info.Id.ToGuid();
         Assert.NotEqual(Guid.Empty, player2Id);
 
         // Player01 creates a play room.
@@ -42,8 +40,7 @@ public partial class ABMGS_TestMain
         Assert.Equal(SystemPacket.ResCreateRoom, packetWrapper.SystemPacketType);
         ResCreateRoom resCreateRoom = packetWrapper.SystemPacketAsResCreateRoom();
         Assert.Equal(PacketErrorCodes.Success, resCreateRoom.Result);
-        Guid roomId = Guid.Empty;
-        roomId.FromGuidType(resCreateRoom.RoomId);
+        Guid roomId = resCreateRoom.RoomId.ToGuid();
 
         // player02 joins the play room.
         (result, packetWrapper) = await SendAndReceive(player02, BuildReqJoinPlayRoomPacket(roomId));

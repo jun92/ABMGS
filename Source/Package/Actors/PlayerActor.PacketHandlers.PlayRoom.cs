@@ -45,9 +45,7 @@ public partial class PlayerActor
     {
         if (!_isOnline || _playRoomSession is null) return;
         
-        Guid roomId = Guid.Empty;
-        roomId.FromGuidType(request.RoomId);
-        
+        Guid roomId = request.RoomId.ToGuid();
         
         PacketErrorCodes errorCode = PacketErrorCodes.Success;
         (errorCode, byte[] playRoomCustomState) = await _playRoomSession.JoinPlayRoom(roomId);
@@ -65,10 +63,8 @@ public partial class PlayerActor
     public async Task HandleReqPlayerListInRoom(ReqPlayerListInRoom request)
     {
         if (!_isOnline || _playRoomSession is null) return;
-        
-        
-        Guid roomId = Guid.Empty;
-        roomId.FromGuidType(request.RoomId);
+
+        Guid roomId = request.RoomId.ToGuid();
         List<PlayRoomMember> players = await _playRoomSession!.GetPlayerListInPlayRoom(roomId);
 
         await _sendQueueActor!.Push(SyncnetPacketBuilder.Build<ResPlayerListInRoomArgs>(
@@ -84,8 +80,7 @@ public partial class PlayerActor
     {
         if (!_isOnline || _playRoomSession is null) return;
         
-        Guid roomId = Guid.Empty;
-        roomId.FromGuidType(request.RoomId);
+        Guid roomId = request.RoomId.ToGuid();
         PacketErrorCodes result = await _playRoomSession!.LeavePlayRoom(roomId);
 
         await _sendQueueActor!.Push(SyncnetPacketBuilder.Build<ResLeaveRoomArgs>(
@@ -97,9 +92,8 @@ public partial class PlayerActor
     public async Task HandleReqPlayerActionToPlayRoom(ReqPlayerActionToPlayRoom request)
     {
         if (!_isOnline || _playRoomSession is null) return;
-        
-        Guid roomId = Guid.Empty;
-        roomId.FromGuidType(request.RoomId);
+
+        Guid roomId = request.RoomId.ToGuid();
 
         PacketErrorCodes errorCode = await _playRoomSession!.PlayerActionToPlayRoom(roomId, PlayerId, request.ActionType,
             request.GetActionParameterArray());

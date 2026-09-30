@@ -138,7 +138,7 @@ public partial class PlayerActor(
     {
         if(playerCustomBehavior is not null)
         {
-            return playerCustomBehavior.GetPlayerCustomState().Deserialize(data);
+            return playerCustomBehavior.GetPlayerCustomState().ToDictionary(data);
         }
         return new Dictionary<string, object?>(capacity: 0);
     }

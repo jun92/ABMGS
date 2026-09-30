@@ -12,7 +12,7 @@
 //     public string TestField02 { get; set; } = String.Empty;
 //     [Id(2)]
 //     public bool TestField03 { get; set; }
-//     public void Deserialize(byte[] serialized)
+//     public void ToDictionary(byte[] serialized)
 //     {
 //         var playRoomCreationMetaData = PlayRoomCreationMetaData.GetRootAsPlayRoomCreationMetaData(new ByteBuffer(serialized));
 //         TestField01 = playRoomCreationMetaData.ExtField1;

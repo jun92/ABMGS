@@ -38,7 +38,11 @@ public class PlayRoomSendBuffer : IPlayRoomSendBuffer
 
     public (string?, byte[]?) PopBuffer(Guid playerId)
     {
-        return _sendBuffer[playerId].Count == 0 ? (null, null) : _sendBuffer[playerId].Dequeue();
+        if (!_sendBuffer.TryGetValue(playerId, out Queue<(string, byte[])>? queue) || queue.Count == 0)
+        {
+            return (null, null);
+        }
+        return queue.Dequeue();
     }
 
     public (string?, byte[]?) GetBufferForAllPlayers()

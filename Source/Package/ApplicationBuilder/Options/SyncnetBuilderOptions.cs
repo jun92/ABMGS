@@ -21,8 +21,8 @@ public class SyncnetBuilderOptions
         where TExtendDataBehaviorType : class, IPlayerCustomBehavior
     {
         PlayerDataExtendDefinitionType = typeof(TExtendDefinitionType);
-        PlayerDataExtendType = typeof(TExtendDataBehaviorType);
-        PlayerCustomBehaviorType = typeof(TExtendDataStateType);
+        PlayerDataExtendType = typeof(TExtendDataStateType);
+        PlayerCustomBehaviorType = typeof(TExtendDataBehaviorType);
     }
     
     // play room's custom state
