@@ -49,6 +49,7 @@ public partial class PlayerActor
         
         PacketErrorCodes errorCode = PacketErrorCodes.Success;
         (errorCode, byte[] playRoomCustomState) = await _playRoomSession.JoinPlayRoom(roomId);
+        playerCustomBehavior?.OnJoinPlayRoom(_playerState, roomId, false, playRoomCustomState);
 
         await _sendQueueActor!.Push(SyncnetPacketBuilder.Build<ResJoinRoomArgs>(
             new ResJoinRoomArgs(

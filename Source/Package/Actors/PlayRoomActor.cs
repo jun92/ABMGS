@@ -168,9 +168,8 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         
         if( updatedPlayRoomCustomState is not null)
         {
-            // _playRoomState.PlayRoomCustomState?.ToDictionary(updatedPlayRoomCustomState);
             // Broadcasting to all players due to playroom state changed.
-            await BroadcastPlayRoomCustomState(updatedPlayRoomCustomState.PlayRoomUpdatedStat, m => true);
+            await BroadcastPlayRoomCustomState(updatedPlayRoomCustomState.PlayRoomUpdatedState, m => true);
         }
 
         if (updatedPlayerExtendData is not null)

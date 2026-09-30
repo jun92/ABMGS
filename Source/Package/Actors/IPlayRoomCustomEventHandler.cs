@@ -7,7 +7,7 @@ namespace SyncnetPlatform.Actors;
 
 public record PlayerActionResult(Dictionary<Guid, byte[]> PlayerUpdatedStats);
 
-public record PlayRoomActionResult(byte[] PlayRoomUpdatedStat);
+public record PlayRoomActionResult(byte[] PlayRoomUpdatedState);
 
 public interface IPlayRoomCustomEventHandler
 {
