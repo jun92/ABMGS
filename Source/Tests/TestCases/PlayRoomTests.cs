@@ -1,6 +1,9 @@
 using SyncnetPlatform.Extensions;
 using SyncnetPlatform.Protocols.Generated;
+using System;
 using System.Net.WebSockets;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace SyncnetPlatform.Tests;
 public partial class ABMGS_TestMain : IAsyncLifetime
@@ -14,8 +17,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         Assert.Equal(SystemPacket.ResCreateRoom, packetWrapper.SystemPacketType);
         Assert.Equal(PacketErrorCodes.Success, packetWrapper.SystemPacketAsResCreateRoom().Result);
         
-        Guid roomId = default;
-        roomId.FromGuidType(packetWrapper.SystemPacketAsResCreateRoom().RoomId);
+        Guid roomId = packetWrapper.SystemPacketAsResCreateRoom().RoomId.ToGuid();
 
         // Leave
         (result, packetWrapper) = await SendAndReceive(wsClient, BuildReqLeavelPlayRoomPacket(roomId));
@@ -66,23 +68,19 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         // Owner info.
         (result, packetWrapper) = await SendAndReceive(wsClientOwner, ReqUserInfoPacket);
         Assert.Equal(SystemPacket.ResUserInfo, packetWrapper.SystemPacketType);
-        Guid OwnerPlayerId = default;
-        OwnerPlayerId.FromGuidType(packetWrapper.SystemPacketAsResUserInfo().Id);
+        Guid ownerPlayerId = packetWrapper.SystemPacketAsResUserInfo().Id.ToGuid();
 
         // Joiner info.
         (result, packetWrapper) = await SendAndReceive(wsClientJoiner, ReqUserInfoPacket);
         Assert.Equal(SystemPacket.ResUserInfo, packetWrapper.SystemPacketType);
-        Guid JoinerPlayerId = default;
-        JoinerPlayerId.FromGuidType(packetWrapper.SystemPacketAsResUserInfo().Id);
+        Guid joinerPlayerId = packetWrapper.SystemPacketAsResUserInfo().Id.ToGuid();
 
         // Owner creates a room.
         (result, packetWrapper) = await SendAndReceive(wsClientOwner, BuildReqCreatePlayRoomPacket("CreateRoomTestTitle", false, "", 5));
-        //(result, packetWrapper) = await SendAndReceive(wsClientOwner, BuildReqCreatePlayRoomPacket("CreateRoomTestTitle"));
 
         Assert.Equal(SystemPacket.ResCreateRoom, packetWrapper.SystemPacketType);
         Assert.Equal(PacketErrorCodes.Success, packetWrapper.SystemPacketAsResCreateRoom().Result);
-        Guid roomId = default;
-        roomId.FromGuidType(packetWrapper.SystemPacketAsResCreateRoom().RoomId);
+        Guid roomId = packetWrapper.SystemPacketAsResCreateRoom().RoomId.ToGuid();
 
         // Joiner trys to join.
         (result, packetWrapper) = await SendAndReceive(wsClientJoiner, BuildReqJoinPlayRoomPacket(roomId));
@@ -93,14 +91,11 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         (result, packetWrapper) = await ReceiveAsync(wsClientOwner);
         Assert.Equal(SystemPacket.OnPlayerJoinRoom, packetWrapper.SystemPacketType);
 
-        Guid RecvRoomId = default;
-        Guid JoinedPlayerId = default;
+        Guid recvRoomId = packetWrapper.SystemPacketAsOnPlayerJoinRoom().RoomId.ToGuid();
+        Guid joinedPlayerId = packetWrapper.SystemPacketAsOnPlayerJoinRoom().JoinerId.ToGuid();
 
-        RecvRoomId.FromGuidType(packetWrapper.SystemPacketAsOnPlayerJoinRoom().RoomId);
-        JoinedPlayerId.FromGuidType(packetWrapper.SystemPacketAsOnPlayerJoinRoom().JoinerId);
-
-        Assert.Equal(roomId, RecvRoomId);
-        Assert.Equal(JoinerPlayerId, JoinedPlayerId);
+        Assert.Equal(roomId, recvRoomId);
+        Assert.Equal(joinerPlayerId, joinedPlayerId);
 
         // Getting plaer list 
 
@@ -116,9 +111,8 @@ public partial class ABMGS_TestMain : IAsyncLifetime
 
         (result, packetWrapper) = await ReceiveAsync(wsClientJoiner);
         Assert.Equal(SystemPacket.OnPlayerLeaveRoom, packetWrapper.SystemPacketType);
-        Guid notifiedLeaverPlayerId = new Guid();
-        notifiedLeaverPlayerId.FromGuidType(packetWrapper.SystemPacketAsOnPlayerLeaveRoom().PlayerId);
-        Assert.Equal(OwnerPlayerId, notifiedLeaverPlayerId);
+        Guid notifiedLeaverPlayerId = packetWrapper.SystemPacketAsOnPlayerLeaveRoom().PlayerId.ToGuid();
+        Assert.Equal(ownerPlayerId, notifiedLeaverPlayerId);
 
         (result, packetWrapper) = await SendAndReceive(wsClientJoiner, BuildReqLeavelPlayRoomPacket(roomId));
         Assert.Equal(SystemPacket.ResLeaveRoom, packetWrapper.SystemPacketType);

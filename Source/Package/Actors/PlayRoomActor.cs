@@ -1,33 +1,43 @@
 using Microsoft.Extensions.Logging;
+using Orleans;
+using Orleans.Runtime;
 using SyncnetPlatform.Interfaces.Actors;
+using SyncnetPlatform.Network.Buffers;
 using SyncnetPlatform.Protocols.Generated;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SyncnetPlatform.Actors;
 
 public class PlayRoomActor : Grain, IPlayRoomActor
 {
     private readonly ILogger<PlayRoomActor> _logger;
+    private Guid RoomId => GrainContext.GrainId.GetGuidKey();
 
-    private readonly List<PlayRoomMember> _players = new List<PlayRoomMember>();
+    private readonly List<PlayRoomMember> _players = [];
 
     private int _maxPlayerCapacity = 4;
     private bool _isPrivate = false;
     private Guid _ownerPlayerId = Guid.Empty;
     private IDisposable? _playRoomTimer;
     private readonly PlayRoomState _playRoomState = new();
+    private readonly IPlayRoomSendBuffer _playRoomSendBuffer;
 
     //Customizations
     private readonly IPlayRoomCustomEventHandler? _playRoomCustomEventHandler = null;
+    
     public PlayRoomActor(
         ILogger<PlayRoomActor> logger,
+        IPlayRoomSendBuffer playRoomSendBuffer,
         IPlayRoomCustomEventHandler? playRoomCustomEventHandler = null
         )
     {
         _logger = logger;
-        if( playRoomCustomEventHandler is not null)
-        {
-            _playRoomCustomEventHandler = playRoomCustomEventHandler;
-        }
+        _playRoomSendBuffer = playRoomSendBuffer;
+        _playRoomCustomEventHandler = playRoomCustomEventHandler;
     }
 
     public override async Task OnActivateAsync(CancellationToken cancellationToken)
@@ -56,15 +66,14 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         }
         _playRoomTimer?.Dispose();
     }
-    public Guid RoomId => GrainContext.GrainId.GetGuidKey();
     
-    public async Task<(PacketErrorCodes, byte[]?)> SetRoomInformation(string displayName,
+    public async Task<(PacketErrorCodes, byte[]?)> Create(string displayName,
         bool isPrivate,
         int maxCapacity,
         string roomPassword,
         PlayRoomMember owner)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(displayName, nameof(displayName));
+        // ArgumentNullException.ThrowIfNullOrWhiteSpace(displayName, nameof(displayName));
         _playRoomState.DisplayName = displayName;
         _playRoomState.PasswordForEntrance = roomPassword;
         _maxPlayerCapacity = maxCapacity;
@@ -80,13 +89,11 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         return (PacketErrorCodes.Success, SerializePlayRoomCustomState());
     }
 
-    public ValueTask<bool> IsValidRoomToJoin() => ValueTask.FromResult<bool>(_ownerPlayerId != Guid.Empty);
-
     public async Task<(PacketErrorCodes, byte[])> JoinPlayer(PlayRoomMember joiner)
     {
         #region Early exit check
-        if(_ownerPlayerId == Guid.Empty) return (PacketErrorCodes.RoomNotFound, []);
-        if(_players.Exists(p => p.PlayerId == joiner.PlayerId)) return (PacketErrorCodes.AlreadyInRoom, []);
+        if (_ownerPlayerId == Guid.Empty) return (PacketErrorCodes.RoomNotFound, []);
+        if (_players.Exists(p => p.PlayerId == joiner.PlayerId)) return (PacketErrorCodes.AlreadyInRoom, []);
         if (_players.Count == _maxPlayerCapacity) return (PacketErrorCodes.RoomFull, []);
         #endregion
 
@@ -105,7 +112,7 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         return (PacketErrorCodes.Success, SerializePlayRoomCustomState());
     }
 
-    protected byte[] SerializePlayRoomCustomState() =>
+    private byte[] SerializePlayRoomCustomState() =>
         _playRoomState.PlayRoomCustomState is not null ? _playRoomState.PlayRoomCustomState.Serialize() : [];
 
     public Task<List<PlayRoomMember>> GetPlayersInPlayRoom()
@@ -148,33 +155,66 @@ public class PlayRoomActor : Grain, IPlayRoomActor
         _players.Clear();
     }
 
-    public async Task OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
+    public async Task<PacketErrorCodes> ReqPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter)
     {
-        if(_playRoomCustomEventHandler is not null)
+        #region Early exit check
+        if (_playRoomCustomEventHandler is null) return PacketErrorCodes.InterfaceNotImplemented;
+        #endregion 
+        
+        // Custom processing 
+        (PlayerActionResult? updatedPlayerExtendData, PlayRoomActionResult? updatedPlayRoomCustomState) = 
+            await _playRoomCustomEventHandler.ReqPlayerActionToPlayRoom(playerId, actionType, actionParameter, _playRoomSendBuffer);
+        
+        
+        if( updatedPlayRoomCustomState is not null)
         {
-            // Custom processing 
-            (Dictionary<Guid,byte[]> updatedPlayerExtendData, byte[]? updatedPlayRoomCustomState) = await _playRoomCustomEventHandler.OnPlayerActionToPlayRoom(playerId, actionType, actionParameter);
-            
-            
-            // Broadcasting to all players
-            if( updatedPlayRoomCustomState is not null)
-            {
-                foreach (PlayRoomMember member in _players)
-                {
-                    IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(member.PlayerId);
-                    await p.OnUpdatePlayRoomCustomState(RoomId, updatedPlayRoomCustomState);
-                }
-            }
-            
-            foreach(KeyValuePair<Guid, byte[]> playerExtendData in updatedPlayerExtendData)
+            // Broadcasting to all players due to playroom state changed.
+            await BroadcastPlayRoomCustomState(updatedPlayRoomCustomState.PlayRoomUpdatedState, m => true);
+        }
+
+        if (updatedPlayerExtendData is not null)
+        {
+            foreach(KeyValuePair<Guid, byte[]> playerExtendData in updatedPlayerExtendData.PlayerUpdatedStats)
             {
                 PlayRoomMember? updatedMember = _players.Find(p => p.PlayerId == playerExtendData.Key);
-                if (updatedMember is not null)
-                {
-                    IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(updatedMember.PlayerId);
-                    await p.OnUpdatePlayerExtendData(playerExtendData.Value);
-                }
+                if (updatedMember is null) continue;
+                IPlayerActor p = GrainFactory.GetGrain<IPlayerActor>(updatedMember.PlayerId);
+                await p.OnUpdatePlayerExtendData(playerExtendData.Value);
             }
+        }
+        
+        
+        while( _playRoomSendBuffer.GetBufferForAllPlayers() is var (resultType, parameters) &&  
+               (resultType != null && parameters != null))
+        {
+            _players.ForEach(p =>
+            {
+                IPlayerActor playActor = GrainFactory.GetGrain<IPlayerActor>(p.PlayerId);
+                playActor.OnPlayerActionToPlayRoomResult(RoomId, resultType, parameters);
+            });
+        }
+        
+        _players.ForEach(member =>
+        {
+            IPlayerActor playerActor = GrainFactory.GetGrain<IPlayerActor>(member.PlayerId);
+            
+            while (_playRoomSendBuffer.PopBuffer(member.PlayerId) is var (resultType, parameters) &&
+                   (resultType != null && parameters != null))
+            {
+                playerActor.OnPlayerActionToPlayRoomResult(RoomId, resultType, parameters);
+            }
+        });
+
+        return PacketErrorCodes.Success;
+    }
+
+    private async Task BroadcastPlayRoomCustomState(byte[] updatedData, Func<PlayRoomMember, bool> filterFunc)
+    {
+        foreach (PlayRoomMember member in _players)
+        {
+            if (!filterFunc(member)) continue;
+            IPlayerActor  playerActor = GrainFactory.GetGrain<IPlayerActor>(member.PlayerId);
+            await playerActor.OnUpdatePlayRoomCustomState(member.RoomId, updatedData);
         }
     }
 }

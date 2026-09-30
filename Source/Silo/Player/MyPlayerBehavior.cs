@@ -1,4 +1,5 @@
 using Google.FlatBuffers;
+using Silo.TestPackets;
 using SyncnetPlatform.Actors;
 using SyncnetPlatform.Databases;
 
@@ -9,8 +10,23 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
         return Task.CompletedTask;
     }
 
+    public void OnCreatePlayRoom(PlayerState playerState, Guid playRoomId, byte[]? roomState)
+    {
+        throw new NotImplementedException();
+    }
+
     public void OnJoinPlayRoom(PlayerState playerState, Guid playRoomId, bool isOwner, byte[]? roomMetaData)
     {
+    }
+
+    public byte[] Serialize(IReadOnlyDictionary<string, object?> playerState)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IPlayerDataExtend GetPlayerCustomState()
+    {
+        throw new NotImplementedException();
     }
 
     public Task<bool> OnLoginAsync(PlayerState playerData, CancellationToken? cancellationToken = null)
@@ -18,7 +34,7 @@ public class MyPlayerBehavior : IPlayerCustomBehavior
         return Task.FromResult<bool>(false);
     }
 
-    public Task<bool> OnLogoutAsync(PlayerState playerData, CancellationToken? cancellationToken = null)
+    public Task<bool> OnLogoutAsync(CancellationToken? cancellationToken = null)
     {
 
         return Task.FromResult<bool>(false);

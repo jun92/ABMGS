@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using SyncnetPlatform.ApplicationBuilder.Options;
 using SyncnetPlatform.Extensions;
+using System;
 
 namespace SyncnetPlatform.ApplicationBuilder;
 

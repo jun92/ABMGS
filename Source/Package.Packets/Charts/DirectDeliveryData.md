@@ -10,3 +10,5 @@ Player1Client->>+Player1Actor: ReqDirectDeliveryData
 Player1Actor->>Player2Actor: OnDirectDeliveryData
 Player2Actor->>Player2Client: OnDirectDeliveryData 
 Player1Actor->>-Player1Client: ResDirectDeliveryData
+```
+

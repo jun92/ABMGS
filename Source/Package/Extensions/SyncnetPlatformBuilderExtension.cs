@@ -25,11 +25,14 @@ using SyncnetPlatform.Extensions.Options;
 using SyncnetPlatform.Interfaces.Network.Handlers;
 using SyncnetPlatform.Interfaces.Network.Sessions;
 using SyncnetPlatform.Interfaces.Network.Utils;
+using SyncnetPlatform.Network.Buffers;
 using SyncnetPlatform.Network.Sessions;
 using SyncnetPlatform.Network.Utils;
 using SyncnetPlatform.Repositories;
 using SyncnetPlatform.Utils;
 using SyncnetPlatform.Utils.Telemetry;
+using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 
@@ -97,6 +100,7 @@ public static class SyncnetPlatformBuilderExtension
         builder.Services.AddTransient<IGameSessionService, GameSessionService>();
         builder.Services.AddTransient<IPacketRouter, FlatBufferPacketRouter>();
         builder.Services.AddSingleton<SyncnetMetricsService>();
+        builder.Services.AddTransient<IPlayRoomSendBuffer, PlayRoomSendBuffer>();
     }
 
     private static void ConfigureDatabase(WebApplicationBuilder builder)

@@ -1,0 +1,66 @@
+
+namespace TGame.Packets;
+
+table TGamePlayerCustomData {
+    win_count: int = 0;
+    lose_count: int = 0;
+    play_count: int = 0;
+}
+
+// for other packets, not solo use.
+table TGameCellInfo  {
+    marked_player_id: string;
+    marked_time: string;
+    mark : int;
+}
+
+union TGameActionParameters {
+    TGamePlayRoomState,
+    TGameNotifyGameStarted,
+    TGameReqActionSetReady,
+    TGameResActionSetReady,
+    TGameReqActionPutItem,
+    TGameResActionPutItem
+}
+
+// for TGamePlayRoomState.  not solo use.
+table ReadyState {
+    player_id: string;
+    is_ready: bool;
+}
+
+table TGamePlayRoomState {
+    ready_state: [ReadyState];
+    board_state: [TGameCellInfo];
+    current_turn_player_id: string;
+}
+
+table TGameNotifyGameStarted {
+    start_player_id: string;
+}
+
+table TGameReqActionSetReady {
+    player_id: string;
+    ready_state: bool;
+}
+
+table TGameResActionSetReady {
+    error_code: int;
+}
+
+table TGameReqActionPutItem {
+    player_id: string;
+    x:int;
+    y:int;
+}
+
+table TGameResActionPutItem {
+    result: bool;
+    error_code: int;
+}
+
+table TGameNotifyGameEnd {
+    winner: string; // Guid.Empty means "draw"
+    
+}
+

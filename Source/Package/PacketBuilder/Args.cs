@@ -1,4 +1,6 @@
+using Orleans;
 using SyncnetPlatform.Protocols.Generated;
+using System;
 
 namespace SyncnetPlatform.Network.Utils;
 
@@ -34,6 +36,7 @@ namespace SyncnetPlatform.Network.Utils;
 
 [GenerateSerializer] public record ReqPlayerActionToPlayRoomArgs(Guid RoomId, string ActionType, byte[] ActionParameter) : IPacketBuildArgs;
 [GenerateSerializer] public record ResPlayerActionToPlayRoomArgs(PacketErrorCodes result, int app_error_code) : IPacketBuildArgs;
+[GenerateSerializer] public record OnPlayerActionToPlayRoomResultArgs(string ActionType, byte[] ActionParameterResult) : IPacketBuildArgs;
 [GenerateSerializer] public record ReqLeaveRoomArgs(Guid roomId) : IPacketBuildArgs;
 [GenerateSerializer] public record ResLeaveRoomArgs(PacketErrorCodes result) : IPacketBuildArgs;
 [GenerateSerializer] public record OnPlayerLeaveRoomArgs(Guid roomId, Guid playerId, string playerName): IPacketBuildArgs;
@@ -42,4 +45,3 @@ namespace SyncnetPlatform.Network.Utils;
 [GenerateSerializer] public record ResBroadcastRoomArgs(PacketErrorCodes result) : IPacketBuildArgs;
 [GenerateSerializer] public record BroadcastRoomArgs(Guid from, string message) : IPacketBuildArgs;
 
-[GenerateSerializer] public record DeliverCustomPacketArgs(DeliverDestination Dest, byte[] CustomData) : IPacketBuildArgs;

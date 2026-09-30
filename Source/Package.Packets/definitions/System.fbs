@@ -27,6 +27,7 @@ union SystemPacket {
     OnPlayRoomUpdatePlayerExtendData,
     ReqPlayerActionToPlayRoom,
     ResPlayerActionToPlayRoom,
+    OnPlayerActionToPlayRoomResult,
     ReqLeaveRoom,
     ResLeaveRoom,
     OnPlayerLeaveRoom,
@@ -34,8 +35,7 @@ union SystemPacket {
     ResBroadcastRoom,
     BroadcastRoom,
     ReqUpdatePlayerName,
-    ResUpdatePlayerName,
-    DeliverCustomPacket
+    ResUpdatePlayerName
 }
 
 table PacketWrapper {

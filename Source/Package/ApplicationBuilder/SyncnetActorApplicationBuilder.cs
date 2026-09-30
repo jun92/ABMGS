@@ -3,6 +3,7 @@ using SyncnetPlatform.Actors;
 using SyncnetPlatform.ApplicationBuilder.Options;
 using SyncnetPlatform.Databases;
 using SyncnetPlatform.Extensions;
+using System;
 using System.Reflection;
 
 namespace SyncnetPlatform.ApplicationBuilder;
@@ -29,11 +30,29 @@ public class SyncnetActorApplicationBuilder : SyncnetBaseApplicationBuilder<Sync
         }
         Builder.AddSyncnetPlatformSilo(_options.LoggerConfigure, _options.TelemetryConfigure, entryAssembly.GetName().Name);
 
-        if(_options.PlayerDataExtendCreateType is Type PlayerDataExtendType )
-            Builder.Services.AddTransient(typeof(IPlayerDataExtendCreater), PlayerDataExtendType);
-        if (_options.PlayerCustomBehaviorType is Type PlayerCustomBehaviorType)
-            Builder.Services.AddTransient(typeof(IPlayerCustomBehavior), PlayerCustomBehaviorType);
-
+        // Player data extend feature enabled.
+        if(_options is
+           {
+               PlayerDataExtendDefinitionType: { } playerDataExtendDefinitionType, 
+               PlayerDataExtendType: { } playerDataExtendType, 
+               PlayerCustomBehaviorType: { } playerCustomBehaviorType
+           })
+        {
+            Builder.Services.AddTransient(typeof(IPlayerDataExtendDefinition), playerDataExtendDefinitionType);
+            Builder.Services.AddTransient(typeof(IPlayerCustomBehavior), playerCustomBehaviorType);
+            Builder.Services.AddTransient(typeof(IPlayerDataExtend), playerDataExtendType);
+        }
+        
+        // Play room feature enabled
+        if (_options is
+            {
+                PlayRoomCustomStateType: { } playRoomCustomStateType, 
+                PlayRoomCustomEventHandlerType: { } playRoomCustomEventHandlerType
+            })
+        {
+            Builder.Services.AddTransient(typeof(IPlayRoomCustomEventHandler), playRoomCustomEventHandlerType);
+            Builder.Services.AddTransient(typeof(IPlayRoomCustomState), playRoomCustomStateType);
+        }
         var webApp = Builder.Build();
         return new SyncnetActorApplication(webApp, _options);
     }

@@ -17,7 +17,7 @@ namespace Silo.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.9")
+                .HasAnnotation("ProductVersion", "10.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -33,15 +33,15 @@ namespace Silo.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<long>("CustomExp")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
-                        .HasDefaultValue(33L);
-
-                    b.Property<int>("CustomLevel")
+                    b.Property<int>("LoseCount")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer")
-                        .HasDefaultValue(1);
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("PlayCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.Property<Guid>("PlayerId")
                         .HasColumnType("uuid");
@@ -49,6 +49,11 @@ namespace Silo.Migrations
                     b.Property<string>("PlayerName")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("WinCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.HasKey("Id");
 

@@ -1,18 +1,22 @@
+using SyncnetPlatform.Network.Buffers;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
 namespace SyncnetPlatform.Actors;
+
+public record PlayerActionResult(Dictionary<Guid, byte[]> PlayerUpdatedStats);
+
+public record PlayRoomActionResult(byte[] PlayRoomUpdatedState);
 
 public interface IPlayRoomCustomEventHandler
 {
     Task<IPlayRoomCustomState> OnPlayRoomInitializingAsync();
     
     Task OnPlayRoomDestroyingAsync();
-    
-    Task OnHandleCustomPacket(byte[] customPacket);
 
-    IPlayRoomCustomState DeserializePlayRoomState(byte[] roomMetaData);
-    byte[]  SerializePlayRoomState(IPlayRoomCustomState playRoomCustomState);
+    Task<int> AddPlayerToPlayRoom(Guid id, byte[] playerExtendData);
 
-    Task AddPlayerToPlayRoom(Guid id, byte[] playerMetadata);
-
-    Task<(Dictionary<Guid, byte[]>, byte[]?)> OnPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter);
+    Task<(PlayerActionResult?, PlayRoomActionResult?)> ReqPlayerActionToPlayRoom(Guid playerId, string actionType, byte[] actionParameter, IPlayRoomSendBuffer sendBuffer);
     Task OnTimer(float delta);
 }

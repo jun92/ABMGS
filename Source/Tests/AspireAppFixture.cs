@@ -1,6 +1,11 @@
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
+using Aspire.Hosting.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace SyncnetPlatform.Tests;
 public class AspireAppFixture : IAsyncLifetime

@@ -12,9 +12,9 @@ public static class PlayerDataColumn
     public const string CustomExp = "CustomExp";
 
 }
-public class MyGamePlayerDataExtendCreater : IPlayerDataExtendCreater
+public class MyGamePlayerDataExtendCreater : IPlayerDataExtendDefinition
 {
-    public IReadOnlyList<(Type, string, object)> RegisterPlayerCustomData()
+    public IReadOnlyList<(Type, string, object)> GetExtendDataDefinitions()
     {
         return new List<(Type, string, object)>
         {

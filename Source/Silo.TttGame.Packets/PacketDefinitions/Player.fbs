@@ -1,4 +1,5 @@
 
+namespace Silo.TestPackets;
 
 table PlayerCustomData{
 	custom_level: int;

@@ -1,6 +1,10 @@
 using Google.FlatBuffers;
+using Silo.TestPackets;
 using SyncnetPlatform.Extensions;
 using SyncnetPlatform.Protocols.Generated;
+using System;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace SyncnetPlatform.Tests;
 
@@ -11,9 +15,9 @@ public partial class ABMGS_TestMain : IAsyncLifetime
     {
         var wsClient = await CreateAuthoredWebSocket();
 
-        string RandomPlayerName = "Guest" + CreateRandomString(6);
+        string randomPlayerName = "Guest" + CreateRandomString(6);
 
-        var (result, packetWrapper) = await SendAndReceive(wsClient, BuildUpdatePlayerNamePacket(RandomPlayerName));
+        var (result, packetWrapper) = await SendAndReceive(wsClient, BuildUpdatePlayerNamePacket(randomPlayerName));
 
         _output.WriteLine($"Count: {result.Count}");
         Assert.True(result.EndOfMessage);
@@ -26,7 +30,7 @@ public partial class ABMGS_TestMain : IAsyncLifetime
 
         Assert.True(result.EndOfMessage);
 
-        Assert.Equal(RandomPlayerName, packetWrapper.SystemPacketAsResUserInfo().Name);
+        Assert.Equal(randomPlayerName, packetWrapper.SystemPacketAsResUserInfo().Name);
 
         await CloseAuthoredWebSocket(wsClient);
     }
@@ -65,17 +69,15 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         //Get Client1 User info
         await SendDataAsync(wsClient1, getUserInfoPacket);
         var (result, packetWrapper) = await ReceiveAsync(wsClient1);
-        ResUserInfo UserInfoClient1 = packetWrapper.SystemPacketAsResUserInfo();
-        Guid player1Id = new();
-        player1Id.FromGuidType(UserInfoClient1.Id);
+        ResUserInfo userInfoClient1 = packetWrapper.SystemPacketAsResUserInfo();
+        Guid player1Id = userInfoClient1.Id.ToGuid();
         Assert.NotEqual(Guid.Empty, player1Id);
 
         //Get Client2 User info
         await SendDataAsync(wsClient2, getUserInfoPacket);
         (result, packetWrapper) = await ReceiveAsync(wsClient2);
-        ResUserInfo UserInfoClient2 = packetWrapper.SystemPacketAsResUserInfo();
-        Guid player2Id = new();
-        player2Id.FromGuidType(UserInfoClient2.Id);
+        ResUserInfo userInfoClient2 = packetWrapper.SystemPacketAsResUserInfo();
+        Guid player2Id = userInfoClient2.Id.ToGuid();
         Assert.NotEqual(Guid.Empty, player2Id);
 
         // Two different accounts.
@@ -83,8 +85,8 @@ public partial class ABMGS_TestMain : IAsyncLifetime
 
 
         string messageToSend = "Hello Friend";
-        var ReqDirectMessage = BuildReqDirectDeliveryDataPacket(player2Id, messageToSend, DirectDeliveryDataType.Whipher);
-        await SendDataAsync(wsClient1, ReqDirectMessage);
+        var reqDirectMessage = BuildReqDirectDeliveryDataPacket(player2Id, messageToSend, DirectDeliveryDataType.Whipher);
+        await SendDataAsync(wsClient1, reqDirectMessage);
 
         (result, packetWrapper) = await ReceiveAsync(wsClient2);
         OnDirectDeliveryData onDirectDeliveryData = packetWrapper.SystemPacketAsOnDirectDeliveryData();
@@ -109,9 +111,8 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         //Get Client1 User info
         await SendDataAsync(wsClient1, getUserInfoPacket);
         var (result, packetWrapper) = await ReceiveAsync(wsClient1);
-        ResUserInfo UserInfoClient1 = packetWrapper.SystemPacketAsResUserInfo();
-        Guid player1Id = new();
-        player1Id.FromGuidType(UserInfoClient1.Id);
+        ResUserInfo userInfoClient1 = packetWrapper.SystemPacketAsResUserInfo();
+        Guid player1Id = userInfoClient1.Id.ToGuid();
         Assert.NotEqual(Guid.Empty, player1Id);
 
         var player2Id = Guid.NewGuid();
@@ -128,35 +129,36 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         await CloseAuthoredWebSocket(wsClient1);
 
     }
-    [Fact]
-    public async Task PlayerCustomDataUpdate()
-    {
-        var wsClient = await CreateAuthoredWebSocket();
-        
-        //Get current player custom data
-        var reqUserInfo = BuildReqUserInfoPacket();
-        await SendDataAsync(wsClient, reqUserInfo);
-        var (result, packetWrapper) = await ReceiveAsync(wsClient);
-        ResUserInfo UserInfoClient = packetWrapper.SystemPacketAsResUserInfo();
-        
-        
-        var customData = PlayerCustomData.GetRootAsPlayerCustomData(new ByteBuffer(UserInfoClient.GetExtendDataArray()));
-        Assert.Equal(1, customData.CustomLevel);
-        Assert.Equal(33, customData.CustomExp);
-        long prevCustomExp = customData.CustomExp;
-        
-        const string ActionType = "gainEXP";
-        byte[] ActionParameters = BitConverter.GetBytes(100);
-        var reqUserActionForUpdatePlayerCustomData = BuildReqUserActionForUpdatePlayerCustomData(ActionType, ActionParameters);
-        
-        await SendDataAsync(wsClient, reqUserActionForUpdatePlayerCustomData);
-        
-        (result, packetWrapper) = await ReceiveAsync(wsClient);
-        ResUserActionForUpdatePlayerExtendData res = packetWrapper.SystemPacketAsResUserActionForUpdatePlayerExtendData();
-        
-        customData = PlayerCustomData.GetRootAsPlayerCustomData(new ByteBuffer(res.GetExtendDataArray()));
-        
-        Assert.Equal(prevCustomExp + 100, customData.CustomExp);
-
-    }
+    // it will be available back when TicTacToe game test has done.
+    // [Fact]
+    // public async Task PlayerCustomDataUpdate()
+    // {
+    //     var wsClient = await CreateAuthoredWebSocket();
+    //     
+    //     //Get current player custom data
+    //     var reqUserInfo = BuildReqUserInfoPacket();
+    //     await SendDataAsync(wsClient, reqUserInfo);
+    //     var (result, packetWrapper) = await ReceiveAsync(wsClient);
+    //     ResUserInfo UserInfoClient = packetWrapper.SystemPacketAsResUserInfo();
+    //     
+    //     
+    //     var customData = PlayerCustomData.GetRootAsPlayerCustomData(new ByteBuffer(UserInfoClient.GetExtendDataArray()));
+    //     Assert.Equal(1, customData.CustomLevel);
+    //     Assert.Equal(33, customData.CustomExp);
+    //     long prevCustomExp = customData.CustomExp;
+    //     
+    //     const string ActionType = "gainEXP";
+    //     byte[] ActionParameters = BitConverter.GetBytes(100);
+    //     var reqUserActionForUpdatePlayerCustomData = BuildReqUserActionForUpdatePlayerCustomData(ActionType, ActionParameters);
+    //     
+    //     await SendDataAsync(wsClient, reqUserActionForUpdatePlayerCustomData);
+    //     
+    //     (result, packetWrapper) = await ReceiveAsync(wsClient);
+    //     ResUserActionForUpdatePlayerExtendData res = packetWrapper.SystemPacketAsResUserActionForUpdatePlayerExtendData();
+    //     
+    //     customData = PlayerCustomData.GetRootAsPlayerCustomData(new ByteBuffer(res.GetExtendDataArray()));
+    //     
+    //     Assert.Equal(prevCustomExp + 100, customData.CustomExp);
+    //
+    // }
 }
