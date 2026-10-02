@@ -68,8 +68,8 @@ public class GameSessionController : ControllerBase
 
 public enum SupportedPlatformType
 {
-    googleplay,
-    apple,
-    steam,
-    guest
+    GooglePlay,
+    Apple,
+    Steam,
+    Guest
 } 

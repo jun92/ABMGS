@@ -38,7 +38,7 @@ public class AuthController : ControllerBase
 
     public async Task<IActionResult> TestIssueToken([FromRoute] string playerId)
     {
-        return Ok(_syncnetJwtAuthenticationService.IssueNewToken(playerId, SupportedPlatformType.guest.ToString()));
+        return Ok(_syncnetJwtAuthenticationService.IssueNewToken(playerId, SupportedPlatformType.Guest.ToString()));
     }
 
     /// <summary>
@@ -56,14 +56,14 @@ public class AuthController : ControllerBase
         {
             switch (supportedPlatformType)
             {
-                case SupportedPlatformType.googleplay:
+                case SupportedPlatformType.GooglePlay:
                     await _authenticationService.GetPlayerIdByGooglePlayAuth(serverAuthCode: identifier);
                     break;
-                case SupportedPlatformType.apple:
+                case SupportedPlatformType.Apple:
                     break;
-                case SupportedPlatformType.steam:
+                case SupportedPlatformType.Steam:
                     break;
-                case SupportedPlatformType.guest:
+                case SupportedPlatformType.Guest:
                     syncnetPlatformId = await _authenticationService.GetPlayerIdByGuest(identifier);
                     break;
             }
