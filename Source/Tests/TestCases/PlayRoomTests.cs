@@ -30,6 +30,8 @@ public partial class ABMGS_TestMain : IAsyncLifetime
 
         Assert.Equal(SystemPacket.ResJoinRoom, packetWrapper.SystemPacketType);
         Assert.Equal(PacketErrorCodes.RoomNotFound, packetWrapper.SystemPacketAsResJoinRoom().Result);
+
+        await CloseAuthoredWebSocket(wsClient);
     }
 
     [Fact]
@@ -48,6 +50,8 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         var (result, packetWrapper) = await SendAndReceive(wsClient, BuildReqJoinPlayRoomPacket(roomId));
         Assert.Equal(SystemPacket.ResJoinRoom, packetWrapper.SystemPacketType);
         Assert.Equal(PacketErrorCodes.RoomNotFound, packetWrapper.SystemPacketAsResJoinRoom().Result);
+
+        await CloseAuthoredWebSocket(wsClient);
     }
 
     [Fact]
