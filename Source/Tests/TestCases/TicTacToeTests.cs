@@ -114,7 +114,10 @@ public partial class ABMGS_TestMain
         // await PutMarkerOnBoardTest(player01, player1Id, 0, 0, playRoomState);
         // await PutMarkerOnBoardTest(player02, player2Id, 1, 1, playRoomState);
 
-        
+        await CloseAuthoredWebSocket(player01);
+        await CloseAuthoredWebSocket(player02);
+        await CloseAuthoredWebSocket(playerCannotJoin);
+
     }
 
     private async Task PutMarkerOnBoardTest(ClientWebSocket playerConn, Guid playerId, int x, int y, TttGamePlayRoomState tttGamePlayRoomState)

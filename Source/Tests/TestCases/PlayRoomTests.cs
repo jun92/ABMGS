@@ -118,6 +118,9 @@ public partial class ABMGS_TestMain : IAsyncLifetime
         Assert.Equal(SystemPacket.ResLeaveRoom, packetWrapper.SystemPacketType);
         Assert.Equal(PacketErrorCodes.Success, packetWrapper.SystemPacketAsResLeaveRoom().Result);
 
+        await CloseAuthoredWebSocket(wsClientOwner);
+        await CloseAuthoredWebSocket(wsClientJoiner);
+
     }
 
 }
